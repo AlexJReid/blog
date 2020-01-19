@@ -1,6 +1,6 @@
 # mybranch.dev
 
-My personal [blog](https://blog.mybranch.dev), managed with `hugo`. It's basically an `nginx` image hosted on Google Cloud Run, that contains the generated site. Google Cloud Build is used to build and deploy.
+My personal [blog](https://blog.mybranch.dev), managed with `hugo`. It's basically an `nginx` image hosted on Google Cloud Run, which contains the generated site. Google Cloud Build is used to build and deploy.
 
 ## Workflow
 Add markdown files to the posts directory and edit. Manage changes with git.
@@ -17,6 +17,6 @@ See [cloudbuild.yaml](cloudbuild.yaml) to see how it all fits together.
 ## Why Cloud Run?
 I don't believe you can believe anything written on a blog that isn't hosted by k8s. But as I'm not clever enough for that, Cloud Run is a fair substitute. ;)
 
-Seriously though, I had been impressed with Cloud Run and it seemed a simple way of getting off Medium. It has nice monitoring and very simple support for custom domains. Which reminds me, I also couldn't be arsed with CloudFront.
+Seriously though, I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has nice monitoring and dead simple support for custom domains. Which reminds me, I really couldn't be arsed with CloudFront.
 
-There may be better approaches but it seems to work for me.
+There may be better approaches but it seems to work.
