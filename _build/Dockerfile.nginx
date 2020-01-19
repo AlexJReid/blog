@@ -1,4 +1,4 @@
-ROM nginx:1
+FROM nginx:1
 
 WORKDIR /app
 COPY _deploy /app
