@@ -1,0 +1,8 @@
+ROM nginx:1
+
+WORKDIR /app
+COPY _deploy /app
+COPY /workspace/public /app/site
+
+CMD ["/app/start.sh"]
+
