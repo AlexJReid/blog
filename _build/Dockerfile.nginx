@@ -1,8 +1,9 @@
 FROM nginx:1
 
-WORKDIR /app
+WORKDIR /workspace
 COPY _deploy /app
-COPY /workspace/public /app/site
+RUN ['ls', '/workspace']
+COPY public /app/site
 
 CMD ["/app/start.sh"]
 
