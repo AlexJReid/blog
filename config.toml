@@ -18,7 +18,7 @@ pygmentscodefencesguesssyntax = true
     info = "thoughts on software engineering, clouds and data"
     description = "Alex Reid"
     keywords = "blog,developer,personal,data,gcp,aws"
-    avatarurl = "images/avatar.jpg"
+    #avatarurl = "images/alexjreid.jpg"
 
     favicon_32 = "/img/favicon-32x32.png"
     favicon_16 = "/img/favicon-16x16.png"
