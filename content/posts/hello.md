@@ -1,15 +1,39 @@
 +++ 
-draft = true
-date = 2020-01-19T12:18:48Z
-title = "Hello"
-description = ""
-slug = "" 
-tags = []
+draft = false
+date = 2020-01-19T21:05:54Z
+title = "Hello, Goodbye (Medium)"
+description = "Exciting blog migration story"
+slug = "hello" 
+tags = ['meta', 'gcp', 'cloud run', 'cloud build', 'medium']
 categories = []
 externalLink = ""
 series = []
 +++
 
-# Welcome
+# Hello, Goodbye (Medium)
 
-This is just a test.
+I've been meaning to get off Medium for a while so decided to self-host my personal site. Things have changed quite a lot since the last time I did this, which is probably approaching twenty years ago.
+
+I guess _self-hosting_ has changed meaning in that time. So to be a bit meta, here's a little about the new setup.
+
+The page you're seeing is coming from `nginx` image hosted on Google Cloud Run, which contains the generated site. Google Cloud Build is used to build and deploy.
+
+## Workflow
+Add markdown files to the posts directory and edit. Manage changes with git.
+
+## Deploy steps
+When a change is pushed to master, the site is rebuilt and deployed by Google Cloud Build.
+- Clone git submodules (hugo theme, in this case)
+- Run `hugo` via a custom builder (a Docker image containing the `hugo` binary)
+- Copy the built site to an `nginx` image and push it to a registry
+- Deploy the serving image to Cloud Run
+
+See [cloudbuild.yaml](https://github.com/AlexJReid/blog/blob/master/cloudbuild.yaml) to see how it all fits together.
+
+## Why Cloud Run?
+I don't believe you can believe anything written on a blog that isn't hosted by k8s. But as I'm not clever enough for that, Cloud Run is a fair substitute. ;)
+
+Seriously though, I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has nice monitoring and dead simple support for custom domains. Which reminds me, I really couldn't be arsed with CloudFront.
+
+There may be better approaches but it seems to work. There's a tool to convert Medium articles to Markdown so I'll be trying that out next.
+

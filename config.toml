@@ -11,13 +11,13 @@ pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
-disqusShortname = "mybranchblog"
+#disqusShortname = "mybranchblog"
 
 [params]
     author = "Alex Reid"
-    info = "Developer"
+    info = "thoughts on software engineering, clouds and data"
     description = "Alex Reid"
-    keywords = "blog,developer,personal,data"
+    keywords = "blog,developer,personal,data,gcp,aws"
     avatarurl = "images/avatar.jpg"
 
     favicon_32 = "/img/favicon-32x32.png"
@@ -35,22 +35,22 @@ disqusShortname = "mybranchblog"
 
 # Social links
 [[params.social]]
-    name = "Github"
-    icon = "fab fa-github fa-2x"
+    name = "LinkedIn"
+    icon = "fab fa-linkedin fa-2x"
     weight = 1
-    url = "https://github.com/alexjreid/"
+    url = "https://www.linkedin.com/in/alexjreid/"
 [[params.social]]
     name = "Twitter"
     icon = "fab fa-twitter fa-2x"
+    weight = 2
+    url = "https://twitter.com/alexjreid"
+[[params.social]]
+    name = "Github"
+    icon = "fab fa-github fa-2x"
     weight = 3
-    url = "https://twitter.com/alexjreid/"
+    url = "https://github.com/alexjreid"
 
-# Menu links
 [[menu.main]]
     name = "Blog"
     weight = 1
     url  = "/posts/"
-[[menu.main]]
-    name = "About"
-    weight = 2
-    url = "/about/"
