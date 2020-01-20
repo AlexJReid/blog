@@ -10,8 +10,6 @@ externalLink = ""
 series = []
 +++
 
-# Hello, Goodbye (Medium)
-
 I've been meaning to get off Medium for a while so decided to self-host my personal site. Things have changed quite a lot since the last time I did this, which is probably approaching twenty years ago.
 
 At some point we decided to publish our thoughts via megacorps and VC-backed lunatics as it saved messing around with Apache configurations. We might look back upon this as being a Bad Thing.
