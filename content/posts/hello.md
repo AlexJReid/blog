@@ -35,9 +35,7 @@ When a change is pushed to master, the site is rebuilt and deployed by Google Cl
 See [cloudbuild.yaml](https://github.com/AlexJReid/blog/blob/master/cloudbuild.yaml) to see how it all fits together. The code for this entire (one page!) site is in that repo.
 
 ## Why Cloud Run?
-I don't believe you can believe anything written on a blog that isn't hosted by k8s. As I'm not clever enough for that, Cloud Run is a fair substitute. ;)
-
-Seriously though, I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has nice monitoring and dead simple support for custom domains. Which reminds me, I really couldn't be arsed with CloudFront.
+I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has nice monitoring and dead simple support for custom domains. Which reminds me, I really couldn't be arsed with CloudFront.
 
 Getting it setup was easy enough. Cloud Shell is excellent, AWS should have similar.
 
