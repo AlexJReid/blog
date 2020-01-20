@@ -11,10 +11,17 @@ http {
 
   server {
     listen $PORT;
+    server_name mybranch.dev;
     root /app/site;
 
     location / {
       try_files $uri $uri.html $uri/ /404.html;
     }
+  }
+  
+  server {
+      listen $PORT;
+      server_name blog.mybranch.dev;
+      return 301 https://mybranch.dev$request_uri;
   }
 }
