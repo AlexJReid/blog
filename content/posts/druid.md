@@ -10,8 +10,6 @@ externalLink = ""
 series = []
 +++
 
-Update February 2019 — this post still gets a few views. Some of the content probably still makes sense, but Druid has moved on a lot…
-
 > **Update February 2019** — this post still gets a few views. Some of the content probably still makes sense, but Druid has moved on a lot. [Managed services, SQL support, BI tools and so on](https://imply.io/).
 
 > I confess that I did not get as far as using Druid in production as (typically) project requirements changed.
