@@ -18,7 +18,8 @@ Designing a good schema that supports your query patterns can be challenging. Of
 
 When ready to try out an approach with DynamoDB, it's a hassle to then create the items through the AWS Console or CLI. 
 
-On my way to work this morning, I hacked together a script to ease the process of loading from a spreadsheet of a specific format into a DynamoDB table.
+So, on my way to work this morning, I hacked together a script to ease the process of loading from a spreadsheet of a specific format into a DynamoDB table.
+
 It's available at https://github.com/AlexJReid/dynamodb-dev-importer
 
 The script:
@@ -48,6 +49,8 @@ Will yield an item like this:
     feb 1927
 }
 ```
+
+For a full example, take a look at [example.csv](https://github.com/AlexJReid/dynamodb-dev-importer/blob/master/example.csv).
 
 ## Key ideas
 - Table consists of partition key `pk: S` and sort key `sk: S` - their meaning varies depending on the item
