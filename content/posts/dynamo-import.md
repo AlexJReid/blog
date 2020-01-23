@@ -18,7 +18,7 @@ Designing a good schema that supports your query patterns can be challenging. Of
 
 When ready to try out an approach with DynamoDB, it's a hassle to then create the items through the AWS Console or CLI. 
 
-Enter `ddbimp`, a tiny utility that eases the process of populating a DynamoDB table from a CSV file, exported from a spreadsheet which follows a specific format, common to DynamoDB modelling patterns.
+Enter `ddbimp`, a tiny (and quite dumb) utility that eases the process of populating a DynamoDB table from a CSV file, exported from a spreadsheet which follows a specific format, common to DynamoDB modelling patterns.
 
 ## Install and run
 You can install and run it with
