@@ -18,7 +18,7 @@ Designing a good schema that supports your query patterns can be challenging. Of
 
 When ready to try out an approach with DynamoDB, it's a hassle to then create the items through the AWS Console or CLI. 
 
-I therefore created a utility eases the process of populating a DynamoDB table from a CSV that follows a specific format.
+Enter `ddbimp`, a tiny utility that eases the process of populating a DynamoDB table from a CSV file, exported from a spreadsheet which follows a specific format, common to DynamoDB modelling patterns.
 
 ## Install and run
 You can install and run it with
@@ -71,6 +71,6 @@ For a full example CSV, take a look at [example.csv](https://github.com/AlexJRei
 AWS recently [released a preview build of a tool called NoSQL Workbench](https://aws.amazon.com/blogs/aws/nosql-workbench-for-amazon-dynamodb-available-in-preview/). It builds on the above ideas. I've tried it out and it seems pretty good, but I am a luddite and am faster working in a spreadsheet right now. I'd certainly recommend giving it a try.
 
 ## Useful resources
-- [AWS Docs: Indexes best practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes.html)
-- [AWS Docs: NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html)
+- [Best Practices for Using Secondary Indexes in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes.html)
+- [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html)
 - [Video: Advanced Design Patterns at re:Invent 2019](https://www.youtube.com/watch?v=6yqfmXiZTlM)
