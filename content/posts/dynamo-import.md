@@ -2,7 +2,7 @@
 draft = false
 date = 2020-01-22T21:37:35Z
 title = "DynamoDB modelling in a spreadsheet"
-description = "Easily load data from a spreadsheet to test out your DynamoDB table design"
+description = "Easily load data from a spreadsheet to test out your DynamoDB table design with ddbimp"
 slug = "" 
 tags = ['aws','dynamodb','data']
 categories = []
@@ -18,11 +18,18 @@ Designing a good schema that supports your query patterns can be challenging. Of
 
 When ready to try out an approach with DynamoDB, it's a hassle to then create the items through the AWS Console or CLI. 
 
-So, on my way to work this morning, I hacked together a script to ease the process of loading from a spreadsheet of a specific format into a DynamoDB table.
+So, on my way to work this morning, I hacked together a small utility, `ddbimp`, to ease the process of loading from a spreadsheet of a specific format into a DynamoDB table.
 
-It's available at https://github.com/AlexJReid/dynamodb-dev-importer
+You can install and run it with
 
-The script:
+```
+$ pip install ddbimp
+$ ddbimp --table people --region eu-west-1 --skip 1 example.csv
+```
+
+Check out the [Github repo](https://github.com/AlexJReid/dynamodb-dev-importer) too.
+
+It:
 - reads a CSV file (exported from your spreadsheet) and imports it into a DynamoDB table 
 - columns 0 and 1 are used for the key: partition key `pk: S` and sort key `sk: S` - your target table needs these keys defined
 - column 2, if not an empty string, is set to `data: S`
@@ -62,6 +69,6 @@ For a full example, take a look at [example.csv](https://github.com/AlexJReid/dy
 AWS recently [released a preview build of a tool called NoSQL Workbench](https://aws.amazon.com/blogs/aws/nosql-workbench-for-amazon-dynamodb-available-in-preview/). It builds on the above ideas. I've tried it out and it seems pretty good, but I am a luddite and am faster working in a spreadsheet right now. I'd certainly recommend giving it a try.
 
 ## Useful resources
-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes.html
-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html
-- https://www.youtube.com/watch?v=6yqfmXiZTlM
+- [AWS Docs: Indexes best practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes.html)
+- [AWS Docs: NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html)
+- [Video: Advanced Design Patterns at re:Invent 2019](https://www.youtube.com/watch?v=6yqfmXiZTlM)
