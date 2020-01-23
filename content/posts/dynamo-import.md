@@ -1,10 +1,10 @@
 +++ 
 draft = false
 date = 2020-01-22T21:37:35Z
-title = "DynamoDB modelling in a spreadsheet"
+title = "DynamoDB modelling in a spreadsheet with ddbimp"
 description = "Easily load data from a spreadsheet to test out your DynamoDB table design with ddbimp"
 slug = "" 
-tags = ['aws','dynamodb','data']
+tags = ['aws','dynamodb','data','ddbimp']
 categories = []
 externalLink = ""
 series = []
@@ -18,8 +18,9 @@ Designing a good schema that supports your query patterns can be challenging. Of
 
 When ready to try out an approach with DynamoDB, it's a hassle to then create the items through the AWS Console or CLI. 
 
-So, on my way to work this morning, I hacked together a small utility, `ddbimp`, to ease the process of loading from a spreadsheet of a specific format into a DynamoDB table.
+So, on my way to work this morning, I hacked together a small utility, `ddbimp`, to ease the process of loading from a CSV that follows a specific format into a DynamoDB table.
 
+## Install and run
 You can install and run it with
 
 ```
@@ -27,15 +28,16 @@ $ pip install ddbimp
 $ ddbimp --table people --region eu-west-1 --skip 1 example.csv
 ```
 
-Check out the [Github repo](https://github.com/AlexJReid/dynamodb-dev-importer) too.
+You can find the code on [Github](https://github.com/AlexJReid/dynamodb-dev-importer) too.
 
-It:
-- reads a CSV file (exported from your spreadsheet) and imports it into a DynamoDB table 
-- columns 0 and 1 are used for the key: partition key `pk: S` and sort key `sk: S` - your target table needs these keys defined
-- column 2, if not an empty string, is set to `data: S`
-- all other columns are added as non-key attributes
+### Expected format
 
-Your CSV should contain columns for:
+
+| pk       | sk            | data |            |           |
+| -------- | ------------- | ---- | ---------- | --------- | 
+| PERSON-1 | sales-Q1-2019 | Alex | jan: 12012 | feb: 1927 |
+
+Your spreadsheet (and exported CSV) should contain columns for:
 - pk
 - sk
 - data (optional)
@@ -57,7 +59,7 @@ Will yield an item like this:
 }
 ```
 
-For a full example, take a look at [example.csv](https://github.com/AlexJReid/dynamodb-dev-importer/blob/master/example.csv).
+For a full example CSV, take a look at [example.csv](https://github.com/AlexJReid/dynamodb-dev-importer/blob/master/example.csv).
 
 ## Key ideas
 - Table consists of partition key `pk: S` and sort key `sk: S` - their meaning varies depending on the item
