@@ -26,13 +26,13 @@ Add markdown files to the posts directory and edit with any editor or in a brows
 ## Deploy steps
 When a change is pushed to master, the site is rebuilt and deployed by Google Cloud Build.
 - Clone git submodules (hugo theme, in this case)
-- Run `hugo` via a custom Cloud Build builder (basically just a [Docker image](https://github.com/AlexJReid/blog/blob/master/_hugo-cloudbuilder) containing the `hugo` binary. This has been built and prepared in advance.)
+- Run `hugo` via a custom Cloud Build builder (basically just a [Docker image](https://github.com/AlexJReid/blog/blob/master/_hugo-cloudbuilder) containing the `hugo` binary. The build process assumes that this image has already been built and is available.)
 - Copy the built site to an `nginx` image and push it to a registry
 - Deploy the serving image to Cloud Run
 
 See [cloudbuild.yaml](https://github.com/AlexJReid/blog/blob/master/cloudbuild.yaml) to see how it all fits together. The code for this entire site is in that repo.
 
-One thing I'd like to improve is the removal of old builds I'll never want to run again. Cloud Run keeps these to allow for easy rollback and phased deploys. As this is just my blog, I don't really have a particular SLA to uphold, but it's good to know it's there.
+One thing I'd like to improve is the removal of old builds I'll never want to run again. Cloud Run keeps these to allow for easy rollback, among other things. As this is just my blog, I don't really have a particular SLA to uphold, but it's good to know it's there.
 
 ## Why Cloud Run?
 I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has nice monitoring and dead simple support for custom domains and certificate provisioning. Which reminds me, I really couldn't be arsed with CloudFront.
