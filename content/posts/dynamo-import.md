@@ -24,7 +24,7 @@ Enter `ddbimp`, a tiny (and quite dumb) utility that eases the process of popula
 You can install and run it with
 
 ```
-$ pip install ddbimp
+$ pip3 install ddbimp
 $ ddbimp --table people --region eu-west-1 --skip 1 example.csv
 ```
 
