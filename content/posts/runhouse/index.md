@@ -41,7 +41,7 @@ cat ontime.csv | sed 's/\.00//g' | clickhouse-client -query="INSERT INTO ontime 
 ```
 I then stopped the clickhouse server process and copied the `data` and `metadata` out of the container's `/var/lib/clickhouse`. 
 
-These were added to a Dockerfile add a _data layer_ to the Clickhouse image.
+These were added to _data layer_ extending the base Clickhouse image.
 ```
 FROM yandex/clickhouse-server
 
@@ -52,7 +52,7 @@ ADD ontime.sql /var/lib/clickhouse/metadata/default/ontime.sql
 
 EXPOSE 8123
 ```
-I built and pushed the Docker image using Google Cloud Build.
+I built and pushed the image using Google Cloud Build.
 ```
 steps:
 - name: 'gcr.io/cloud-builders/docker'
@@ -91,11 +91,11 @@ Then the big moment. I tried to query the `ontime` table but the request timed o
 
 ![Latency](runhouse-4.png).
 
-Logs told me that the Clickhouse had exhausted the 256MB memory. Not a problem. I deployed a new revision of the service, this time with 1GB and a query worked!
+Logs told me that the Clickhouse had exhausted the 256MB memory. Not a problem. I deployed a new revision of the service, this time with 1GB and a query worked, responding very quickly.
 
 ![Success](runhouse-5.png)
 
-However when attempting to run a `GROUP BY` query, the following error was returned.
+A `SELECT COUNT()` also worked. However when attempting to run a query with `GROUP BY` or `WHERE`, the following error was returned.
 
 ```
 Code: 460, e.displayText() = DB: :ErrnoException: Failed to create thread timer, errno: 0, strerror: Success (version 20.1.2.4 (official build))
@@ -106,7 +106,7 @@ Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search
 > Some system calls and arguments are not currently supported, as are some parts of the /proc and /sys filesystems. As a result, not all applications will run inside gVisor, but many will run just fine ...
 -- https://cloud.google.com/blog/products/gcp/open-sourcing-gvisor-a-sandboxed-container-runtime
 
-I figured it _might_ have been memory related, but even with a 2GB memory allocation, the error remained. The next port of call would have been to try running Clickhouse in a gVisor environment outside of Cloud Run. But for now, game over.
+I figured it _might_ have been memory related, but even with a 2GB memory allocation, the error remained. The next port of call would have been to try running Clickhouse in a gVisor environment outside of Cloud Run. I pulled the image into my [Cloud Shell](https://cloud.google.com/shell/) and it worked as expected, but this is a small VM so no gVisor? For now, game over.
 
 ## Why I thought the idea was interesting
 - Clickhouse speaks HTTP anyway so will just work on Cloud Run
@@ -117,7 +117,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 ## Why Not
 - Well, it doesn't work...
 - Clickhouse is meant for larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
-- __SQLite plus an API similar to Clickhouse would possibly meet the original _why_ goals__
+- __SQLite plus an API similar to Clickhouse would possibly meet the original, possibly tenuous _why_ goals__
 - You need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
 - Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is how Cloud Run works)
