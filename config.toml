@@ -1,4 +1,4 @@
-baseurl = ""
+baseurl = "https://mybranch.dev"
 title = "mybranch.dev"
 theme = "hugo-coder"
 languagecode = "en"
@@ -11,7 +11,7 @@ pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
-disqusShortname = "mybranchblog"
+#disqusShortname = "mybranchblog"
 
 [params]
     author = "Alex Reid"
@@ -25,7 +25,7 @@ disqusShortname = "mybranchblog"
 
     footercontent = ""
 
-    hidecredits = true
+    hidecredits = false
     hidecopyright = false
 
     rtl = false
