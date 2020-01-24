@@ -12,6 +12,9 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
 #disqusShortname = "mybranchblog"
+enableRobotsTXT = true
+
+googleAnalytics = "UA-156939108-1"
 
 [params]
     author = "Alex Reid"
