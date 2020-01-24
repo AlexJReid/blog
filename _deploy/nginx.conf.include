@@ -13,6 +13,7 @@ http {
     listen $PORT;
     server_name mybranch.dev;
     root /app/site;
+    port_in_redirect off;
 
     location / {
       try_files $uri $uri.html $uri/ /404.html;
