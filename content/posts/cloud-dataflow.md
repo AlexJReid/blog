@@ -16,7 +16,7 @@ Cloud Dataflow lets you process data at scale, without thinking about much other
 
 The original SDK for Cloud Dataflow evolved into Apache Beam, making it agnostic of Google and GCP. If you wanted to, you could run your Apache Beam pipelines on other clouds via an alternate runner, such as Apache Flink or Spark.
 
-You define a data pipeline as a graph of transforms, starting with a source such as a database query or collection of files. The source data is collected and operated on, in parallel. Finally you send your transformed data to a sink, such as a database table, collection of files or search index. You can do this in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://github.com/spotify/scio) as a higher level wrapper to Apache Beam.
+You define a data pipeline as a graph of transforms, starting with a source such as a database query or collection of files. The source data is collected and operated on, in parallel. Finally you send your transformed data to a sink, such as a database table, collection of files or search index. You can do this in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://spotify.github.io/scio/index.html) as a higher level wrapper to Apache Beam.
 
 When you build your pipeline code, the graph is evaluated, validated and cleverly optimised. One such optimisation is the _fusing_ of nodes into one. Your code can be clear, explicit and reusable and you don't pay a cost for it at runtime. The libraries you have used are uploaded to a Cloud Storage bucket, along with the graph (serialized as a JSON document). You can then kick off your pipeline through the CLI or Console UI. In reality, a reliable scheduler should be used - Airflow has some operators for this very task.
 
@@ -46,4 +46,6 @@ To take advantage of all of those autoscaled VMs, you might think that you need 
 
 Some data engineers or scientists may prefer to work in Python, for consistency with other work they may do. The fundamentals don't change, but it is still important to architect a solution that plays to the strengths of the platform. For instance, there is may not be much point in simply wrapping an existing Python program that uses Pandas to count, or uses the multiprocessing library, when there are more _native_ approaches on offer.
 
-I often find it useful to write these things down to solidify my understanding and find gaps. This high level post is based on a few days worth of understanding, so take it with a pinch of salt and feel free to correct me!
+I often find it useful to write these things down to solidify my understanding and find gaps. It's a very interesting tech, which looks to be very well proven. I'm looking forward to learning more about it and actually getting some of my own pipelines into production.
+
+Of course, this high level post is based on a few days worth of understanding, so take it with a pinch of salt and feel free to correct me!
