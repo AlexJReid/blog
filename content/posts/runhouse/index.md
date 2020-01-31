@@ -18,7 +18,7 @@ I really like [Clickhouse](https://clickhouse.yandex). Compared with the expanse
 
 Running it on [Cloud Run](https://cloud.google.com/run/) is a bad idea. Cloud Run is for stateless things like APIs and _embarrassingly parallel_ tasks that pull in data from elsewhere. 
 
-But... well... what if the data being stored/queried is immutable so state is fixed?
+But... well... what if the data being stored/queried is immutable, so arguably the state is fixed?
 
 ## How could that possibly be useful?
 - Maybe you have a comparatively small dataset (or your data has natural partitions of reasonable size, such as multi-tenant SaaS) that don't need to update frequently. For instance, the user is happy to look at yesterday's usage, or it is some historical dataset about oil production in 1983. These could be extracted to a snapshot.
@@ -119,7 +119,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
-- Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is how Cloud Run works)
+- Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about Clickhouse's internals to comment on whether that'll break things.)
 - The API exposed over HTTP speaks SQL, some people get offended by that
 - Probably a niche use case which could be better met in a more conventional way?
 - Serverless data tech already exists! (Athena, Aurora Serverless, BigQuery....)
