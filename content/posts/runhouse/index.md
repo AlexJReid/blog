@@ -12,8 +12,6 @@ series = []
 
 So here's the first in the series of my bad ideas that are nevertheless fun to think through. I am __not__ suggesting you actually do this. Really, I'm not. Serverless data technologies already exist.
 
-{{< tweet 1220369839329628160 >}}
-
 ## The idea
 
 I really like [Clickhouse](https://clickhouse.yandex). Compared with the expanse of complex software in the data space, it's refreshing to run a single process which just works. It's very fast and versatile.
