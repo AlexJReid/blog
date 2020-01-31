@@ -49,3 +49,5 @@ Some data engineers or scientists may prefer to use the Python SDK, for consiste
 I often find it useful to write these things down to solidify my understanding and find gaps. It's a very interesting tech, which looks to be very well proven. I'm looking forward to learning more about it and actually getting some of my own pipelines into production.
 
 Of course, this high level post is based on a few days worth of understanding, so take it with a pinch of salt and feel free to correct me!
+
+[Discuss on Twitter](https://twitter.com/search?q=mybranch.dev%2Fposts%2Fcloud-dataflow)

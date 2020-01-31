@@ -124,8 +124,6 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 - Serverless data tech already exists! (Athena, Aurora Serverless, BigQuery....)
 
 ## Conclusion
-As with a lot of bad ideas, there can be a small grain of sanity. The approach of mastering a _data image_ as an EBS snapshot does work well with Clickhouse and a read-only dataset, in fact I've done it in the past with boring old EC2 and an ASG.
-
-It was good to learn more about gVisor and remember some C++ by reading through the Clickhouse code. Not a completely wasted hour or two.
+I embarked on this knowing it was a silly idea, but it was good to learn more about gVisor and remember some C++ by reading through the Clickhouse code. Not a completely wasted hour or two.
 
 [Discuss on Twitter](https://twitter.com/search?q=mybranch.dev%2Fposts%2Fclickhouse-on-cloud-run)
