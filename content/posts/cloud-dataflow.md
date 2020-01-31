@@ -10,11 +10,11 @@ externalLink = ""
 series = []
 +++
 
-This week I have been busy exploring [Cloud Dataflow](https://cloud.google.com/dataflow), as a small number of projects use it at work. There's a natural divide between the strong data offerings available on GCP, versus the rest of our estate which is over on AWS. BigQuery is clearly a gateway drug here - once committed to it, as we are, it becomes all too convenient to actually start processing data on GCP too.
+This week, I have been busy exploring [Cloud Dataflow](https://cloud.google.com/dataflow), as a small number of projects use it at work. There's a natural divide between the strong data offerings available on GCP, versus the rest of our estate which is over on AWS. BigQuery is clearly a gateway drug here - once committed to it, as we are, it becomes all too convenient to actually start processing data on GCP too.
 
-The original SDK for Dataflow evolved into Apache Beam, making it agnostic of Google and GCP.
+Cloud Dataflow lets you process data at scale, without thinking about much other than the what. The infrastructure is handled by Google. You package and submit your project and that's it. 
 
-Cloud Dataflow lets you process data at scale, without thinking about much other than the what. The infrastructure is handled by Google. You package and submit your project and that's it. If you wanted to, you could run your Apache Beam pipelines on other clouds via an alternate runner, such as Apache Flink or Spark.
+The original SDK for Cloud Dataflow evolved into Apache Beam, making it agnostic of Google and GCP. If you wanted to, you could run your Apache Beam pipelines on other clouds via an alternate runner, such as Apache Flink or Spark.
 
 You define a data pipeline as a graph of transforms, starting with a source such as a database query or collection of files. The source data is collected and operated on, in parallel. Finally you send your transformed data to a sink, such as a database table, collection of files or search index. You can do this in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://github.com/spotify/scio) as a higher level wrapper to Apache Beam.
 
@@ -29,17 +29,20 @@ Pipelines can take options which are parameters such as an initial query or a bu
 When the pipeline is running you get a great visual representation of the graph showing throughput, along with any logs emitted.
 
 ![Cloud Dataflow pipeline, from blog.papercut.com](https://blog.papercut.com/wp-content/uploads/2017/11/google-cloud-dataflow-rescue-2-768x744.png)
+
 (The above image is from https://blog.papercut.com/google-cloud-dataflow-data-migration/)
 
-Common operations you can do with Apache Beam include aggregating metrics, joining data from multiple sources and easily parallelising transformations. It works in both batch mode where a `PCollection` is bounded by the files or result set, or in streaming mode where new data is always arriving from a streaming source such as Kafka or Cloud PubSub. In a streaming context, Beam offers powerful windowing functionality - for instance, to count the number of impressions a page has in a 10 minute window. The count can be emitted at the close of window, or before. This is a deep topic, well beyond the scope of this document.
+Common operations include aggregating metrics, joining data from multiple sources and easily parallelising transformations. 
 
-There are two compelling things about this library (Beam) and platform (Cloud Dataflow) in my mind. 
+Apache Beam works in both batch mode where a `PCollection` is bounded by the files or result set, or in _unbounded_ streaming mode where new data is always arriving from a streaming source such as Kafka or Cloud PubSub. In a streaming context, Beam offers powerful windowing functionality - for instance, to count the number of impressions a page has in a 10 minute window, split by geographic region. The count can be emitted at the close of window, or before. This is a deep topic, well beyond the scope of this document.
 
-The library allows you to compose your transforms as reusable building blocks. If you want to swap out the source or destination, simply ensure the input and output types align. In other words, if your BigQuery sink expects a Person object, ensure that your Redshift sink also expects a Person object and if not, write an intermediate _adapter_ PTransform to map it.
+From my brief exposure, there are two compelling things about this library (Beam) and platform (Cloud Dataflow) that strike me.
 
-The platform analyses your pipeline code and provisions infrastructure to run it effectively - this is across a number of Compute Engine VMs. As the job runs, the runner autoscales as needed. In some of the example talks I've watched this weeks, the presenters had 1000 machines running for 7 hours. This could get expensive, but it proves that the service is designed to deal with data processing problems of all sizes. In addition to orchestrating VMs, it offloads the expensive _shuffle_ operation to a service, taking load of VMs.
+The library allows you to compose your transforms as reusable building blocks. If you want to swap out the source or destination (or indeed any part of your pipeline), simply ensure the input and output types align. In other words, if your BigQuery sink expects a `Person` object, ensure that your Redshift sink also expects a Person object and if not, write an intermediate _adapter_ PTransform to map it.
 
-To take advantage of all of those autoscaled VMs, you might think that you need to do some pretty complex distributed programming and coordination. Nope. Just ensure that the functions and objects you construct are serializable (so that they can be sent across a network between workers) and wrap in  a `ParDo.of()`. The platform handles the distribution and coordination of work. It's pretty clever. At first the framework feels restrictive to work in and some of the Java syntax a little weird, but by preventing you from doing things that will break (or making it difficult), the average developer stands a good chance of writing a data pipeline that scales nicely. 
+The platform analyses your pipeline code and provisions infrastructure to run it effectively - this is across a number of Compute Engine VMs. As the job runs, the runner autoscales as needed. In some of the example talks I've watched this weeks, the presenters had 1000 machines running for 7 hours. This could get expensive, but it proves that the service is designed to deal with data processing problems of all sizes. In addition to orchestrating VMs, it can optionally offload the expensive _shuffle_ operation to a managed service, taking load of VMs.
+
+To take advantage of all of those autoscaled VMs, you might think that you need to do some pretty complex distributed programming and coordination. Nope. Just ensure that the functions and objects you construct are serializable (so that they can be sent across a network between workers) and wrap in a `ParDo.of()`. The platform handles the distribution and coordination of work. It's pretty clever. At first the framework feels restrictive to work in, and some of the Java syntax a little weird, but by preventing you from doing things that will break (or making it difficult), the average developer stands a good chance of writing a data pipeline that scales nicely. That's the promise at least.
 
 Some data engineers or scientists may prefer to work in Python, for consistency with other work they may do. The fundamentals don't change, but it is still important to architect a solution that plays to the strengths of the platform. For instance, there is may not be much point in simply wrapping an existing Python program that uses Pandas to count, or uses the multiprocessing library, when there are more _native_ approaches on offer.
 
