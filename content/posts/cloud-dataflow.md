@@ -24,7 +24,9 @@ The fundamental unit of work is a `PTransform<InputT, OutputT>`. It represents a
 
 There are many built-in transforms including connectors for many technologies. GCP and AWS are well supported out of the box. As an exercise this week I wrote a sink connector that interfaces with Salesforce's bulk API. It was not difficult, particularly as there were many established examples out there already. 
 
-Pipelines can take a set of options, which are runtime parameters such as an initial query or a bucket to read files from. It is possible to build a pipeline as a template. This fits in nicely with CI/CD approaches - your favourite build system such as Travis, Jenkins or Cloud Build runs the Cloud Dataflow tooling to upload the artifacts to Cloud Storage. It can be run by supplying parameters, or `Options`. A nice form automatically appears in the Cloud Dataflow UI if this is your chosen way to start jobs. Airflow can also execute a pipeline from a template.
+Pipelines can take a set of options, which are runtime parameters such as an initial query or a bucket to read files from. It is possible to build a pipeline as a template. This fits in nicely with CI/CD approaches - your favourite build system such as Travis, Jenkins or Cloud Build runs the Cloud Dataflow tooling to upload the artifacts to Cloud Storage. 
+
+This build can be run by supplying parameters, or `Options`. A nice form automatically appears in the Cloud Dataflow UI if this is your chosen way to start jobs. You can even supply metadata in a JSON file to further enhance this user experience. Airflow can also execute a pipeline from a template.
 
 When the pipeline is running you get a great visual representation of the graph showing throughput, along with any logs emitted.
 
