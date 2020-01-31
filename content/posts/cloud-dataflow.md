@@ -2,7 +2,7 @@
 draft = false
 date = 2020-01-31T21:46:24Z
 title = "Exploring Cloud Dataflow"
-description = "Getting to grips with Google's Apache Beam-as-a-service"
+description = "This week, I have been busy exploring Cloud Dataflow - Google Cloud's managed data processing platform."
 slug = "" 
 tags = ["gcp","data","cloud dataflow"]
 categories = []
@@ -12,19 +12,19 @@ series = []
 
 This week, I have been busy exploring [Cloud Dataflow](https://cloud.google.com/dataflow), as a small number of projects use it at work. There's a natural divide between the strong data offerings available on GCP, versus the rest of our estate which is over on AWS. BigQuery is clearly a gateway drug here - once committed to it, as we are, it becomes all too convenient to actually start processing data on GCP too.
 
-Cloud Dataflow lets you process data at scale, without thinking about much other than the what. The infrastructure is handled by Google. You package and submit your project and that's it. 
+Cloud Dataflow lets you process data at scale, without thinking about much other than the _what_. The infrastructure is handled for you. You package and submit your project and that's it. 
 
 The original SDK for Cloud Dataflow evolved into Apache Beam, making it agnostic of Google and GCP. If you wanted to, you could run your Apache Beam pipelines on other clouds via an alternate runner, such as Apache Flink or Spark.
 
-You define a data pipeline as a graph of transforms, starting with a source such as a database query or collection of files. The source data is collected and operated on, in parallel. Finally you send your transformed data to a sink, such as a database table, collection of files or search index. You can do this in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://spotify.github.io/scio/index.html) as a higher level wrapper to Apache Beam.
+You define a data pipeline as a graph of transforms, starting with a source such as a database query or collection of files. The source data is collected and operated on, in parallel. Finally, you send your transformed data to a sink, such as a database table, collection of files or search index. You can do this in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://spotify.github.io/scio/index.html) as a higher level wrapper to Apache Beam.
 
-When you build your pipeline code, the graph is evaluated, validated and cleverly optimised. One such optimisation is the _fusing_ of nodes into one. Your code can be clear, explicit and reusable and you don't pay a cost for it at runtime. The libraries you have used are uploaded to a Cloud Storage bucket, along with the graph (serialized as a JSON document). You can then kick off your pipeline through the CLI or Console UI. In reality, a reliable scheduler should be used - Airflow has some operators for this very task.
+When you build your pipeline code, the graph is evaluated, validated and optimised. One such optimisation is the _fusing_ of several nodes into one. Your code can be clear, explicit and reusable and you don't pay a cost for it at runtime. The libraries you have used are uploaded to a Cloud Storage bucket, along with the graph (serialized as a JSON document). You can then kick off your pipeline through the CLI or Console UI. In reality, a reliable scheduler should be used - Airflow has some operators for this very task.
 
-The fundamental unit of work is a `PTransform<InputT, OutputT>`. It represents a step in your pipeline. A `PCollection` is a distributed data set that a transform operates on. A `PTransform` returns a new `PCollection` - they're immutable, so are never modified. A `PTransform` is the input and output of each step in a pipeline. As previously stated, a pipeline starts with a _source_ which is essentially a `PTransform` that talks to some external source. At the end of the process, an output `PTransform` or _sink_, writes the data out to some storage or service.
+The fundamental unit of work is a `PTransform<InputT, OutputT>`. It represents a step in your pipeline. A `PCollection` is a distributed data set that a transform operates on, element at a time. A `PTransform` returns a new `PCollection` - they're immutable, so are never modified. A `PTransform` is the input and output of each step in a pipeline. As previously stated, a pipeline starts with a _source_ which is essentially a `PTransform` that talks to some external source. At the end of the process, an output `PTransform` or _sink_, writes the data out to some storage or service.
 
 There are many built-in transforms including connectors for many technologies. GCP and AWS are well supported out of the box. As an exercise this week I wrote a sink connector that interfaces with Salesforce's bulk API. It was not difficult, particularly as there were many established examples out there already. 
 
-Pipelines can take options which are parameters such as an initial query or a bucket to read files from. It is possible to build a pipeline as a template. This fits in nicely with CI/CD approaches - your build agent such as Travis, Jenkins or Cloud Build runs the Cloud Dataflow tooling to upload the artifacts to Cloud Storage. It can be run by supplying parameters, or `Options`. A nice form automatically appears in the Cloud Dataflow UI if this is your chosen way to start jobs. Airflow can also execute a pipeline from a template.
+Pipelines can take a set of options, which are runtime parameters such as an initial query or a bucket to read files from. It is possible to build a pipeline as a template. This fits in nicely with CI/CD approaches - your favourite build system such as Travis, Jenkins or Cloud Build runs the Cloud Dataflow tooling to upload the artifacts to Cloud Storage. It can be run by supplying parameters, or `Options`. A nice form automatically appears in the Cloud Dataflow UI if this is your chosen way to start jobs. Airflow can also execute a pipeline from a template.
 
 When the pipeline is running you get a great visual representation of the graph showing throughput, along with any logs emitted.
 
@@ -44,7 +44,7 @@ The platform analyses your pipeline code and provisions infrastructure to run it
 
 To take advantage of all of those autoscaled VMs, you might think that you need to do some pretty complex distributed programming and coordination. Nope. Just ensure that the functions and objects you construct are serializable (so that they can be sent across a network between workers) and wrap in a `ParDo.of()`. The platform handles the distribution and coordination of work. It's pretty clever. At first the framework feels restrictive to work in, and some of the Java syntax a little weird, but by preventing you from doing things that will break (or making it difficult), the average developer stands a good chance of writing a data pipeline that scales nicely. That's the promise at least.
 
-Some data engineers or scientists may prefer to work in Python, for consistency with other work they may do. The fundamentals don't change, but it is still important to architect a solution that plays to the strengths of the platform. For instance, there is may not be much point in simply wrapping an existing Python program that uses Pandas to count, or uses the multiprocessing library, when there are more _native_ approaches on offer.
+Some data engineers or scientists may prefer to use the Python SDK, for consistency with other work they may do. The fundamentals don't change, but it is still important to architect a solution that plays to the strengths of the platform. For instance, there is may not be much point in simply wrapping an existing Python program that uses Pandas to count, or uses the multiprocessing library, when there are more _native_ approaches on offer.
 
 I often find it useful to write these things down to solidify my understanding and find gaps. It's a very interesting tech, which looks to be very well proven. I'm looking forward to learning more about it and actually getting some of my own pipelines into production.
 
