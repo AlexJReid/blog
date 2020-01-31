@@ -106,6 +106,8 @@ Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search
 
 I figured it _might_ have been memory related, but even with a 2GB memory allocation, the error remained. The next port of call would have been to try running Clickhouse in a gVisor environment outside of Cloud Run. I pulled the image into my [Cloud Shell](https://cloud.google.com/shell/) and it worked as expected, but this is a small VM so no gVisor? For now, game over.
 
+**UPDATE 31/01/2020:** I've just noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github. That's amazing! I'll give it a try in the next few days.
+
 ## Why I thought the idea was interesting
 - Clickhouse speaks HTTP anyway so will just work on Cloud Run
 - It's very fast even with modest hardware and isn't a big install, it's a single binary. There's a ready made Docker image
@@ -113,17 +115,16 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 - Dataset is immutable so no background processes (merging of data) to worry about
 
 ## Why Not
-- Well, it doesn't work...
+- Well, it doesn't work... right now
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
-- __SQLite plus an API similar to Clickhouse would possibly meet the original, possibly tenuous _why_ goals__
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
 - Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is how Cloud Run works)
 - The API exposed over HTTP speaks SQL, some people get offended by that
-- Probably a niche use case which could be better met in a more conventional way
+- Probably a niche use case which could be better met in a more conventional way?
 - Serverless data tech already exists! (Athena, Aurora Serverless, BigQuery....)
 
 ## Conclusion
-I embarked on this knowing it was a silly idea, but it was good to learn more about gVisor and remember some C++ by reading through the Clickhouse code. Not a completely wasted hour or two.
+It was good to learn more about gVisor and remember some C++ by reading through the Clickhouse code. Not a completely wasted hour or two.
 
 [Discuss on Twitter](https://twitter.com/search?q=mybranch.dev%2Fposts%2Fclickhouse-on-cloud-run)
