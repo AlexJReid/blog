@@ -79,7 +79,7 @@ Exciting. I tried the endpoint given to me by the Cloud Run console with curl.
 $ curl https://runhouse-xxxxxx-ew.a.run.app
 Ok.
 ```
-OK, this was hilarious, it seemed to work.
+Hilariously, it seemed to work.
 
 Moving over to Postman I queried one of the system tables.
 
