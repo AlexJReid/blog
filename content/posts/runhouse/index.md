@@ -39,7 +39,7 @@ cat ontime.csv | sed 's/\.00//g' | clickhouse-client -query="INSERT INTO ontime 
 ```
 I then stopped the clickhouse server process and copied the `data` and `metadata` out of the container's `/var/lib/clickhouse`. 
 
-These were added to _data layer_ extending the base Clickhouse image.
+A _data layer_ was added to the base Clickhouse image.
 ```
 FROM yandex/clickhouse-server
 
@@ -79,7 +79,7 @@ Exciting. I tried the endpoint given to me by the Cloud Run console with curl.
 $ curl https://runhouse-xxxxxx-ew.a.run.app
 Ok.
 ```
-Hilariously, it seemed to work.
+It works!!!
 
 Moving over to Postman I queried one of the system tables.
 
@@ -116,6 +116,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 
 ## Why Not
 - Well, it doesn't work... right now
+- sqlite may perform a similar duty, after a trivial HTTP API, similar to Clickhouse's is implemented - performance TBD
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
