@@ -16,7 +16,7 @@ So here's the first in the series of my bad ideas that are nevertheless fun to t
 
 I really like [Clickhouse](https://clickhouse.yandex). Compared with the expanse of complex software in the data space, it's refreshing to run a single process which just works. It's very fast and versatile.
 
-Running it on [Cloud Run](https://cloud.google.com/run/) is a bad idea. Cloud Run is for stateless things like APIs and _embarrassingly parallel_ tasks that pull in data from elsewhere. 
+Running it on [Cloud Run](https://cloud.google.com/run/) is (probably) a bad idea. Cloud Run is for stateless things like APIs and tasks that pull in data from elsewhere. 
 
 But... well... what if the data being stored/queried is immutable, so arguably the state is fixed?
 
@@ -99,14 +99,14 @@ A `SELECT COUNT()` also worked. However when attempting to run a query with `GRO
 Code: 460, e.displayText() = DB: :ErrnoException: Failed to create thread timer, errno: 0, strerror: Success (version 20.1.2.4 (official build))
 ```
 
-Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search?q=Failed+to+create+thread+timer&unscoped_q=Failed+to+create+thread+timer), it appears this relates to a `timer_create` syscall in the query profiler. The excellent [Cloud Run FAQ](https://github.com/ahmetb/cloud-run-faq#which-system-calls-are-supported) has a list of supported gVisor supported syscalls and `timer_create` appears to be among them. Unfortunately the Clickhouse code doesn't appear to log the actual error from `timer_create`. I didn't have time to spend on compiling Clickhouse to explore further. Boo.
+Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search?q=Failed+to+create+thread+timer&unscoped_q=Failed+to+create+thread+timer), it appears this relates to a `timer_create` syscall in the query profiler, which can't be disabled. The excellent [Cloud Run FAQ](https://github.com/ahmetb/cloud-run-faq#which-system-calls-are-supported) has a list of supported gVisor supported syscalls and `timer_create` appears to be among them. Unfortunately the Clickhouse code doesn't appear to log the actual error from `timer_create`. I didn't have time to spend on compiling Clickhouse to explore further. Boo.
 
 > Some system calls and arguments are not currently supported, as are some parts of the /proc and /sys filesystems. As a result, not all applications will run inside gVisor, but many will run just fine ...
 -- https://cloud.google.com/blog/products/gcp/open-sourcing-gvisor-a-sandboxed-container-runtime
 
 I figured it _might_ have been memory related, but even with a 2GB memory allocation, the error remained. The next port of call would have been to try running Clickhouse in a gVisor environment outside of Cloud Run. I pulled the image into my [Cloud Shell](https://cloud.google.com/shell/) and it worked as expected, but this is a small VM so no gVisor? For now, game over.
 
-**UPDATE 31/01/2020:** I've just noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github. That's amazing! I'll give it a try in the next few days.
+**UPDATE 31/01/2020:** I've just noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github that provides a workaround. That's amazing! I'll give it a try in the next few days.
 
 ## Why I thought the idea was interesting
 - Clickhouse speaks HTTP anyway so will just work on Cloud Run
