@@ -116,8 +116,8 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 
 ## Why Not
 - Well, it doesn't work... right now
-- sqlite may perform a similar duty, after a trivial HTTP API, similar to Clickhouse's is implemented - performance TBD
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
+- sqlite may perform a similar duty, after a trivial HTTP API, similar to Clickhouse's is implemented - performance TBD. This is all about tiny datasets anyway.
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
 - Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about Clickhouse's internals to comment on whether that'll break things.)
