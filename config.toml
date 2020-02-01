@@ -52,8 +52,7 @@ googleAnalytics = "UA-156939108-1"
     icon = "fab fa-github fa-2x"
     weight = 3
     url = "https://github.com/alexjreid"
-
 [[menu.main]]
-    name = "Blog"
+    name = "Blog posts"
     weight = 1
     url  = "/posts/"
