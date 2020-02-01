@@ -99,7 +99,7 @@ A `SELECT COUNT()` also worked. However when attempting to run a query with `GRO
 Code: 460, e.displayText() = DB: :ErrnoException: Failed to create thread timer, errno: 0, strerror: Success (version 20.1.2.4 (official build))
 ```
 
-Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search?q=Failed+to+create+thread+timer&unscoped_q=Failed+to+create+thread+timer), it appears this relates to a `timer_create(2)` syscall in the query profiler. The excellent [Cloud Run FAQ](https://github.com/ahmetb/cloud-run-faq#which-system-calls-are-supported) has a list of supported gVisor supported syscalls and `timer_create` appears to be among them. Unfortunately the Clickhouse code doesn't appear to log the actual error from `timer_create`. I didn't have time to spend on compiling Clickhouse to explore further. Boo.
+Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search?q=Failed+to+create+thread+timer&unscoped_q=Failed+to+create+thread+timer), it appears this relates to a `timer_create` syscall in the query profiler. The excellent [Cloud Run FAQ](https://github.com/ahmetb/cloud-run-faq#which-system-calls-are-supported) has a list of supported gVisor supported syscalls and `timer_create` appears to be among them. Unfortunately the Clickhouse code doesn't appear to log the actual error from `timer_create`. I didn't have time to spend on compiling Clickhouse to explore further. Boo.
 
 > Some system calls and arguments are not currently supported, as are some parts of the /proc and /sys filesystems. As a result, not all applications will run inside gVisor, but many will run just fine ...
 -- https://cloud.google.com/blog/products/gcp/open-sourcing-gvisor-a-sandboxed-container-runtime
@@ -117,7 +117,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 ## Why Not
 - Well, it doesn't work... right now
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
-- sqlite may perform a similar duty, after a trivial HTTP API, similar to Clickhouse's is implemented - performance TBD. This is all about tiny datasets anyway.
+- sqlite may be a substitute... after a trivial HTTP API, similar to Clickhouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse`.
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
 - Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about Clickhouse's internals to comment on whether that'll break things.)
