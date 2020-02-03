@@ -106,7 +106,23 @@ Looking at the [Clickhouse code](https://github.com/ClickHouse/ClickHouse/search
 
 I figured it _might_ have been memory related, but even with a 2GB memory allocation, the error remained. The next port of call would have been to try running Clickhouse in a gVisor environment outside of Cloud Run. I pulled the image into my [Cloud Shell](https://cloud.google.com/shell/) and it worked as expected, but this is a small VM so no gVisor? For now, game over.
 
-**UPDATE 31/01/2020:** I've just noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github that provides a workaround. That's amazing! I'll give it a try in the next few days.
+## Update
+A few days after publishing this post, I noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github that provides a workaround. That's amazing!
+
+I rebuilt, tagged pushed the `server` [Docker image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), using the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
+
+I updated my original `Dockerfile` to inherit from this new base image, and re-built my `Clickhouse + Data` image on Cloud Build. 
+
+I then recreated my Cloud Run service and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
+
+As per the workaround, logs report that `timer_create` on Cloud Run might not be behaving as expected.
+![Error](runhouse-7.png)
+
+And...
+
+![Success](runhouse-6.png)
+
+**It works.** It's a very small dataset, but yes - Clickhouse works on Cloud Run. I'll continue to play with it. Available storage on Cloud Run is probably the limiting factor right now. This is understandable, of course.
 
 ## Why I thought the idea was interesting
 - Clickhouse speaks HTTP anyway so will just work on Cloud Run
@@ -115,7 +131,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 - Dataset is immutable so no background processes (merging of data) to worry about
 
 ## Why Not
-- Well, it doesn't work... right now
+- ~~Well, it doesn't work... right now~~
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
 - sqlite may be a substitute... after a trivial HTTP API, similar to Clickhouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse`.
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
