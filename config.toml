@@ -20,7 +20,7 @@ googleAnalytics = "UA-156939108-1"
     author = "Alex Reid"
     info = "thoughts on software engineering, clouds and data"
     description = "Alex Reid"
-    keywords = "blog,developer,personal,data,gcp,aws"
+    keywords = "blog,developer,data,gcp,aws,java,UK,Newcastle-upon-Tyne"
     #avatarurl = "images/alexjreid.jpg"
 
     favicon_32 = "/img/favicon-32x32.png"
@@ -52,6 +52,14 @@ googleAnalytics = "UA-156939108-1"
     icon = "fab fa-github fa-2x"
     weight = 3
     url = "https://github.com/alexjreid"
+[[params.social]]
+    name = "RSS"
+    icon = "fas fa-rss"
+    weight = 6
+    url = "https://mybranch.dev/index.xml"
+    rel = "alternate"
+    type = "application/rss+xml"
+
 [[menu.main]]
     name = "Blog posts"
     weight = 1
