@@ -109,11 +109,11 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 ## Update
 A few days after publishing this post, I noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github that provides a workaround. That's amazing!
 
-I rebuilt, tagged pushed the `clickhouse-server` [Docker image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), with the latest build from the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
+I rebuilt, tagged and pushed a `clickhouse-server` [image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), with the latest build from the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
 
-I updated my original `Dockerfile` to inherit from this new base image, and re-built my `Clickhouse + Data` image on Cloud Build. 
+I updated my `Dockerfile` to inherit from this new base image, and re-built my `Clickhouse + Data` image on Cloud Build. 
 
-I then recreated my Cloud Run service and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
+I then recreated a Cloud Run service and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
 
 As per the workaround, logs report that `timer_create` on Cloud Run might not be behaving as expected.
 ![Error](runhouse-7.png)
