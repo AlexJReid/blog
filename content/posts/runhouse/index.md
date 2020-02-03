@@ -122,7 +122,7 @@ And...
 
 ![Success](runhouse-6.png)
 
-**It works.** It's a very small dataset, but yes - Clickhouse works on Cloud Run, for what's worth. :) Available storage on Cloud Run is probably the limiting factor right now. This is understandable, of course.
+**It works.** It's a very small dataset, but yes - Clickhouse works on Cloud Run, for what it is worth. :) Available storage on Cloud Run is probably the limiting factor right now. This is understandable, of course.
 
 ## Why I thought the idea was interesting
 - Clickhouse speaks HTTP anyway so will just work on Cloud Run
