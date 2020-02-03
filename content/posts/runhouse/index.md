@@ -113,7 +113,7 @@ In addition, soon after, [issue#1738](https://github.com/google/gvisor/issues/17
 
 Anyway, I rebuilt, tagged and pushed a `clickhouse-server` [image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), with the latest build from the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
 
-I updated my `Dockerfile` to inherit from this new base image, and re-built my `Clickhouse + Data` image on Cloud Build. 
+I updated my `Dockerfile` to inherit from this new base image, and rebuilt my `Clickhouse + Data` image on Cloud Build. 
 
 I then created a Cloud Run service with this image and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
 
