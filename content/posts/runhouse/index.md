@@ -109,7 +109,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 ## Update
 A few days after publishing this post, I noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github that provides a workaround. That's amazing! Thanks, ClickHouse contributors.
 
-Even more amazing, [issue#1738](https://github.com/google/gvisor/issues/1738) and [this commit](https://github.com/google/gvisor/commit/bd6d479b0d0009889496989401235ce17c7582bd) on gVisor looks to address this issue at the source. Open source is great...
+In addition, soon after, [issue#1738](https://github.com/google/gvisor/issues/1738) and [this commit](https://github.com/google/gvisor/commit/bd6d479b0d0009889496989401235ce17c7582bd) appeared on Google's gVisor repo, which look to address the issue at the source. Open source is great...
 
 Anyway, I rebuilt, tagged and pushed a `clickhouse-server` [image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), with the latest build from the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
 
