@@ -38,15 +38,15 @@ googleAnalytics = "UA-156939108-1"
 
 # Social links
 [[params.social]]
-    name = "LinkedIn"
-    icon = "fab fa-linkedin fa-2x"
-    weight = 1
-    url = "https://www.linkedin.com/in/alexjreid/"
-[[params.social]]
     name = "Twitter"
     icon = "fab fa-twitter fa-2x"
-    weight = 2
+    weight = 1
     url = "https://twitter.com/alexjreid"
+[[params.social]]
+    name = "LinkedIn"
+    icon = "fab fa-linkedin fa-2x"
+    weight = 2
+    url = "https://www.linkedin.com/in/alexjreid/"
 [[params.social]]
     name = "Github"
     icon = "fab fa-github fa-2x"
@@ -55,7 +55,7 @@ googleAnalytics = "UA-156939108-1"
 [[params.social]]
     name = "RSS"
     icon = "fas fa-rss"
-    weight = 6
+    weight = 4
     url = "https://mybranch.dev/index.xml"
     rel = "alternate"
     type = "application/rss+xml"
