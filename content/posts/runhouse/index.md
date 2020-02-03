@@ -113,7 +113,7 @@ I rebuilt, tagged and pushed a `clickhouse-server` [image](https://github.com/Cl
 
 I updated my `Dockerfile` to inherit from this new base image, and re-built my `Clickhouse + Data` image on Cloud Build. 
 
-I then recreated a Cloud Run service and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
+I then created a Cloud Run service with this image and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
 
 As per the workaround, logs report that `timer_create` on Cloud Run might not be behaving as expected.
 ![Error](runhouse-7.png)
