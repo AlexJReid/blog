@@ -115,7 +115,7 @@ I updated my `Dockerfile` to inherit from this new base image, and re-built my `
 
 I then created a Cloud Run service with this image and ran a few queries from the [ontime tutorial](https://clickhouse.tech/docs/en/getting_started/example_datasets/ontime/).
 
-As per the workaround, logs report that `timer_create` on Cloud Run might not be behaving as expected.
+As per the workaround, logs now report that `timer_create` on Cloud Run might not be behaving as expected.
 ![Error](runhouse-7.png)
 
 And...
