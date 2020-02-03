@@ -64,7 +64,7 @@ To take advantage of all of those autoscaled VMs, you might think that you need 
 Some data engineers or scientists may prefer to use the Python SDK, for consistency with other work they may do. The fundamentals don't change, but it is important to write code that plays to the strengths of the platform. For instance, there might be little point in simply wrapping an existing Python program that uses `pandas` to count, or uses a multiprocessing library, when there are approaches that are native to Beam.
 
 ## Conclusion
-I often find it useful to write these things down to solidify my understanding and find gaps. It's a very interesting tech, which looks to be very well proven. I'm looking forward to learning more about it and actually getting some of my own pipelines into production.
+I often find it useful to write these things down to solidify my understanding and find gaps. It's a very interesting tech, which is well proven. I'm looking forward to learning more about it and actually getting some of my own pipelines into production.
 
 Of course, this high level post is based on a few days worth of understanding, so take it with a pinch of salt and feel free to correct me!
 
