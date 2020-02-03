@@ -109,7 +109,7 @@ I figured it _might_ have been memory related, but even with a 2GB memory alloca
 ## Update
 A few days after publishing this post, I noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on Clickhouse's Github that provides a workaround. That's amazing!
 
-I rebuilt, tagged pushed the `server` [Docker image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), using the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
+I rebuilt, tagged pushed the `clickhouse-server` [Docker image](https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile), with the latest build from the `testing` repository: `deb http://repo.yandex.ru/clickhouse/deb/testing/ main/`
 
 I updated my original `Dockerfile` to inherit from this new base image, and re-built my `Clickhouse + Data` image on Cloud Build. 
 
@@ -133,7 +133,7 @@ And...
 ## Why Not
 - ~~Well, it doesn't work... right now~~
 - Clickhouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
-- sqlite may be a substitute... after a trivial HTTP API, similar to Clickhouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse`.
+- sqlite may be a substitute if you like this odd idea... maybe after a trivial HTTP API, similar to Clickhouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse`.
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
 - Data volume/image size might make the service take a long time to start on demand
 - Clickhouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about Clickhouse's internals to comment on whether that'll break things.)
