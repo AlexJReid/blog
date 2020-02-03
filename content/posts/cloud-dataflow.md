@@ -49,7 +49,7 @@ Common operations include aggregating metrics, joining data from multiple source
 Apache Beam works in both batch mode where a `PCollection` is bounded by the files or result set, or in _unbounded_ streaming mode where new data is always arriving from a streaming source such as Kafka or Cloud PubSub. Beam offers powerful windowing functionality - for instance, to count the number of impressions a page has in a 10 minute window, split by geographic region. The count can be emitted at the close of window, or before. This is a deep topic, well beyond the scope of this document.
 
 ## Thoughts so far
-From my brief exposure, there are a few compelling things about this library (Beam) and platform (Cloud Dataflow) that strike me.
+From my brief exposure, there are a few compelling things about the SDK (Beam) and managed _runner_ (Cloud Dataflow) that strike me.
 
 The library allows you to compose your transforms as reusable building blocks. The same building blocks can mostly be used whether your source is streaming or batch. If you want to swap out the source or destination (or indeed any part of your pipeline), simply ensure the input and output types align. In other words, if your BigQuery sink expects a `Person` object, ensure that your Redshift sink also expects a `Person` object and if not, write an intermediate _adapter_ PTransform to map it.
 
