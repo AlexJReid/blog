@@ -35,9 +35,9 @@ A `PTransform` is the input and output of each step in a pipeline. As previously
 
 Commonly a `PTransform` executes _user code_ against the elements in a `PCollection`. This is achieved by wrapping a `DoFn<InputT, OutputT>` in a `ParDo` `PTransform`.
 
-During pipeline execution, data in `PCollection`s might need to be passed between components, storage and VMs so is serialized to byte strings. Each `PCollection` has a `Coder` attached to it. I believe a `Coder` to be analogous to a `Serde`, for those who are familiar with Kafka or Hive.
+During pipeline execution, data in `PCollection`s might need to be passed between components, storage and VMs so needs to be serializable to byte strings. Each `PCollection` has a `Coder` attached to it. A `Coder` is analogous to a `Serde`, for those who are familiar with Kafka or Hive.
 
-There are many [built-in I/O transforms](https://beam.apache.org/documentation/io/built-in/) including connectors for many technologies. GCP and AWS are well supported out of the box. As an exercise this week I wrote a sink connector that interfaces with Salesforce's bulk API. It was not difficult, particularly as there were many established examples out there already. It is however important to understand the [rules](https://beam.apache.org/documentation/io/developing-io-java/) around serializability, immutability and thread safety.
+There are many [built-in I/O transforms](https://beam.apache.org/documentation/io/built-in/) including connectors for external systems. GCP and AWS are well supported out of the box. As an exercise this week I wrote a sink connector that interfaces with Salesforce's bulk API. It was not difficult, particularly as there were many established examples out there already. It is however important to understand the [rules](https://beam.apache.org/documentation/io/developing-io-java/) around serializability, immutability and thread safety.
 
 ## Grouping and Windowing
 You can _group_ elements on their key or value. If they don't have a key already, you can add one through the `WithKeys` helper. Given `PCollection<KV<String, String>>` a grouping operation will yield `PCollection<KV<String, List<String>>>` - the value is now a list, with all values in a list.
