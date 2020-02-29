@@ -40,9 +40,9 @@ During pipeline execution, data in `PCollection`s might need to be passed betwee
 There are many [built-in I/O transforms](https://beam.apache.org/documentation/io/built-in/) including connectors for external systems. GCP and AWS are well supported out of the box. As an exercise this week I wrote a sink connector that interfaces with Salesforce's bulk API. It was not difficult, particularly as there were many established examples out there already. It is however important to understand the [rules](https://beam.apache.org/documentation/io/developing-io-java/) around serializability, immutability and thread safety.
 
 ## Grouping and Windowing
-You can _group_ elements on their key or value. If they don't have a key already, you can add one through the `WithKeys` helper. Given `PCollection<KV<String, String>>` a grouping operation will yield `PCollection<KV<String, List<String>>>` - the value is now a list, with all values in a list.
+You can _group_ elements on their key or value. If they don't have a key already, you can add one through the `WithKeys` helper. Given `PCollection<KV<String, String>>` a grouping operation will yield `PCollection<KV<String, List<String>>>` - the value is now a list, with all values for that key in the list.
 
-The SDK provides some higher level transforms, including many `CombineFn` implementation for calculating sums, means, approximate quantiles, and so on.
+The SDK provides some higher level transforms, including many `CombineFn` implementations for calculating sums, means, approximate quantiles, and so on.
 
 Applying time windows to data arriving into your pipeline is one of the most powerful, and potentially hardest to grasp aspects of Apache Beam. Firstly, for windowing to work, your input `PCollection` should have a timestamp on each element.
 
