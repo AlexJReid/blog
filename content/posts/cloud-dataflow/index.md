@@ -95,3 +95,5 @@ Which reminds me, when adding new PTransforms use of the builder pattern is reco
 
 ## Conclusion
 Hopefully the above notes are useful. I enjoy working with this technology and am excited to get even more pipelines into production with it.
+
+[Discuss on Twitter](https://twitter.com/search?q=mybranch.dev%2Fposts%2Fcloud-dataflow)
