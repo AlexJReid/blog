@@ -12,9 +12,9 @@ series = []
 
 I have been busy doing a deep dive into [Cloud Dataflow](https://cloud.google.com/dataflow), as we look to potentially expand our use of it at work. There's a natural divide between the strong data offerings available on GCP, versus the rest of our estate which is over on AWS. BigQuery is clearly a gateway drug here - once committed to it, as we are, it becomes all too convenient to actually start processing data on GCP too.
 
-Cloud Dataflow lets you process data from a variety of sources, without thinking about much other than _what_ you need to do with it. The infrastructure to run your pipeline is orchestrated and managed for you. It's a [well proven](https://techcrunch.com/2020/02/18/how-spotify-ran-the-largest-google-dataflow-job-ever-for-wrapped-2019/) with a handful of  high-profile users - for instance, if you got a Wrapped playlist from Spotify, it would have beeen a result of a Cloud Dataflow job.
+Cloud Dataflow lets you process data from a variety of sources, without thinking about much other than _what_ you need to do with it. The infrastructure to run your pipeline is orchestrated and managed for you. It's [well proven](https://techcrunch.com/2020/02/18/how-spotify-ran-the-largest-google-dataflow-job-ever-for-wrapped-2019/) with a handful of  high-profile users. If you got a Wrapped playlist from Spotify over the festive season, it would have been the result of a Cloud Dataflow job.
 
-Yet it doesn't get the same amount of press as Spark or Kafka Streams: offerings that aren't exactly the same, but potentially can be used to solve the same problems.
+Yet it doesn't get the same amount of press as Spark or Kafka Streams: offerings that aren't exactly the same, but potentially can be used to solve the same problems. Is it a well-kept secret, or just lacking hype that projects associated with well funded startups might have? (No snark intended.)
 
 ## What is Apache Beam?
 The original SDK for Cloud Dataflow evolved into Apache Beam, making it agnostic of Google and GCP. If you wanted to, you could run your Apache Beam pipelines on other clouds via an alternate runner, such as Apache Flink or Spark. For a simple life, I'm using the managed service on GCP.
