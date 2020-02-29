@@ -1,8 +1,8 @@
 +++ 
 draft = false
 date = 2020-02-29T00:00:00Z
-title = "Deep dive into Cloud Dataflow and Apache Beam"
-description = "This week, I have been busy exploring Cloud Dataflow - Google Cloud's managed data processing platform using Apache Beam."
+title = "Notes on Cloud Dataflow and Apache Beam"
+description = "Notes on Google Cloud's managed data processing platform, Cloud Dataflow and Apache Beam"
 slug = "" 
 tags = ["gcp","data","cloud dataflow","apache beam","spark"]
 categories = []
@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-I have been busy doing a deep dive into [Cloud Dataflow](https://cloud.google.com/dataflow), as we look to potentially expand our use of it at work. There's a natural divide between the strong data offerings available on GCP, versus the rest of our estate which is over on AWS. BigQuery is clearly a gateway drug here - once committed to it, as we are, it becomes all too convenient to actually start processing data on GCP too.
+I have been busy taking a closer look into [Cloud Dataflow](https://cloud.google.com/dataflow), as we look to potentially expand our use of it at work. There's a natural divide between the strong data offerings available on GCP, versus the rest of our estate which is over on AWS. BigQuery is clearly a gateway drug here - once committed to it, as we are, it becomes all too convenient to actually start processing data on GCP too.
 
 Cloud Dataflow lets you process data from a variety of sources, without thinking about much other than _what_ you need to do with it. The infrastructure to run your pipeline is orchestrated and managed for you. It's [well proven](https://techcrunch.com/2020/02/18/how-spotify-ran-the-largest-google-dataflow-job-ever-for-wrapped-2019/) with a handful of  high-profile users. If you got a Wrapped playlist from Spotify over the festive season, it would have been the result of a Cloud Dataflow job.
 
