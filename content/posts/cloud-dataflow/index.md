@@ -23,7 +23,7 @@ You define a data pipeline as a graph of transforms, starting with a _bounded_ s
 
  The great thing about Apache Beam is that you can use same code, largely, when working with an _unbounded_ source such as a Kafka topic or message queue. Several years ago, the Lambda architecture advocated the use of batch and streaming/speed layers, which, at the time meant two distinct implementations. This made it a costly proposition. Today, with the Beam approach, it is feasible to consider backfilling/correcting from a bounded source whilst consuming in realtime from an unbounded source.
 
-You write code in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://spotify.github.io/scio/index.html) as a higher level wrapper to Apache Beam. I've not tried this library as I've written very little Scala and I'd probably waste time learning Scala, but it looks like it makes for some very succinct code.
+You write code in Java, Python or Go. Java seems to have the best support. If you know Scala, Spotify have released a library called [Scio](https://spotify.github.io/scio/index.html) as a higher level wrapper to Apache Beam. I've not tried this library as I've written very little Scala, but it looks like it makes for some very succinct code.
 
 When you build your pipeline code, the graph is evaluated, validated and optimised. Any libraries you have used are uploaded to a Cloud Storage bucket, along with the serialized graph. You can then kick off your pipeline through the CLI or Console UI. In reality, a reliable scheduler should be used - Airflow has built-in operators for this very task.
 
@@ -54,7 +54,7 @@ Pipelines can take a set of options, which are runtime parameters such as an ini
 
 Templates fit in nicely with CI/CD approaches - your favourite build system such as Travis, Jenkins or Cloud Build runs the Cloud Dataflow tooling to upload the artifacts to Cloud Storage. They do, however, add some overhead. As options are not available at build time, they need boxed in a `ValueProvider<T>`. This means a reference to the value can be passed around the pipeline as a promise that it will contain a value at runtime, via its `get()` method. Unfortunately, this means that all parts of your pipeline that you want to inject options into **must** be able to accept a `ValueProvider`. If they can't, you're out of luck. 
 
-It is also not possible to alter the shape of your pipeline graph (such as adding or removing certain transforms) at runtime. This is controlled at build time. You can still customise the graph through options, but in my mind these should be considered to be _build flags_ not _runtime parameters_.
+It is also not possible to alter the shape of your pipeline graph (such as adding or removing certain transforms) at runtime. This is controlled at build time. You can still customise the graph through options, but in my mind these should be considered to be _build flags_ not _runtime parameters_. If you need to customise your pipeline before executing it, consider making your build artifact a fat `.jar` that your scheduler can run to create a Dataflow job. If you can put the `.jar` inside a container, you could start a job through Airflow (via a bash or Kubernetes operator), Jenkins, Cloud Build or, well, really anything authorised that can run a container.
 
 A template can be run by supplying parameters, or `Options`. You can even supply metadata in a JSON file which causes the Cloud Dataflow UI to render a nice input form for your parameters. Airflow can also execute a pipeline from a template through the `DataflowTemplateOperator`.
 
@@ -83,7 +83,7 @@ At first the framework feels restrictive to work in, and some of the DSL-in-Java
 
 Some data engineers or scientists may prefer to use the Python SDK, for consistency with other work they may do. The fundamentals don't change, but it is important to still write Python code that follows the Beam programming model. For instance, there might be little point in simply wrapping an existing Python program that uses `pandas` to count, or uses a multiprocessing library, when there are approaches that are native to Beam.
 
-As discussed above, templates are powerful, but keep in mind that they will not allow you to customise your pipeline significantly. Their intended use is for things like filenames and database tables.
+Templates are powerful, but keep in mind that they will not allow you to customise your pipeline significantly. Their intended use is for things like changing filenames and database tables.
 
 Storing secrets such as credentials to external services is something that needs to be given careful thought. You could just pass them as options, but they'd be visible within the console. A better approach is to leverage the Secret Service or KMS within GCP, fetching them at runtime. Again, this relies upon your code being able to tolerate fetching these settings at runtime. The AWS Java SDK is well-designed in this regard. I implemented `GCPSecretServiceAWSCredentialsProvider`. (Catchy name, right? I used to write Objective-C.) This provider implementation does a request to the secret service to retrieve the credentials for the AWS SDK to use. It hooks in elegantly alongside the other providers in the chain. Of course, I'm running this pipeline on GCP and need access to AWS resources. If you were running this pipeline on AWS, this wouldn't be relevant, nor would it be if you only needed to access other GCP services as you'd use the IAM/service account implementation available on both of the clouds.
 
@@ -92,6 +92,6 @@ Storing secrets such as credentials to external services is something that needs
 Which reminds me, when adding new `PTransform`s, use of the builder pattern is recommended. Writing a builder by hand is a waste of time, and the Apache Beam team recommend the use of [autovalue](https://github.com/google/auto/tree/master/value). Whilst it works, I find that there's still a fair amount of boilerplate involved. However, despite this, when writing custom PTransforms that have a lot of parameters, I use it to be consistent. For model objects, I recommend the immutables annotations library - but it really doesn't matter too much.
 
 ## Conclusion
-Hopefully the above notes are useful. I enjoy working with this technology and am excited to get even more pipelines into production with it.
+Hopefully the above notes are useful. I've had some success processing some decent workloads, without issue. I enjoy working with this technology and am excited to get even more pipelines into production with it.
 
 [Discuss on Twitter](https://twitter.com/search?q=mybranch.dev%2Fposts%2Fcloud-dataflow)
