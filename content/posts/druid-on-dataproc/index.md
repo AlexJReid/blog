@@ -2,7 +2,7 @@
 draft = false
 date = 2020-04-16
 title = "Running Druid on Cloud Dataproc"
-description = "A very easy way of running Druid on GCP Cloud Dataproc"
+description = "Today I discovered a ridiculously easy way to run a Druid cluster on GCP: flick a switch when creating a Cloud Dataproc cluster."
 slug = "druid-on-dataproc"
 tags = ["data","druid","olap","gcp","dataproc"]
 categories = []
