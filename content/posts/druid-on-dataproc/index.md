@@ -1,9 +1,9 @@
 +++ 
 draft = false
-date = 2020-04-17T00:20:00Z
+date = 2020-04-17
 title = "Running Druid on Cloud Dataproc"
 description = "A very easy way of running Druid on GCP Cloud Dataproc"
-slug = "dataproc-druid" 
+slug = "druid-on-dataproc"
 tags = ["data","druid","olap","gcp","dataproc"]
 categories = []
 externalLink = ""
