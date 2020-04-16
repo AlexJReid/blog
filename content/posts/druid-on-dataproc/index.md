@@ -31,7 +31,7 @@ Luckily, Cloud Dataproc provides a mechanism called _initialisation actions_ for
 Nothing too out of the ordinary.
 
 ## Running it
-Anyone who is famiilar with Druid will know that it can take a bit of effort to configure well. It is quite funny to see this reduced to...
+Anyone who is famiilar with Druid will know that it can take a bit of effort to learn and configure well. For a simple cluster, this can be reduced to almost a one-liner.
 
 ```
 gcloud dataproc clusters create druid-example \
