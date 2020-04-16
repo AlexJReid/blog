@@ -1,10 +1,10 @@
 +++ 
 draft = false
-date = 2017-01-23T10:00:00Z
+date = 2020-04-17T00:20:00Z
 title = "Running Druid on Cloud Dataproc"
 description = "A very easy way of running Druid on GCP Cloud Dataproc"
-slug = "exploring-druid" 
-tags = ["data","druid","olap","clickhouse"]
+slug = "cloudprod-druid" 
+tags = ["data","druid","olap","gcp","dataproc"]
 categories = []
 externalLink = ""
 series = []
@@ -14,7 +14,7 @@ Today I discovered a ridiculously easy way to run a [Druid](https://druid.io) cl
 
 ![Component](component.png)
 
-Great, right? (If you don't mind using something labelled _alpha_ by Google.)
+Great, right? (Assuming you don't mind using something labelled _alpha_ by Google.)
 
 ## Problems
 There is literally no documentation other than the page I stumbled across: [Cloud Dataproc Druid Component](https://cloud.google.com/dataproc/docs/concepts/components/druid).
