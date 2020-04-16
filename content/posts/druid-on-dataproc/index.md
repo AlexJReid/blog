@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2020-04-17
+date = 2020-04-16
 title = "Running Druid on Cloud Dataproc"
 description = "A very easy way of running Druid on GCP Cloud Dataproc"
 slug = "druid-on-dataproc"
@@ -12,19 +12,18 @@ series = []
 
 Today I discovered a ridiculously easy way to run a [Druid](https://druid.io) cluster on GCP is to flick a switch when creating a Cloud Dataproc cluster. It's a recent version too.
 
-![Component](component.png)
+![Component](components.png)
 
 Great, right? (Assuming you don't mind using something labelled _alpha_ by Google.)
 
-## Problems
+## Customisation
 There is literally no documentation other than the page I stumbled across: [Cloud Dataproc Druid Component](https://cloud.google.com/dataproc/docs/concepts/components/druid).
 
 After running up a small cluster, I noticed the following issues:
-- the [Druid router](https://druid.apache.org/docs/latest/design/router.html) process contains a great console which makes one-off ingests easy to achieve. Unfortunately, this is not enabled
-- the `druid-google-extensions` extension is not included, meaning the cluster cannot load files from GCS
+- the [Druid router](https://druid.apache.org/docs/latest/design/router.html) process contains a great console which makes one-off ingests easy to achieve. Unfortunately, this is not enabled.
+- the `druid-google-extensions` extension is not included, meaning the cluster cannot load files from GCS.
 
-## Solution
-Luckily, Cloud Dataproc provides a mechanism for customising nodes. These are nothing more than scripts that each node pulls from GCS on boot. I created two scripts to rectify the above.
+Luckily, Cloud Dataproc provides a mechanism called _initialisation actions_ for customising nodes. These are nothing more than scripts that each node pulls from GCS on boot. I created two scripts to rectify the above.
 
 - `enable-druid-router.sh` creates a config file and systemd unit for the router process; this means the master node will listen on port 8888. [Gist](https://gist.github.com/AlexJReid/1f0cc59d31a2ac8ff1e69d2c756a098c)
 - `enable-google-extensions.sh` appends a different `druid.extensions.loadList` line in the common properties file, enabling GCP ingest support. [Gist](https://gist.github.com/AlexJReid/1684106b2118dfa69f98b68345cad634)
