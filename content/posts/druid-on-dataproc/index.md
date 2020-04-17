@@ -21,7 +21,7 @@ There is literally no documentation other than the page I stumbled across: [Clou
 
 After running up a small cluster, I noticed some things were missing:
 - the [Druid router](https://druid.apache.org/docs/latest/design/router.html) process contains a great console which makes one-off ingests easy to achieve. Unfortunately, this is not enabled.
-- the `druid-google-extensions` extension is not included, meaning the cluster cannot load files from GCS.
+- the `druid-google-extensions` extension is not included, meaning the cluster cannot load files from GCS. (It is possible that the GCS Hadoop connector would mean `gs://` URIs work, although I didn't try this.)
 
 Luckily, Cloud Dataproc provides a mechanism called _initialisation actions_ for customising nodes. These are nothing more than scripts that each node pulls from GCS and executes. I created two scripts to rectify the above.
 
@@ -57,6 +57,12 @@ The component is labelled alpha, so could vanish at any time. It isn't really do
 The above initialisation actions are brittle because I'm assuming Google won't change where they install Druid.
 
 By default, the cluster uses storage HDFS rather than GCS or S3. This could be changed with yet another initialisation action.
+
+You're paying the Cloud Dataproc tax on top of the instances. This isn't an excessive sum.
+
+You're running a ton of irrelevant Hadoopy stuff you don't need or want. This can be uninstalled when bringing the cluster up. On the flip slide, Hadoop/YARN batch ingestion is setup and ready to go out of the box.
+
+Druid Cluster metadata runs on a MySQL instance on the master node. Backup strategies for this are left as an exercise for the reader. Loss of cluster metadata is bad.
 
 One of the nice things about Druid is the ability to scale out the various processes as required. This approach is opinionated: the master(s) run the query, broker, coordinator and overlord processes (as well as Zookeeper), the worker nodes serve as historical, middle manager and indexing processes. 
 
