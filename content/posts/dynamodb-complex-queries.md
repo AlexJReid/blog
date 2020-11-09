@@ -86,7 +86,7 @@ Ultimately, we write the comment to the table `32` times with a `sk` representin
 
 ## Query patterns
 
-We should now be able to satisfy all of our query patterns. All queries should have `ScanIndexForward` set to `false` to retrieve results in reverse order, i.e. most recent first. This is because the `gsi` uses `cd` as its sort key, and the creation dates sort lexicographically.
+We should now be able to satisfy all of our query patterns. All queries should have `ScanIndexForward` set to `false` to retrieve the most recent comments first. This is because the `gsi` uses `cd` as its sort key, and the creation dates sort lexicographically.
 
 #### Show comments in reverse order, i.e. most recent first, regardless of filter
 
