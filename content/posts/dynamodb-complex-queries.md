@@ -12,11 +12,11 @@ series = []
 
 It never ceases to amaze me just how much is possible through the seemingly constrained model DynamoDB gives us. It's a fun puzzle to try to support query patterns beyond a simple key value lookup, or ordered set of items.
 
-The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication: DymamoDB secondary indexes allow us to store the same items by using different attributes from the item as keys.
+The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication: DymamoDB secondary indexes allow us to automatically duplicate items, using different attributes from the item as keys, allowing us to support different queries.
 
-A common approach is to delegate more complex queries to another system, such as Elasticsearch. DynamoDB can remain the source of truth, sending updates to Elasticsearch via DynamoDB Stream and on to a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
+This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Stream and a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
 
-In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. It's a balance between reinventing the wheel and adding unnecessary infrastructure to a system, but I believe it is desirable to keep things as lean as possible. 
+In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. It's a balance between reinventing the wheel and adding unnecessary infrastructure to a system. I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
 
 Let's explore what is possible with DynamoDB alone.
 
@@ -29,16 +29,16 @@ Our query patterns are as follows:
 - **QP1**: show comments in reverse order, i.e. most recent first, regardless of filter
 - **QP2**: show comments in the user's local language, but let them see comments in all languages
 - **QP3**: show comments with any combination of ratings, from 1-5, where 1 is terrible and 5 is excellent
-- **QP4**: show 20 comments per page, with no identical performance on fetching older pages of comments
+- **QP4**: show 20 comments per page, with no performance degradation when fetching pages of older comments
 - **QP5**: show a comment directly through its identifier
 - **QP6**: show the most recent positive English comment for product 42
 - **QP7**: delete comment by id
 
 ## What's wrong with filters?
 
-DynamoDB lets us to filter the results before they are returned to our client program. We use a query to limit the result set as much as possible, using a combination of the keys available on the table or index. It then possible to filter on any non-key attribute, which sounds liberating - however, the filter is performed after the query has been run, so if a large amount of data is filtered out, we will still consume resources, time and money, in order to find that needle in the haystack.
+DynamoDB lets us to filter the results before they are returned to our client program. We use a query to limit the result set as much as possible, using a combination of the keys available on the table or index. It is then possible to filter on any non-key attribute, which sounds liberating - however, the filter is performed after the query has been run, so if a large amount of data is filtered out, we will still consume resources, time and money, in order to find that needle in the haystack. Filters do have utility at ensuring data is within bounds, but work best when only a small proportion of the items are thrown away by the filter.
 
-An alternative approach, as alluded to earlier, is to duplicate data to match the query pattern.
+An alternative approach, as alluded to earlier, is to duplicate data.
 
 ## Table design
 
@@ -54,9 +54,9 @@ Note that the second row is a duplicate of the first, but with a different `sk` 
 - `pk` is the table partition key; it holds the a unique identifier of a comment
 - `sk` is the table sort key and the GSI partition key; it holds a _query string_ relating to when the comment should be returned in a list
 - `cd` is the creation date and the GSI sort key; it is used to order lists of comments
-- `language` and `rating` are self-explainatory and are used to form different permutations of the query string held in `sk`
-- `auto` is a `bool` denoting this item is a duplicate row, used to satisfy a specific query string - more on this later!
-- `comment_blob` the comment itself, containing arbitrary data: it could be a map, JSON encoded string, protobuf and so on
+- `language` and `rating` are used to form different permutations of the query string held in `sk`
+- `auto` is a `bool` denoting this item is a duplicate row, used to satisfy a specific query string - more on this later
+- `comment_blob` the comment itself, containing arbitrary data: it could be a DynamoDB map, JSON encoded string, protobuf and so on...
 
 ## Key design
 
@@ -84,7 +84,7 @@ As per `QP2`, a user can choose to show _all_ languages or select a single langu
 
 Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialised to an ordered, `.`-delimited string such as `1.2.3.4.5`.
 
-This is just binary. You could think about each of the ratings being toggle switches that are set low or high.
+You could think about each of the ratings being toggle switches that are set low or high.
 
 - `00001` = Rating 1
 - `00010` = Rating 2
@@ -209,4 +209,4 @@ We should not be afraid of duplicating data to make our service work efficiently
 
 This is not a complete solution with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or even a relational database), but it proves just how far we can get with DynamoDB alone.
 
-[Happy to hear your thoughts on Twitter!](https://twitter.com/alexjreid)
+[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid)
