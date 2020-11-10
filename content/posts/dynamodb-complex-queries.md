@@ -73,7 +73,7 @@ Here are some examples:
 - `PRODUCT#42/en/1.2.5` - English only, with a rating of 1, 2 or 5
 - `PRODUCT#42/~/1.2.5` - any language, with a rating of 1, 2 or 5
 
-It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a RESTful resource such as `/product/42/comments/en/1.2.3` or `/product/42/comments/~/1.2.3`.
+It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a URI such as `/product/42/comments/en/1.2.3` or `/product/42/comments/~/1.2.3`.
 
 ## What duplicates do we need?
 
