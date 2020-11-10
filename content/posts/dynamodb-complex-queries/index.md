@@ -40,21 +40,17 @@ Filters do have utility at ensuring data is within bounds (such as enforcing TTL
 
 ## Table design
 
-A table with a global secondary index `gsi` is used. The index will be used to display comments relating to a product.
+#### Table
+![Table view](comments.png)
 
-| pk             | sk (gsi pk)     | cd (gsi sk)             | language | rating | auto | comment_blob
-| -------------- | --------------- | ----------------------- | -------- | ------ | ---- | ------------
-| COMMENT#100001 | PRODUCT#42/~/~  | 2020-11-09 12:00:00.123 | en       | 5      |      | { ... }
-| COMMENT#100001 | PRODUCT#42/en/~ | 2020-11-09 12:00:00.123 | en       | 5      | true | { ... }
+The above table contains two comments for product `42`. Note that there are duplicate items for each comment.
 
-Note that the second row is a duplicate of the first, but with a different `sk` to support a specific query.
+#### GSI
+The global secondary index `gsi` will be used to answer the majority of the queries. Both comments exist under under `PRODUCT#42/~/~` (any language, any rating) and `PRODUCT#42/en/~` (English, any rating). `PRODUCT#42/en/5` and `PRODUCT#42/en/3` contain only one comment each, as the two comments in the table are rated `5` and `3`.
 
-- `pk` is the table partition key; it holds the a unique identifier of a comment
-- `sk` is the table sort key and the GSI partition key; it holds a _query string_ relating to when the comment should be returned in a list
-- `cd` is the creation date and the GSI sort key; it is used to order lists of comments
-- `language` and `rating` are used to form different permutations of the query string held in `sk`
-- `auto` is a `bool` denoting this item is a duplicate row, used to satisfy a specific query string - more on this later
-- `comment_blob` the comment itself, containing arbitrary data: it could be a DynamoDB map, JSON encoded string, protobuf and so on...
+![GSI](GSI_comments_gsi.png)
+
+Not shown are the non-indexed attributes such as the comment text itself.
 
 ## Key design
 
