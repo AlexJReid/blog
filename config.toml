@@ -29,7 +29,7 @@ googleAnalytics = "UA-156939108-1"
     footercontent = ""
 
     hidecredits = false
-    hidecopyright = false
+    hidecopyright = true
 
     rtl = false
 
@@ -61,6 +61,6 @@ googleAnalytics = "UA-156939108-1"
     type = "application/rss+xml"
 
 [[menu.main]]
-    name = "Blog posts"
+    name = "Posts"
     weight = 1
     url  = "/posts/"
