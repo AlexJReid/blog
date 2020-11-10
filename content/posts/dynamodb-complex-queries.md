@@ -110,7 +110,7 @@ As the combination of `rating_5` and `rating_1` is `17`, this could be used as a
 
 It has the side-effect of allowing longer set values to be stored. For instance, if instead of numeric ratings we used `['Poor', 'Fair', 'Good', 'Great', 'Excellent']`, the keys would be longer and we would consume more resources.
 
-It might seem premature, but shaving bytes off from repeated keys and attribute names is considered good practice. The downside is that this portion of the key is less readable by the human eye.
+It might seem premature, but shaving bytes off repeated keys and attribute names is considered good practice. The downside is that this portion of the key is less readable by the human eye.
 
 ## Query patterns
 
