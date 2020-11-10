@@ -58,7 +58,9 @@ Note that the second row is a duplicate of the first, but with a different `sk` 
 
 ## Key design
 
-Let's elaborate on `sk`. It contains a `/` delimited string. The first element is the type, `PRODUCT#` and its identifier `42`. The second element is the language, such as `en` or `~` to denote _any_. The final element is the rating number, from `1` to `5`.
+Let's elaborate on `sk`. Each `sk` under a comment `pk` represents a collection of comments for that product, of the selected language and ratings.
+
+`sk` consists of a `/` delimited string. The first element is the type, `PRODUCT#` and its identifier `42`. The second element is the language, such as `en` or `~` to denote _any_. The final element is the rating number, from `1` to `5`.
 
 As per `QP3`, any **combination** of ratings can be specified in addition to the selected language. (If it was acceptable to only show a single rating at a time, a simpler model could be used.)
 
@@ -77,9 +79,9 @@ It might help to think of each `sk` as representing an ordered set of comments. 
 
 We will assume this application will be write light and read heavy, so it is acceptable to store the same comment mulitple times to provide  inexpensive querying.
 
-As per `QP2`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language the user was written in, such as `en`.
+As per `QP2`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
 
-`QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see the bad, or `5` to only see the great - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`. 
+`QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`. 
 
 Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialised to an ordered, `.`-delimited string such as `1.2.3.4.5`.
 
