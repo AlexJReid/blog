@@ -14,7 +14,7 @@ It never ceases to amaze me just how much is possible through the seemingly cons
 
 The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication. DymamoDB secondary indexes allow us to automatically duplicate items with different attributes from the item as keys.
 
-This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Stream and a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
+This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Stream and a Lambda function.
 
 In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary, so let's explore what is possible with DynamoDB alone.
 
@@ -60,7 +60,7 @@ Note that the second row is a duplicate of the first, but with a different `sk` 
 
 Let's elaborate on `sk`. It contains a `/` delimited string. The first element is the type, `PRODUCT#` and its identifier `42`. The second element is the language, such as `en` or `~` to denote _any_. The final element is the rating number, from `1` to `5`.
 
-As per `QP3`, any combination of ratings can be specified in addition to the selected language. 
+As per `QP3`, any **combination** of ratings can be specified in addition to the selected language. (If it was acceptable to only show a single rating at a time, a simpler model could be used.)
 
 Here are some examples:
 
@@ -71,7 +71,7 @@ Here are some examples:
 - `PRODUCT#42/en/1.2.5` - English only, with a rating of 1, 2 or 5
 - `PRODUCT#42/~/1.2.5` - any language, with a rating of 1, 2 or 5
 
-It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a RESTful resource such as `/product/42/comments/en/1.2.3`.
+It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a RESTful resource such as `/product/42/comments/en/1.2.3` or `/product/42/comments/~/1.2.3`.
 
 ## What duplicates do we need?
 
