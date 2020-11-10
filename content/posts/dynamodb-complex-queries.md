@@ -73,6 +73,7 @@ Here are some examples:
 - `PRODUCT#42/en/1.2.5` - English only, with a rating of 1, 2 or 5
 - `PRODUCT#42/~/1.2.5` - any language, with a rating of 1, 2 or 5
 
+> It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a RESTful resource such as `/product/42/comments/en/1.2.3`.
 
 ## What duplicates do we need?
 
@@ -110,7 +111,7 @@ As the combination of `rating_5` and `rating_1` is `17`, this could be used as a
 
 It has the side-effect of allowing longer set values to be stored. For instance, if instead of numeric ratings we used `['Poor', 'Fair', 'Good', 'Great', 'Excellent']`, the keys would be longer and we would consume more resources.
 
-It might seem premature, but shaving bytes off repeated keys and attribute names is considered good practice. The downside is that this portion of the key is less readable by the human eye.
+It might seem premature, but shaving bytes off repeated keys and attribute names is considered good practice. The tradeoff is that this portion of the key is less readable by the human eye.
 
 ## Query patterns
 
@@ -185,7 +186,7 @@ To avoid an infinite loop, an additional attribute, `auto` is added to the autom
 
 ## Problems
 
-Creation of the duplicate records is not atomic as `TransactWriteItems` only supports 25 operations. An update could fail after making partial changes. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. Repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
+Creation of the duplicate records is not atomic as `TransactWriteItems` only supports 25 operations. Creation of the duplicate items could fail after making partial changes. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. Repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
 
 There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ set size increases.
 
