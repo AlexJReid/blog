@@ -208,7 +208,7 @@ Despite the identified caveats, we've successfully built a filtering solution wi
 
 We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
 
-This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or even a relational database), but it proves just how far we can get with DynamoDB alone.
+This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how far we can get with DynamoDB alone.
 
 [I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) _Corrections and comments are most welcome._
 
