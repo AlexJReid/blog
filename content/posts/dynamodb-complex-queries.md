@@ -16,9 +16,7 @@ The NoSQL gods teach us to store data in a way that mirrors our application's fu
 
 This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Stream and a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
 
-In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. It's a balance between reinventing the wheel and adding unnecessary infrastructure to a system. 
-
-I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary, so let's explore what is possible with DynamoDB alone.
+In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary, so let's explore what is possible with DynamoDB alone.
 
 ## Example scenario: a product comments system
 
