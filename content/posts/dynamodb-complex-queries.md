@@ -180,7 +180,7 @@ When a comment is created, the wildcard  `sk` should be used, i.e. `PRODUCT#42/~
 
 The Lambda function will be invoked with a change payload when the primary item is added, updated or deleted. From the attributes `language` and `rating`, it will generate the duplicate items and add them to the table. If `language` and `rating` subsequently change, previous duplicate items will be removed before the new duplicate set is added. Upon a delete modification, all duplicate items will be removed.
 
-To avoid an infinite loop, an additional attribute, `auto` is added to the automatically created items. The Lambda function contains a guard so that it performs no action when encountering a change where the `auto` attribute is set on the item.
+An additional attribute, `auto` is added to the automatically created items so that the Lambda function knows to take no action in response to items that it has created in the table.
 
 ## Problems
 
