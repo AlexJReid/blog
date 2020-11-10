@@ -36,7 +36,7 @@ Our query patterns are as follows:
 
 ## What's wrong with filters?
 
-DynamoDB lets us to filter the results before they are returned to our client program. We use a query to limit the result set as much as possible, using a combination of the keys available on the table or index. It is possible to filter on any non-key attribute, which sounds liberating - however, the filter is performed after the query has been run, so if a large amount of data is filtered out, we will still consume resources, time and money, in order to find that needle in the haystack.
+DynamoDB lets us to filter the results before they are returned to our client program. We use a query to limit the result set as much as possible, using a combination of the keys available on the table or index. It then possible to filter on any non-key attribute, which sounds liberating - however, the filter is performed after the query has been run, so if a large amount of data is filtered out, we will still consume resources, time and money, in order to find that needle in the haystack.
 
 An alternative approach, as alluded to earlier, is to duplicate data to match the query pattern.
 
