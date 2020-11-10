@@ -77,7 +77,7 @@ It might help to think of each `sk` as representing an ordered set of comments. 
 
 ## What duplicates do we need?
 
-We will assume this application will be write light and read heavy, so it is acceptable to store the same comment mulitple times to provide  inexpensive querying.
+We assume this application will be write light and read heavy, so it is acceptable to store the same comment multiple times in order to provide inexpensive querying.
 
 As per `QP2`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
 
@@ -149,7 +149,7 @@ We should now be able to satisfy all of our query patterns. All queries should h
 
 #### Show 20 comments per page
 
-- Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requetsed.
+- Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requested.
 
 #### Show a comment directly through its identifier
 
