@@ -14,7 +14,7 @@ It never ceases to amaze me just how much is possible through the seemingly cons
 
 The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication: DymamoDB secondary indexes allow us to store the same items by using different attributes from the item as keys.
 
-This can get us far, however a common pattern is to give up and delegate more complex queries to another system, such as Elasticsearch. DynamoDB can remain the source of truth, sending updates to Elasticsearch via DynamoDB Stream and on to a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
+A common approach is to delegate more complex queries to another system, such as Elasticsearch. DynamoDB can remain the source of truth, sending updates to Elasticsearch via DynamoDB Stream and on to a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
 
 In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. It's a balance between reinventing the wheel and adding unnecessary infrastructure to a system, but I believe it is desirable to keep things as lean as possible. 
 
@@ -83,6 +83,34 @@ As per `QP2`, a user can choose to show _all_ languages or select a single langu
 `QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see the bad, or `5` to only see the great - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`. 
 
 Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialised to an ordered, `.`-delimited string such as `1.2.3.4.5`.
+
+This is just binary. You could think about each of the ratings being toggle switches that are set low or high.
+
+- `00001` = Rating 1
+- `00010` = Rating 2
+- `00100` = Rating 3
+- `01000` = Rating 4
+- `10000` = Rating 5
+
+Combinations are represented as you'd expect.
+
+- `10001` = Rating 1 and 5
+- `11111` = All ratings
+
+```
+>>> rating_1 = 0b00001
+>>> rating_5 = 0b10000
+>>> bin(rating_5 | rating_1)
+'0b10001'
+>>> rating_5 | rating_1
+17
+```
+
+As the combination of `rating_5` and `rating_1` is `17`, this could be used as a more compact representation of the selected ratings, as a future optimization. Instead of `PRODUCT#42/en/1.2.3.4.5`, `PRODUCT#42/en/31` could be stored instead.
+
+It has the side-effect of allowing longer set values to be stored. For instance, if instead of numeric ratings we used `['Poor', 'Fair', 'Good', 'Great', 'Excellent']`, the keys would be longer and we would consume more resources.
+
+It might seem premature, but shaving bytes off from repeated keys and attribute names is considered good practice. The downside is that this portion of the key is less readable by the human eye.
 
 ## Query patterns
 
@@ -162,6 +190,7 @@ Creation of the duplicate records is not atomic as `TransactWriteItems` only sup
 There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ set size increases.
 
 ```
+2 ** 5 = 32
 2 ** 6 = 64
 2 ** 7 = 128
 2 ** 8 = 256
@@ -172,10 +201,12 @@ As the number of duplicates increases, so does the number of operations and ther
 
 ## Summary
 
-Despite the identified caveats, we've successfully built a filtering solution without needing to use filters in DynamoDB. Nothing is free, we have paid for this by duplicating the data and the corresponding write and on-going storage costs. However, it is expected that this system will perform well, scale well and be very economical to run.
+It is expected that this system will perform well, scale well and be very economical to run. 
 
-We should not be afraid of duplicating data to support identified query patterns. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
+Despite the identified caveats, we've successfully built a filtering solution without needing to use filters in DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding write and on-going storage costs. 
 
-This is not a perfect solution with certain areas requiring further investigation. It is obviously less flexible than what could be achieved with DynamoDB coupled with Elasticsearch, but it does prove what can be achieved with DynamoDB alone, with just a little bit of thought.
+We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
+
+This is not a complete solution with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or even a relational database), but it proves just how far we can get with DynamoDB alone.
 
 [Happy to hear your thoughts on Twitter!](https://twitter.com/alexjreid)
