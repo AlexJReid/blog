@@ -209,4 +209,13 @@ We should not be afraid of duplicating data to make our service work efficiently
 
 This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or even a relational database), but it proves just how far we can get with DynamoDB alone.
 
-[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid)
+[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) _Corrections and comments are most welcome._
+
+## Links
+
+If you found this interesting, you'll enjoy the following even more.
+
+- [When to use (and when not to use) DynamoDB Filter Expressions](https://www.alexdebrie.com/posts/dynamodb-filter-expressions/)
+- [Best Practices for Using Secondary Indexes in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes.html)
+- [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html)
+- [Video: Advanced Design Patterns at re:Invent 2019](https://www.youtube.com/watch?v=6yqfmXiZTlM)

@@ -10,9 +10,7 @@ externalLink = ""
 series = []
 +++
 
-> **Update February 2019** — this post still gets a few views. Some of the content probably still makes sense, but Druid has moved on a lot. [Managed services, SQL support, BI tools and so on](https://imply.io/).
-
-> I confess that I did not get as far as using Druid in production as (typically) project requirements changed. However, I've recently picked up the technology again in my current role. I'll be sure to revisit this post and make updates/corrections shortly.
+> **Update February 2019** — this post still gets a few views. Some of the content probably still makes sense, but Druid has moved on a lot.[Managed services, SQL support, BI tools and so on](https://imply.io/). I'm still happily using it in production!
 
 The big data technology space is vibrant but crowded. There is a plethora of technologies, often appearing to be in competition with each other. There are several excellent SQL-on-Hadoop projects, for instance. Spark SQL? Presto? Drill? Good old Hive?
 

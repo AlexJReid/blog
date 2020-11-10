@@ -63,4 +63,4 @@ googleAnalytics = "UA-156939108-1"
 [[menu.main]]
     name = "Blog posts"
     weight = 1
-    url  = "/posts"
+    url  = "/posts/"
