@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-It never ceases to amaze me just how much is possible through the seemingly constrained model DynamoDB gives us. It's a fun puzzle to try to support query patterns beyond a simple key value lookup, or ordered set of items.
+It never ceases to amaze me just how much is possible through the seemingly constrained model DynamoDB gives us. It's a fun puzzle to try to support query patterns beyond a simple key value lookup, or the retrieval of an ordered set of items.
 
 The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication. DymamoDB secondary indexes allow us to automatically duplicate items with different attributes from the item as keys.
 
