@@ -34,11 +34,11 @@ Our query patterns are as follows:
 - **QP6**: show the most recent positive English comment for product 42
 - **QP7**: delete comment by id
 
-## What's wrong with filters?
+## What's wrong with DynamoDB filters?
 
-DynamoDB lets us to filter the results before they are returned to our client program. We use a query to limit the result set as much as possible, using a combination of the keys available on the table or index. It is then possible to filter on any non-key attribute, which sounds liberating - however, the filter is performed after the query has been run, so if a large amount of data is filtered out, we will still consume resources, time and money, in order to find that needle in the haystack. Filters do have utility at ensuring data is within bounds, but work best when only a small proportion of the items are thrown away by the filter.
+DynamoDB lets us to filter the results before they are returned to our client program. We use a query to limit the result set as much as possible, using a combination of the keys available on the table or index. It is then possible to filter on any non-key attribute, which sounds liberating at first - however, the filter is performed after the query has been run, so if a large amount of data is filtered out, we will still consume resources, time and money, in order to find that needle in the haystack. This is particularly costly if each item size runs into kilobytes.
 
-An alternative approach, as alluded to earlier, is to duplicate data.
+Filters do have utility at ensuring data is within bounds (such as enforcing TTL on expired items that might not have been _collected_ yet). They work best when only a small proportion of the items are thrown away by the filter.
 
 ## Table design
 
