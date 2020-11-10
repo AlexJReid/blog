@@ -16,9 +16,9 @@ The NoSQL gods teach us to store data in a way that mirrors our application's fu
 
 This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Stream and a Lambda function. A DynamoDB stream conveys changes made to a DynamoDB table that are received by the Lambda function, which in turn converts the change into an Elasticsearch document and indexing request.
 
-In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. It's a balance between reinventing the wheel and adding unnecessary infrastructure to a system. I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
+In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. It's a balance between reinventing the wheel and adding unnecessary infrastructure to a system. 
 
-Let's explore what is possible with DynamoDB alone.
+I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary, so let's explore what is possible with DynamoDB alone.
 
 ## Example scenario: a product comments system
 
@@ -208,7 +208,7 @@ Despite the identified caveats, we've successfully built a filtering solution wi
 
 We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
 
-This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how far we can get with DynamoDB alone.
+This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how powerful DynamoDB can be.
 
 [I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) _Corrections and comments are most welcome._
 
