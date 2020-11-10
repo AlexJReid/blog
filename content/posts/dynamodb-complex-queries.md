@@ -58,7 +58,7 @@ Note that the second row is a duplicate of the first, but with a different `sk` 
 
 ## Key design
 
-Let's elaborate on `sk`. Each `sk` under a comment `pk` represents a collection of comments for that product, of the selected language and ratings.
+Let's elaborate on `sk`. Each `sk` under a comment `pk` represents membership to a collection of comments for that product, of the criteria encoded into the key.
 
 `sk` consists of a `/` delimited string. The first element is the type, `PRODUCT#` and its identifier `42`. The second element is the language, such as `en` or `~` to denote _any_. The final element is the rating number, from `1` to `5`.
 
