@@ -197,16 +197,16 @@ There will come a point where the number of duplicates ceases to remain feasible
 ...
 ```
 
-As the number of duplicates increases, so does the number of operations and therefore cost, particularly if using on-demand biling. Payloads could be compressed with `snappy` or `bz` to possibly reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
+As the number of duplicates increases, so does the number of operations and therefore cost. Payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
 
 ## Summary
 
 It is expected that this system will perform well, scale well and be very economical to run. 
 
-Despite the identified caveats, we've successfully built a filtering solution without needing to use filters in DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding write and on-going storage costs. 
+Despite the identified caveats, we've successfully built a filtering solution without needing to use filters in DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding compute, write and on-going storage costs. 
 
 We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
 
-This is not a complete solution with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or even a relational database), but it proves just how far we can get with DynamoDB alone.
+This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or even a relational database), but it proves just how far we can get with DynamoDB alone.
 
 [I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid)
