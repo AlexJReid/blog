@@ -46,7 +46,7 @@ Filters do have utility at ensuring data is within bounds (such as enforcing TTL
 The above table contains two comments for product `42`. Note that there are duplicate items for each comment.
 
 #### GSI
-The global secondary index `gsi` will be used to answer the majority of the queries. Both comments exist under under `PRODUCT#42/~/~` (any language, any rating) and `PRODUCT#42/en/~` (English, any rating). `PRODUCT#42/en/5` and `PRODUCT#42/en/3` contain only one comment each, as the two comments in the table are rated `5` and `3`.
+The global secondary index `gsi` will be used to answer the majority of the queries. Both comments exist under `PRODUCT#42/~/~` (any language, any rating) and `PRODUCT#42/en/~` (English, any rating). `PRODUCT#42/en/5` and `PRODUCT#42/en/3` contain only one comment each, as the two comments in the table are rated `5` and `3`.
 
 ![GSI](GSI_comments_gsi.png)
 
