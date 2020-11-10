@@ -186,7 +186,7 @@ An additional attribute, `auto` is added to the automatically created items so t
 
 ## Problems
 
-Creation of the duplicate records is not atomic. Creation of the duplicate items could fail after making partial changes. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
+Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
 
 There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ set size increases.
 
