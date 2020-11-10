@@ -2,7 +2,7 @@
 draft = false
 date = 2020-11-09T17:54:11Z
 title = "Efficient filtering with DynamoDB"
-description = "Implementing an efficient product comments system with DynamoDB"
+description = "An exploration of using data duplication to implement an efficient product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
 tags = ['aws','dynamodb','data']
 categories = []
@@ -186,7 +186,7 @@ To avoid an infinite loop, an additional attribute, `auto` is added to the autom
 
 ## Problems
 
-Creation of the duplicate records is not atomic as `TransactWriteItems` only supports 25 operations. Creation of the duplicate items could fail after making partial changes. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. Repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
+Creation of the duplicate records is not atomic. Creation of the duplicate items could fail after making partial changes. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. Repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
 
 There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ set size increases.
 
@@ -202,9 +202,9 @@ As the number of duplicates increases, so does the number of operations and ther
 
 ## Summary
 
-It is expected that this system will perform well, scale well and be very economical to run. 
+It is expected that this system will perform well, support lots of traffic and be very economical to run. 
 
-Despite the identified caveats, we've successfully built a filtering solution without needing to use filters in DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding compute, write and on-going storage costs. 
+Despite the identified caveats, we've successfully built a filtering solution without needing to use the post-query filters provided by DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding compute, write and on-going storage costs. 
 
 We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
 
