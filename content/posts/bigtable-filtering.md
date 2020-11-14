@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-In a [previous post](/posts/dynamodb-efficient-filtering/), an implementation of paginated and filtered product comments data model for DynamoDB was proposed.
+In a [previous post](/posts/dynamodb-efficient-filtering/), an implementation of paginated and filtered product comments data model for DynamoDB was shown.
 
 This post explores how we might solve the same problem using [Cloud Bigtable](https://cloud.google.com/bigtable). This is a simple comparison and is not meant to pitch DynamoDB against Cloud Bigtable as both are incredible pieces of engineering. Between them, I wager they power a good proportion of the sites and services we use on a daily basis.
 
@@ -60,7 +60,7 @@ We can now implement the queries needed for our comments application. The only t
 
 #### Show comments for a product in reverse order, i.e. most recent first, regardless of filter
 
-Read rows from `PRODUCT#42/` to `PRODUCT#42/~`. This is the base query used by all other examples. A `KeyRegexFilter` is applied to further restrict the returned results, based on their key.
+Read rows from `PRODUCT#42` to `PRODUCT#42/~`. This is the base query used by all other examples. A `KeyRegexFilter` is applied to further restrict the returned results, based on their key.
 
 #### Show comments in the user's local language, but let them see comments in all languages
 
@@ -72,11 +72,11 @@ Filter rows with `.*/.*/en/(1|2|5)` to show English comments of a `1`, `2` or `5
 
 #### Show 20 comments per page, with ability to paginate
 
-Read 21 rows from `PRODUCT#42/` to `PRODUCT#42/~`. Store the `reverse_sort_key` value from row `20`. Only return `rows[0:19]` rows to the client.
+For the first page, read 21 rows from `PRODUCT#42` to `PRODUCT#42/~`. Store the `reverse_sort_key` value from row `20`. Only return `rows[0:19]` rows to the client.
 
-To fetch the next page, repeat the process by reading from `PRODUCT#42/<reverse_sort_key>/~`.
+To fetch the next page, repeat the process by reading from `PRODUCT#42/<reverse_sort_key>`.
 
-If it is anticipated that more than one comment per second can be received for a product, the timestamp resolution could be increased to include miliseconds. Alternatively, a random three or four digit number could be appended. This is not to ensure uniqueness as the comment ID is the final key element. This is to workaround a scenario where comments with the same timestamp might be shown twice if they fall over a page boundary.
+If it is anticipated that more than one comment per second will be received for a product, the timestamp resolution could be increased to include milliseconds. Alternatively, a random three or four digit number could be appended. This is not to ensure row key uniqueness as the comment ID is the final key element. This is to workaround a scenario where comments with identical timestamps might be shown twice if they fall over a page boundary.
 
 ``` python
 LONG_TIME_FUTURE = 4102444800 # 1st Jan 2100 ...
@@ -159,9 +159,9 @@ Pagination is simply a case of passing the `startTime` to start reading from. Th
 We don't need to store the comment multiple times for different filtering patterns. This means the code is far simpler: there is no need to synchronize changes.
 
 The biggest drawback is our use of regular expressions for filtering. Our proposed read pattern is simply to scan _all_ comments **for a given product**, up to a page size limit of `20`. If a product has a mix of comments ratings, this isn't a problem. 
-For example, filtering for comments with a `1` rating when there are `20000` rows between the first `1`-rated comment and the next, this will result in noticeable latency. Potentially the query will scan to the end of the comments for that product. This isn't a full table scan, but a _hot_ product with a lot of comments may make this model less viable. Filtering in Cloud Bigtable is not as costly as in DynamoDB as the nodes are already paid for and entire items are not read - but resources are still consumed. 
+For example, filtering for comments with a `1` rating when there are `20000` rows between the first `1`-rated comment and the next, this will result in noticeable latency. Potentially the query will scan to the end of the comments for that product. This isn't a full table scan, but a _hot_ product with a lot of comments may make this model less viable. It is envisaged that filtering in Cloud Bigtable is not as costly as in DynamoDB as the nodes are already paid for and entire items are not read - but resources are still consumed. This should be benchmarked.
 
-Our prior DynamoDB implementation was brute force. It materialized result sets for every possible filtering scenario at write-time. Therefore, it is likely to exhibit uniform behaviour, regardless of query. The trade off is less flexibility.
+Our prior DynamoDB implementation was brute force. It materialized result sets for every possible filtering scenario at write-time. Therefore, it is likely to exhibit uniform behaviour, regardless of query. The trade off is less flexibility around ease of adding additional query patterns.
 
 DynamoDB hits a sweet spot by being incredibly economical for very small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them. A single node is the smallest billing increment. Google has other, more on-demand NoSQL products such as Firebase.
 
@@ -171,6 +171,6 @@ As with data models, the best fitting technology depends on the workload and bud
 
 Both solutions are unable to support jumping to arbitrary pages, instead treating the reverse-chronological stream of comments like a tape that gets started, paused, cued and stopped. 
 
-But why are our users jumping to page `4272`? Do they want to see comments from a year ago? It is not hard to imagine how we might partition our data to efficiently implement that. This is a better user experience and less work for our database. Win, win.
+But why are our users jumping to page `4272`? Do they want to see comments from a year ago? It is not hard to imagine how we might partition our data to efficiently implement that. This is a better user experience and less work for the database. Win, win.
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fcloud-bigtable-paginated-comments%2F) _Corrections and comments are most welcome._
