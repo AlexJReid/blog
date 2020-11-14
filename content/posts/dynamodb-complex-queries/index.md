@@ -210,6 +210,8 @@ This is not a complete solution, with certain areas requiring further investigat
 
 [I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) _Corrections and comments are most welcome._
 
+In a [next post](/posts/cloud-bigtable-paginated-comments/) we look at how the same problem can be approached with [Cloud Bigtable](https://cloud.google.com/bigtable).
+
 ## Links
 
 If you found this interesting, you'll enjoy the following even more.
