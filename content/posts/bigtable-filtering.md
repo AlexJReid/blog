@@ -173,4 +173,6 @@ Both solutions are unable to support jumping to arbitrary pages, instead treatin
 
 But why are our users jumping to page `4272`? Do they want to see comments from a year ago? It is not hard to imagine how we might partition our data to efficiently implement that. This is a better user experience and less work for the database. Win, win.
 
+In the next post, I will benchmark the two solutions.
+
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fcloud-bigtable-paginated-comments%2F) _Corrections and comments are most welcome._
