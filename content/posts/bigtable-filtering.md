@@ -74,7 +74,7 @@ Filter rows with `.*/.*/en/(1|2|5)` to show English comments of a `1`, `2` or `5
 
 Read 21 rows from `PRODUCT#42/` to `PRODUCT#42/~`. Store the `reverse_sort_key` value from row `20`. Only return `rows[0:19]` rows to the client.
 
-To fetch the next page, repeat the process by reading from `PRODUCT#42/<reverse_sort_key>/~/~`.
+To fetch the next page, repeat the process by reading from `PRODUCT#42/<reverse_sort_key>/~`.
 
 If it is anticipated that more than one comment per second can be received for a product, the timestamp resolution could be increased to include miliseconds. Alternatively, a random three or four digit number could be appended. This is not to ensure uniqueness as the comment ID is the final key element. This is to workaround a scenario where comments with the same timestamp might be shown twice if they fall over a page boundary.
 
