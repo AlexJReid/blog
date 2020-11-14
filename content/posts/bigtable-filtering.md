@@ -60,7 +60,7 @@ We can now implement the queries needed for our comments application. The only t
 
 #### Show comments for a product in reverse order, i.e. most recent first, regardless of filter
 
-Read rows from `PRODUCT#42` to `PRODUCT#42/~`. This is the base query used by all other examples. A `KeyRegexFilter` is applied to further restrict the returned results, based on their key.
+Read rows from `PRODUCT#42` to `PRODUCT#42/~`. This is the base query used by all other examples. A `RowKeyFilter` is applied to further restrict the returned results, based on their key.
 
 #### Show comments in the user's local language, but let them see comments in all languages
 
