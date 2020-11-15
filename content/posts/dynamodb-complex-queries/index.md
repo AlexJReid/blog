@@ -2,7 +2,7 @@
 draft = false
 date = 2020-11-09T17:54:11Z
 title = "Efficient filtering with DynamoDB"
-description = "An exploration of using data duplication to implement an efficient product comments system on DynamoDB."
+description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
 tags = ['aws','dynamodb','data']
 categories = []

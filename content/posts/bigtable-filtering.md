@@ -1,7 +1,7 @@
 +++
 draft = false
 date = 2020-11-14T15:37:10Z
-title = "A paginated and filterable comments data model for Cloud Bigtable"
+title = "Building a paginated and filterable comments data model for Cloud Bigtable"
 description = "An approach for building a paginated and filterable comments data model for Cloud Bigtable."
 slug = "cloud-bigtable-paginated-comments"
 tags = ["data","gcp","bigtable","dynamodb"]
