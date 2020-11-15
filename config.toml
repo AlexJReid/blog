@@ -16,6 +16,8 @@ enableRobotsTXT = true
 
 googleAnalytics = "UA-156939108-1"
 
+enableGitInfo = true
+
 [params]
     author = "Alex Reid"
     info = "thoughts on software engineering, clouds and data"
@@ -25,11 +27,9 @@ googleAnalytics = "UA-156939108-1"
 
     favicon_32 = "/img/favicon-32x32.png"
     favicon_16 = "/img/favicon-16x16.png"
-
-    footercontent = ""
-
+    
     hidecredits = false
-    hidecopyright = true
+    hidecopyright = false
 
     rtl = false
 
