@@ -16,7 +16,7 @@ enableRobotsTXT = true
 
 googleAnalytics = "UA-156939108-1"
 
-enableGitInfo = true
+enableGitInfo = false
 
 [params]
     author = "Alex Reid"
