@@ -1,12 +1,10 @@
-/* global */
-
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    margin: 0 20px;
+    font-family: "Arvo", "Helvetica Neue", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans", sans-serif;
+    margin: 0 2rem;
 }
 
 article {
-    max-width: 800px;
+    max-width: 720px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -14,6 +12,10 @@ article {
 a {
     color: #000;
     text-decoration: none;
+}
+
+h2 {
+    padding-top: 1rem;
 }
 
 a:hover {
@@ -24,9 +26,7 @@ a:hover {
     margin: 50px 0;
 }
 
-
 /* overwrite github-markdown */
-
 .markdown-body {
     font-size: 18px;
 }
@@ -36,7 +36,6 @@ a:hover {
 }
 
 /* header */
-
 .site-title {
     font-size: 3rem;
     margin-top: 32px;
@@ -48,6 +47,7 @@ a:hover {
 
 .signatures {
     font-family: "Arvo", sans-serif;
+    font-weight: 600;
 }
 
 .signatures a {
@@ -113,17 +113,6 @@ a:hover {
 
 /* post */
 
-@media screen and (max-width: 600px) {
-    .site-header {
-        display: none;
-    }
-    .post-content {
-        padding: 0 12px;
-    }
-    .post-content p {
-        letter-spacing: 0.05em;
-    }
-}
 
 @media screen and (max-width: 48em) {
     .posts-category {
@@ -136,11 +125,11 @@ a:hover {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 12px;
+    margin-top: 14px;
 }
 
 .post-header {
-    margin-bottom: 50px;
+    margin-bottom: 55px;
 }
 
 .post-title {
@@ -181,24 +170,12 @@ a:hover {
     margin-bottom: 1em;
 }
 
-.releated-content {
-    padding: 0 10px;
-    margin-bottom: 50px;
-}
-
-.releated-content li {
-    margin: 5px 0;
-}
-
 /* taxonomy */
-
 .taxonomy-term {
     font-size: 3rem;
 }
 
-
 /* gallery */
-
 .gallery-img {
     text-align: center;
 }
