@@ -1,6 +1,6 @@
 baseurl = ""
-title = "alexjreid.dev"
-theme = "hugo-coder"
+title = "Alex Reid"
+theme = "yinyang"
 languagecode = "en"
 defaultcontentlanguage = "en"
 
@@ -16,51 +16,21 @@ enableRobotsTXT = true
 
 googleAnalytics = "UA-156939108-1"
 
-enableGitInfo = false
-
 [params]
+    headTitle = "Alex Reid"
     author = "Alex Reid"
+    title = "Alex Reid"
     info = "thoughts on software engineering, clouds and data"
-    description = "Alex Reid"
+    description = "Alex Reid developer"
     keywords = "blog,developer,data,gcp,aws,java,UK,Newcastle-upon-Tyne"
-    #avatarurl = "images/alexjreid.jpg"
+    mainSections = ["posts"]
 
-    favicon_32 = "/img/favicon-32x32.png"
-    favicon_16 = "/img/favicon-16x16.png"
-    
-    hidecredits = false
-    hidecopyright = false
-
-    rtl = false
-
-    math = true
-    custom_css = ["css/custom.css"]
-
-# Social links
-[[params.social]]
-    name = "Twitter"
-    icon = "fab fa-twitter fa-2x"
-    weight = 1
-    url = "https://twitter.com/alexjreid"
-[[params.social]]
-    name = "LinkedIn"
-    icon = "fab fa-linkedin fa-2x"
-    weight = 2
-    url = "https://www.linkedin.com/in/alexjreid/"
-[[params.social]]
-    name = "Github"
-    icon = "fab fa-github fa-2x"
-    weight = 3
-    url = "https://github.com/alexjreid"
-[[params.social]]
-    name = "RSS"
-    icon = "fas fa-rss"
-    weight = 4
-    url = "https://mybranch.dev/index.xml"
-    rel = "alternate"
-    type = "application/rss+xml"
-
-[[menu.main]]
-    name = "Posts"
-    weight = 1
-    url  = "/posts/"
+[[params.socials]]
+name = "Twitter"
+link = "https://twitter.com/alexjreid"
+[[params.socials]]
+name = "GitHub"
+link = "https://github.com/alexjreid"
+[[params.socials]]
+name = "LinkedIn"
+link = "https://www.linkedin.com/in/alexjreid/"
