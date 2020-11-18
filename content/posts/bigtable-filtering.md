@@ -1,8 +1,8 @@
 +++
 draft = false
 date = 2020-11-14T15:37:10Z
-title = "Building a paginated and filterable comments data model for Cloud Bigtable"
-description = "An approach for building a paginated and filterable comments data model for Cloud Bigtable."
+title = "Efficient NoSQL filtering and pagination - part 2: Cloud Bigtable"
+description = "Building a paginated and filterable comments data model with Cloud Bigtable."
 slug = "cloud-bigtable-paginated-comments"
 tags = ["data","gcp","bigtable","dynamodb"]
 categories = []
@@ -10,22 +10,50 @@ externalLink = ""
 series = []
 +++
 
-In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model for DynamoDB was shown.
+In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model for DynamoDB was discussed. This was not a perfect solution as the number of items stored would increase dramatically if the queries got even slightly more complicated.
 
-This post explores how we might solve the same problem using [Cloud Bigtable](https://cloud.google.com/bigtable). This is a simple comparison and is not meant to pitch DynamoDB against Cloud Bigtable as both are incredible pieces of engineering. Between them, I wager they power a good proportion of the sites and services we use on a daily basis.
+It could be argued that this is acceptable if the patterns will never change. Storing ~32x the number of records might be an acceptable trade off. However, if it is not, it might be time to go back to the drawing board.
 
-There are several differences between DynamoDB and Bigtable, but most of note are:
+This post explores how we could solve the same problem we previously solved with DynamoDB using [Cloud Bigtable](https://cloud.google.com/bigtable). We will see some similarities and contrasts. You might wonder why another NoSQL technology is being introduced when we have only just started out with DynamoDB. It is my belief that a lot of the _thinking_ that goes into a NoSQL design is fairly portable. Whether it be DynamoDB, Cloud Bigtable, Cassandra and HBase... maybe even Redis, the thought process is the same.
+
+Some technologies have features others don't, whereas some have very few visible features other than high, predictable levels of performance that will scale in a linear fashion as more nodes are added. This is Bigtable.
+
+Bigtable does less than DynamoDB. On the surface it is a very minimal and simple store: a huge sorted dictionary. Despite this simple interface, its performance and ability to scale, when used correctly, is made possible by some incredibly clever engineering.
+
+But to us mere mortals who simply want to use it, there are several differences from DynamoDB. Most of note are:
 
 - no sort keys, the only index is a single, lexicographically-ordered row key
 - no automatically created secondary indexes
 - no triggers to fan out the creation of duplicate records
 - pay per node rather than capacity units
 
-This will influence our design.
+This will influence our design for how we must store the data and query it.
 
-## Recap
+## Possible solutions
 
-In the previous post, a paginated and filtered set of comments required the following query patterns.
+### Power sets
+We could port the DynamoDB solution from the previous post to Bigtable. As Bigtable has no sort key in which to store the creation date, it would get promoted to be part of the row key. Although simple to implement, it will have the same drawbacks as the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule.
+
+### Regular expression row filter
+Instead of loading in millions of duplicates, we could use Bigtable's `RowFilter` support, coupled with a start and end key. By providing a start and end key, Bigtable will only scan the relevant products, in reverse time order. If the key also contains a language, only those rows will be scanned. When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
+
+We filter rows out through the evaluation of a regular expression, generated for the submitted query. In a sense this is similar to a DynamoDB filter - the database is reading the row (neither are columnar) and only sending results that pass the filter back to the client program. The big difference with Bigtable is the fact that nodes are a _sunk cost_ we reading tens of thousands of rows does not matter. Of course, this inefficiency will catch up with us as volume increases. Resources are not infinite and the shape of the data will make query performance less predictable. **This post will explore this approach in more detail.**
+
+### Index and multi get
+The most promising, but more complex approach is to insert _index_ rows into another table. These provide pointers back to rows in the comment table. The query algorithm is not rocket science but has a few steps:
+
+- Parallel scan the index table for each requested rating, i.e. `1, 2, 4` up to the number of comments per page such as `20`
+- Collect the results in the client and order by their sort key, in memory (this is only `60` rows)
+- Extract the row key for the `topN` rows
+- Perform a multi get operation to fetch the candidate rows by their key
+- Order again on sort key, return
+
+The reason for having to order the results is because both parallel operations will yield their results out of order. This is not a costly operation. There is also a small amount of waste as we are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small pointers, this is likely to be acceptable.
+
+This solution will be demonstrated in the next post. 
+
+## Query patterns
+To recap, these are are query patterns.
 
 - **QP1**: show comments in reverse order, i.e. most recent first, regardless of filter
 - **QP2**: show comments in the user's local language, but let them see comments in all languages
@@ -35,9 +63,9 @@ In the previous post, a paginated and filtered set of comments required the foll
 - **QP6**: show the most recent positive English comment for product 42
 - **QP7**: delete comment by id
 
-## Row key design
+### Row key design
 
-As Bigtable has no secondary indexes, the creation time needs to be embedded into the row key so that we can show newest comments first. As we need to filter on `language` and a set of selected `rating`s, these also need to be included.
+As Bigtable has no secondary indexes, the creation time `sort key` needs to be embedded into the row key so that we can show newest comments first. As we need to filter on `language` and a set of selected `rating`s, these also need to be included.
 
 Bigtable does not support reverse scans and to meet `QP1` we need to show the most recent comments first. A trick to achieve this is to subtract the actual timestamp from a timestamp 100 years (or more) into the future.
 
@@ -98,7 +126,7 @@ Look up the _product_ row key by first looking up the _comment_ row key, as deta
 
 #### Compose start and end key
 
-``` go
+``` golang
 // Compose key and row filter, based on parameters
 baseKey := fmt.Sprintf("PRODUCT#%s", productID)
 // Scan to end for this PRODUCT#id
@@ -152,7 +180,7 @@ err := tbl.ReadRows(ctx, bigtable.NewRange(startKey, endKey), func(row bigtable.
 
 ## Discussion
 
-The pattern here is simple. We exploit the fact that Cloud Bigtable orders rows by key. Comments for the same product are stored near each other. This makes ordered scanning for pages of comments simple to achieve.
+The solution presented here is simple. We exploit the fact that Cloud Bigtable orders rows by key. Comments for the same product are stored near each other. This makes ordered scanning for pages of comments simple to achieve.
 
 Pagination is simply a case of passing the `startTime` to start reading from. This is very efficient - performance will not degrade when paginating through earlier rows as scanning begins at the explicitly set start key.
 
@@ -171,8 +199,6 @@ As with data models, the best fitting technology depends on the workload and bud
 
 Both solutions are unable to support jumping to arbitrary pages, instead treating the reverse-chronological stream of comments like a tape that gets started, paused, cued and stopped. 
 
-But why are our users jumping to page `4272`? Do they want to see comments from a year ago? It is not hard to imagine how we might partition our data to efficiently implement that. This is a better user experience and less work for the database. Win, win.
+The next post will explore the final approach - parallel scanning a separate index and gathering the results. [I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) 
 
-In the next post, I will benchmark the two solutions.
-
-[Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fcloud-bigtable-paginated-comments%2F) _Corrections and comments are most welcome._
+_Corrections and comments are most welcome._

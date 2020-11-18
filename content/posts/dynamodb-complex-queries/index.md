@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2020-11-09T17:54:11Z
-title = "Efficient filtering with DynamoDB"
+title = "Efficient NoSQL filtering and pagination - part 1: DynamoDB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
 tags = ['aws','dynamodb','data']
@@ -208,7 +208,9 @@ We should not be afraid of duplicating data to make our service work efficiently
 
 This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how powerful DynamoDB can be.
 
-[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) _Corrections and comments are most welcome._
+[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) 
+
+_Corrections and comments are most welcome._
 
 In a [next post](/posts/cloud-bigtable-paginated-comments/) we look at how the same problem can be approached with [Cloud Bigtable](https://cloud.google.com/bigtable).
 
