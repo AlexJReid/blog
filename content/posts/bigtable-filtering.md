@@ -24,6 +24,7 @@ But to us mere mortals who simply want to use it, there are several differences 
 
 - no sort keys, the only index is a single, lexicographically-ordered row key
 - no automatically created secondary indexes
+- no reverse scans
 - no triggers to fan out the creation of duplicate records
 - pay per node rather than capacity units
 
@@ -35,12 +36,12 @@ This will influence our design for how we must store the data and query it.
 We could port the DynamoDB solution from the previous post to Bigtable. As Bigtable has no sort key in which to store the creation date, it would get promoted to be part of the row key. Although simple to implement, it will have the same drawbacks as the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule.
 
 ### Regular expression row filter
-Instead of loading in millions of duplicates, we could use Bigtable's `RowFilter`, coupled with a start and end key. By providing a start and end key, Bigtable will only scan the relevant products, in reverse time order. If the key also contains a language, only those rows will be scanned. When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
+Instead of loading in millions of duplicates, we could use Bigtable's `RowFilter`, coupled with a start and end key. By providing a start and end key, Bigtable will only scan the relevant products, in key order. If the key also contains the language, only those rows will be scanned. When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
 
-We filter rows out through the evaluation of a regular expression, generated for the submitted query. In a sense this is similar to a DynamoDB filter - the database is reading the row (neither are columnar) and only sending results that pass the filter back to the client program. The big difference with Bigtable is the fact that nodes are a _sunk cost_ we reading tens of thousands of rows does not matter. Of course, this inefficiency will catch up with us as volume increases. Resources are not infinite and the shape of the data will make query performance less predictable. **This post will explore this approach in more detail.**
+We filter rows out through the evaluation of a regular expression, generated for the submitted query. In a sense this is similar to a DynamoDB filter - the database is reading the row (neither are columnar) and only sending results that pass the filter back to the client program. The big difference with Bigtable is the fact that nodes are a _sunk cost_, reading tens of thousands of rows does not matter. Of course, this inefficiency will catch up with us as volume increases. Resources are not infinite and the data will make query performance less predictable. **This post will explore this approach in more detail.**
 
 ### Index and multi get
-The most promising, but more complex approach is to insert _index_ rows into another table. These provide pointers back to rows in the comment table. The query algorithm is not rocket science but has a few steps:
+The most promising, but more complex approach is to insert _index_ rows into another table. These provide pointers back to rows in the comment table. The query algorithm is a not rocket science but has a few steps:
 
 - Parallel scan the index table for each requested rating, i.e. `1, 2, 4` up to the number of comments per page such as `20`
 - Collect the results in the client and order by their sort key, in memory (this is only `60` rows)
@@ -48,7 +49,7 @@ The most promising, but more complex approach is to insert _index_ rows into ano
 - Perform a multi get operation to fetch the candidate rows by their key
 - Order again on sort key, return
 
-The reason for having to order the results is because both parallel operations will yield their results out of order. This is not a costly operation. There is also a small amount of waste as we are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small pointers, this is likely to be acceptable.
+The parallel aspects require the client program to make concurrent requests in multiple threads, goroutines, promises, etc. The reason for having to order the results is because both parallel operations will yield their results out of order. This is not a costly operation. There is also a small amount of waste as we are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small pointers, this is likely to be acceptable.
 
 This solution will be demonstrated in the next post. 
 
