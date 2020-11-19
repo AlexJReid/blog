@@ -20,7 +20,7 @@ In many cases, this is the right approach. However, Elasticsearch, even when man
 
 ## Example scenario: a product comments system
 
-Suppose we want to model the comments section on a product page within an e-commerce site. Each product has a set of comments, shown in reverse date order. 
+Suppose we want to model the comments section on a product page within an e-commerce site. Each product has a set of comments, shown in reverse date order.
 
 Our query patterns are as follows:
 
@@ -32,7 +32,7 @@ Our query patterns are as follows:
 - **QP6**: show the most recent positive English comment for product 42
 - **QP7**: delete comment by id
 
-## What's wrong with DynamoDB filters?
+## What's wrong with DynamoDB filters
 
 DynamoDB allows us to filter query results before they are returned to our client program. It is possible to filter on any non-key attribute, which sounds liberating at first. However, if a large amount of data is filtered out, we will still consume resources, time and money in order to find the needle in the haystack. This is particularly costly if each item size runs into kilobytes.
 
@@ -40,13 +40,13 @@ Filters do have utility at ensuring data is within bounds (such as enforcing TTL
 
 ## Table design
 
-#### Table
+### Table
 
 The below table contains two comments for product `42`. Note that there are duplicate items for each comment.
 
 ![Table view](comments.png)
 
-#### GSI
+### GSI
 
 The global secondary index `gsi` will be used to answer the majority of the queries. Both comments exist under `PRODUCT#42/~/~` (any language, any rating) and `PRODUCT#42/en/~` (English, any rating). `PRODUCT#42/en/5` and `PRODUCT#42/en/3` contain only one comment each, as the two comments in the table are rated `5` and `3`.
 
@@ -73,13 +73,13 @@ Here are some examples:
 
 It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a URI such as `/product/42/comments/en/1.2.3` or `/product/42/comments/~/1.2.3`.
 
-## What duplicates do we need?
+## What duplicates do we need
 
 We assume this application will be write light and read heavy, so it is acceptable to store the same comment multiple times in order to provide inexpensive querying.
 
 As per `QP2`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
 
-`QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`. 
+`QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`.
 
 Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialised to an ordered, `.`-delimited string such as `1.2.3.4.5`.
 
@@ -96,7 +96,7 @@ Combinations are represented as you'd expect.
 - `10001` = Rating 1 and 5
 - `11111` = All ratings
 
-```
+```python
 >>> rating_1 = 0b00001
 >>> rating_5 = 0b10000
 >>> bin(rating_5 | rating_1)
@@ -115,66 +115,64 @@ It might seem premature, but shaving bytes off repeated keys and attribute names
 
 We should now be able to satisfy all of our query patterns. All queries should have `ScanIndexForward` set to `false` to retrieve the most recent comments first. This is because the `gsi` uses `cd` as its sort key, and the creation dates sort lexicographically.
 
-#### Show comments in reverse order, i.e. most recent first, regardless of filter
+### Show comments in reverse order, i.e. most recent first, regardless of filter
 
 - Query on `gsi`
+  - SK = `PRODUCT#42/~/~`
+
+### Show comments in the user's local language, but let them see comments in all languages
+
+- Local language:
+  - Query on `gsi`
+    - SK = `PRODUCT#42/en/~`
+- All languages
+  - Query on `gsi`
     - SK = `PRODUCT#42/~/~`
 
-
-#### Show comments in the user's local language, but let them see comments in all languages
-
-- Local language: 
-    - Query on `gsi`
-        - SK = `PRODUCT#42/en/~`
-- All languages
-    - Query on `gsi`
-        - SK = `PRODUCT#42/~/~`
-
-#### Show comments with any combination of ratings
+### Show comments with any combination of ratings
 
 - Rating 1
-    - Query on `gsi`
-        - SK = `PRODUCT#42/en/1`
+  - Query on `gsi`
+    - SK = `PRODUCT#42/en/1`
 - Rating 1 or 5
-    - Query on `gsi`
-        - SK = `PRODUCT#42/en/1.5`
+  - Query on `gsi`
+    - SK = `PRODUCT#42/en/1.5`
 - Rating 2, 3 or 4
-    - Query on `gsi`
-        - SK = `PRODUCT#42/en/2.3.4`
+  - Query on `gsi`
+    - SK = `PRODUCT#42/en/2.3.4`
 - Rating 5, all languages
-    - Query on `gsi`
-        - SK = `PRODUCT#42/~/5`
+  - Query on `gsi`
+    - SK = `PRODUCT#42/~/5`
 
-#### Show 20 comments per page
+### Show 20 comments per page
 
 - Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requested.
 
-#### Show a comment directly through its identifier
+### Show a comment directly through its identifier
 
 - Show comment `100001`
-    - Query on table
-        - PK = `COMMENT#100001`
-        - Limit = 1
-
-#### Show the most recent positive English comment for product 42
-
-- Query on `gsi`
-    - SK = `PRODUCT#42/en/4.5`
+  - Query on table
+    - PK = `COMMENT#100001`
     - Limit = 1
 
-#### Delete comment 100001
+### Show the most recent positive English comment for product 42
+
+- Query on `gsi`
+  - SK = `PRODUCT#42/en/4.5`
+  - Limit = 1
+
+### Delete comment 100001
 
 - Query on `table`
-    - PK = `COMMENT#100001`
+  - PK = `COMMENT#100001`
 
 Delete each value for PK/SK returned in a batch.
-
 
 ## Building the table
 
 As we've seen, this approach works by duplicating items with different keys.
 
-Triggers are a great way to automate the creation of these duplicated items. A DynamoDB stream should be setup on the table and connected to a Lambda function. 
+Triggers are a great way to automate the creation of these duplicated items. A DynamoDB stream should be setup on the table and connected to a Lambda function.
 
 When a comment is created, the wildcard  `sk` should be used, i.e. `PRODUCT#42/~/~`. We will call this the _primary item_.
 
@@ -188,7 +186,7 @@ Creation of the duplicate items could partially fail. Although the Lambda will r
 
 There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
 
-```
+```python
 2 ** 5 = 32
 2 ** 6 = 64
 2 ** 7 = 128
@@ -200,15 +198,15 @@ As the number of duplicates increases, so does the number of operations and ther
 
 ## Summary
 
-It is expected that this system will perform well, support lots of traffic and be very economical to run. 
+It is expected that this system will perform well, support lots of traffic and be very economical to run.
 
-Despite the identified caveats, we've successfully built a filtering solution without needing to use the post-query filters provided by DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding compute, write and on-going storage costs. 
+Despite the identified caveats, we've successfully built a filtering solution without needing to use the post-query filters provided by DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding compute, write and on-going storage costs.
 
 We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
 
 This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how powerful DynamoDB can be.
 
-[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid) 
+[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid)
 
 _Corrections and comments are most welcome._
 
