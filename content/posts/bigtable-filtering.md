@@ -18,7 +18,7 @@ This post explores how we could solve the same problem we previously solved with
 
 Some technologies have features others don't, whereas some have very few visible features.
 
-Bigtable, at first glance, does less than DynamoDB. On the surface it is a huge sorted dictionary consisting of rows, addressable by a key, and columns which can store multiple revisions of a value. Despite this simple interface, its performance and ability to scale linearly, hints at some very advanced engineering, which might go some way to justifying its rather high price. (More on that later.)
+Bigtable, at first glance, does less than DynamoDB. On the surface it is a huge sorted dictionary consisting of rows that contain any number of cells. Despite this simple interface, it is proven to support massive workloads.
 
 There are several differences from DynamoDB. Most of note are:
 
@@ -135,7 +135,7 @@ reversed_timestamp_key = str(LONG_TIME_FUTURE - created_ts) + str(random.randint
 
 ### Show a comment directly through its identifier
 
-This is where our scanning/filtering model gives us a little more work to do. We have only really thought about ordered sets of products. Finding a comment by its identifier (or comments written by a given user) would be inefficient with the current model.
+So far we have only thought about ordered sets of products. Finding a comment by its identifier (or comments written by a given user) would be inefficient with the current model.
 
 A simple solution is to write the row again, with a row key beginning with the comment identifier, such as `COMMENT#1`. A column within that row should hold the `PRODUCT#42/...` row key.
 
