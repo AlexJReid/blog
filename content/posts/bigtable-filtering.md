@@ -12,13 +12,13 @@ series = []
 
 In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model for DynamoDB was discussed. This was not a perfect solution as the number of items stored would increase dramatically if the queries got even slightly more complicated.
 
-It could be argued that this is acceptable if the patterns will never change. Storing ~32x the number of records might be an acceptable trade off. However, if it is not, it might be time to go back to the drawing board.
+It could be argued that this is acceptable if the query patterns will never change. Storing ~32x the number of rows might be an acceptable trade off. However, if it is not, it is time to go back to the drawing board.
 
 This post explores how we could solve the same problem we previously solved with DynamoDB using [Cloud Bigtable](https://cloud.google.com/bigtable). We will see some similarities and contrasts. You might wonder why another NoSQL technology is being introduced when we have only just started out with DynamoDB. It is my belief that a lot of the _thinking_ that goes into a NoSQL design is fairly portable. Whether it be DynamoDB, Cloud Bigtable, Cassandra and HBase... maybe even Redis, the thought process is the same.
 
-Some technologies have features others don't, whereas some have very few visible features other than high, predictable levels of performance that will scale in a linear fashion as more nodes are added. This is Bigtable.
+Some technologies have features others don't, whereas some have very few visible features other than high, predictable levels of performance that will scale in a linear fashion as more nodes are added. Cloud Bigtable falls into this category.
 
-Bigtable does less than DynamoDB. On the surface it is a very minimal and simple store: a huge sorted dictionary. Despite this simple interface, its performance and ability to scale, when used correctly, is made possible by some incredibly clever engineering.
+Bigtable does less than DynamoDB. On the surface it is a huge sorted dictionary. Despite this simple interface, its performance and ability to scale, when used correctly, is made possible by some incredibly clever engineering.
 
 But to us mere mortals who simply want to use it, there are several differences from DynamoDB. Most of note are:
 
@@ -35,7 +35,7 @@ This will influence our design for how we must store the data and query it.
 We could port the DynamoDB solution from the previous post to Bigtable. As Bigtable has no sort key in which to store the creation date, it would get promoted to be part of the row key. Although simple to implement, it will have the same drawbacks as the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule.
 
 ### Regular expression row filter
-Instead of loading in millions of duplicates, we could use Bigtable's `RowFilter` support, coupled with a start and end key. By providing a start and end key, Bigtable will only scan the relevant products, in reverse time order. If the key also contains a language, only those rows will be scanned. When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
+Instead of loading in millions of duplicates, we could use Bigtable's `RowFilter`, coupled with a start and end key. By providing a start and end key, Bigtable will only scan the relevant products, in reverse time order. If the key also contains a language, only those rows will be scanned. When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
 
 We filter rows out through the evaluation of a regular expression, generated for the submitted query. In a sense this is similar to a DynamoDB filter - the database is reading the row (neither are columnar) and only sending results that pass the filter back to the client program. The big difference with Bigtable is the fact that nodes are a _sunk cost_ we reading tens of thousands of rows does not matter. Of course, this inefficiency will catch up with us as volume increases. Resources are not infinite and the shape of the data will make query performance less predictable. **This post will explore this approach in more detail.**
 
