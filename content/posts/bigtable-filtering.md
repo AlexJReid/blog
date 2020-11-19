@@ -38,9 +38,11 @@ We could port the DynamoDB solution from the previous post to Bigtable. As Bigta
 
 ### Regular expression row filter
 
-Instead of loading in millions of duplicates, we could use Bigtable's `RowFilter`, coupled with a start and end key. By providing a start and end key, Bigtable will only scan the relevant products, in order. This effectively partitions our data set so that we only scan comments for a given product. If the key also contains the language, only those rows will be scanned. (This style of hierarchical key is often used in DynamoDB as a sort key.) When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
+Instead of loading in millions of duplicates, we can use row filers. By providing a start and end key, Bigtable will only scan the relevant products, in order. This effectively partitions our data set so that we only scan comments for a given product. If the key also contains the language, only those rows will be scanned. When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan.
 
-Rows filtered out through the evaluation of a regular expression, generated for the submitted query. In a sense this is similar to a DynamoDB filter: the database is reading the whole row (neither are columnar) and only sending results that pass the filter back to the client program. The big difference with Bigtable is the fact that nodes are a _sunk cost_, reading tens of thousands of rows does not matter. Of course, this inefficiency will catch up with us as volume increases. Node resources are not infinite and the data will make query performance less predictable. **This post will explore this approach in more detail.**
+Rows are filtered out through the evaluation of a regular expression against the row key. In a sense this is similar to a DynamoDB filter: the database is reading the whole row and only sending results that pass the filter back to the client program. 
+
+The big difference with Bigtable is the fact that nodes are a _sunk cost_, reading tens of thousands of rows does not matter. Of course, this inefficiency will catch up with us as volume increases. Node resources are not infinite and the data will make query performance less predictable. **This post will explore this approach in more detail.**
 
 ### Index and multi get
 
@@ -81,7 +83,7 @@ To recap, these are are query patterns.
 
 ### Row key design
 
-As Bigtable has no secondary indexes, the creation time `sort key` needs to be embedded into the row key so that we can show newest comments first. As we need to filter on `language` and a set of selected `rating`s, these also need to be included.
+As Bigtable has no secondary indexes, the creation time `sort key` needs to be embedded into the row key so that we can show newest comments first. As we need to filter on `language` and a set of selected `rating`s, these also need to be included in the key.
 
 Bigtable does not support reverse scans and to meet `QP1` we need to show the most recent comments first. A trick to achieve this is to subtract the actual timestamp from a timestamp 100 years (or more) into the future.
 
@@ -107,7 +109,7 @@ We can now implement the queries needed for our comments application. The only t
 
 Read rows from `PRODUCT#42/` to `PRODUCT#42/~`. A `RowKeyFilter` is applied to further restrict the returned results, based on their key.
 
-We are potentially going to scan all reviews for this product, resting on the filter. By including the sort key as the second element of the key we have enabled the _all_ reviews query with a prefix scan. If we shifted the sort key to after the `language` and `rating` elements, we break the _all_ query, but can now efficiently get comments in order for a given `language` and `rating`. A definite trade-off. In a real system, we would optimise for the most common query.
+We are potentially going to scan all reviews for this product until the page size is reached. By including the sort key as the second element of the key we have enabled the _all_ reviews query with a prefix scan. If we shifted the sort key to after the `language` and `rating` elements, we break the _all_ query, but can now efficiently get comments in order for a given `language` and `rating`.
 
 ### Show comments in the user's local language, but let them see comments in all languages
 
