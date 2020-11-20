@@ -1,0 +1,397 @@
+{
+  "ModelName": "Product Comments",
+  "ModelMetadata": {
+    "Author": "Alex Reid",
+    "DateCreated": "Nov 10, 2020, 04:27 PM",
+    "DateLastModified": "Nov 20, 2020, 11:45 PM",
+    "Description": "Model described in https://alexjreid.dev/posts/dynamodb-efficient-filtering/ series of blog posts. Comments and corrections are welcome.",
+    "AWSService": "Amazon DynamoDB",
+    "Version": "2.0"
+  },
+  "DataModel": [
+    {
+      "TableName": "comments",
+      "KeyAttributes": {
+        "PartitionKey": {
+          "AttributeName": "pk",
+          "AttributeType": "S"
+        },
+        "SortKey": {
+          "AttributeName": "sk",
+          "AttributeType": "S"
+        }
+      },
+      "NonKeyAttributes": [
+        {
+          "AttributeName": "cd",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "language",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "rating",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "comment",
+          "AttributeType": "M"
+        }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "gsi",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "sk",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "cd",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "TableData": [
+        {
+          "pk": {
+            "S": "COMMENT#100001"
+          },
+          "sk": {
+            "S": "PRODUCT#42/~/~"
+          },
+          "cd": {
+            "S": "2020-11-10T16:31:30"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "5"
+          }
+        },
+        {
+          "pk": {
+            "S": "COMMENT#100001"
+          },
+          "sk": {
+            "S": "PRODUCT#42/en/~"
+          },
+          "cd": {
+            "S": "2020-11-10T16:31:30"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "5"
+          }
+        },
+        {
+          "pk": {
+            "S": "COMMENT#100001"
+          },
+          "sk": {
+            "S": "PRODUCT#42/en/5"
+          },
+          "cd": {
+            "S": "2020-11-10T16:31:30"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "5"
+          }
+        },
+        {
+          "pk": {
+            "S": "COMMENT#100002"
+          },
+          "sk": {
+            "S": "PRODUCT#42/~/~"
+          },
+          "cd": {
+            "S": "2020-11-10T16:37:30"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "3"
+          }
+        },
+        {
+          "pk": {
+            "S": "COMMENT#100002"
+          },
+          "sk": {
+            "S": "PRODUCT#42/en/~"
+          },
+          "cd": {
+            "S": "2020-11-10T16:37:30"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "3"
+          }
+        },
+        {
+          "pk": {
+            "S": "COMMENT#100002"
+          },
+          "sk": {
+            "S": "PRODUCT#42/en/3"
+          },
+          "cd": {
+            "S": "2020-11-10T16:37:30"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "3"
+          }
+        }
+      ],
+      "DataAccess": {
+        "MySql": {}
+      }
+    },
+    {
+      "TableName": "comments2",
+      "KeyAttributes": {
+        "PartitionKey": {
+          "AttributeName": "PK",
+          "AttributeType": "S"
+        },
+        "SortKey": {
+          "AttributeName": "SK",
+          "AttributeType": "S"
+        }
+      },
+      "NonKeyAttributes": [
+        {
+          "AttributeName": "GSIPK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSISK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI2PK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI3PK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSIPK4",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "language",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "rating",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "data",
+          "AttributeType": "S"
+        }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "byLangAndRating",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSIPK",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSISK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "INCLUDE",
+            "NonKeyAttributes": [
+              "language",
+              "rating",
+              "data",
+              "PK"
+            ]
+          }
+        },
+        {
+          "IndexName": "byLang",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSI2PK",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSISK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "INCLUDE",
+            "NonKeyAttributes": [
+              "language",
+              "rating",
+              "data",
+              "PK"
+            ]
+          }
+        },
+        {
+          "IndexName": "byRating",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSI3PK",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSISK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "INCLUDE",
+            "NonKeyAttributes": [
+              "language",
+              "rating",
+              "data"
+            ]
+          }
+        },
+        {
+          "IndexName": "all",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSIPK4",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSISK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "INCLUDE",
+            "NonKeyAttributes": [
+              "language",
+              "rating",
+              "data",
+              "PK"
+            ]
+          }
+        }
+      ],
+      "TableData": [
+        {
+          "PK": {
+            "S": "COMMENT#1"
+          },
+          "SK": {
+            "S": "COMMENT#1"
+          },
+          "GSIPK": {
+            "S": "PRODUCT#42/en/5"
+          },
+          "GSISK": {
+            "S": "2020-11-20 12:00"
+          },
+          "GSI2PK": {
+            "S": "PRODUCT#42/en"
+          },
+          "GSI3PK": {
+            "S": "PRODUCT#42/5"
+          },
+          "GSIPK4": {
+            "S": "PRODUCT#42"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "5"
+          }
+        },
+        {
+          "PK": {
+            "S": "COMMENT#2"
+          },
+          "SK": {
+            "S": "COMMENT#2"
+          },
+          "GSIPK": {
+            "S": "PRODUCT#42/en/5"
+          },
+          "GSISK": {
+            "S": "2020-11-20 12:01"
+          },
+          "GSI2PK": {
+            "S": "PRODUCT#42/en"
+          },
+          "GSI3PK": {
+            "S": "PRODUCT#42/5"
+          },
+          "GSIPK4": {
+            "S": "PRODUCT#42"
+          },
+          "language": {
+            "S": "en"
+          },
+          "rating": {
+            "S": "5"
+          }
+        },
+        {
+          "PK": {
+            "S": "COMMENT#3"
+          },
+          "SK": {
+            "S": "COMMENT#3"
+          },
+          "GSIPK": {
+            "S": "PRODUCT#42/fr/3"
+          },
+          "GSISK": {
+            "S": "2020-11-20 12:02"
+          },
+          "GSI2PK": {
+            "S": "PRODUCT#42/fr"
+          },
+          "GSI3PK": {
+            "S": "PRODUCT#42/3"
+          },
+          "GSIPK4": {
+            "S": "PRODUCT#42"
+          },
+          "language": {
+            "S": "fr"
+          },
+          "rating": {
+            "S": "3"
+          }
+        }
+      ],
+      "DataAccess": {
+        "MySql": {}
+      }
+    }
+  ]
+}

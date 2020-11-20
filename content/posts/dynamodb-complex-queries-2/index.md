@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2020-11-20T17:54:11Z
+date = 2020-11-20T00:42:00Z
 title = "Efficient NoSQL filtering and pagination with DynamoDB - part 2"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering-more-gsis"
@@ -186,6 +186,8 @@ As previously stated, we cannot use this solution to meet every new access patte
 > When was a product last commented on?
 
 > ... and so on, let me know if you spot any!
+
+The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json).
 
 In a next post we look at how these patterns can be applied to another NoSQL database, Cloud Bigtable.
 
