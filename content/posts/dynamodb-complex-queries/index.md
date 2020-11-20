@@ -112,7 +112,7 @@ It might seem premature, but shaving bytes off repeated keys and attribute names
 
 ## Queries
 
-We should now be able to satisfy all of our access patterns. All queries should have `ScanIndexForward` set to `false` to retrieve the most recent comments first.
+We should now be able to satisfy all of our access patterns. All queries should have `ScanIndexForward` set to `false` in order to retrieve the most recent comments first, and a `Limit` of `20`.
 
 ### AP1: Show all comments for a product, most recent first
 
@@ -142,7 +142,7 @@ We should now be able to satisfy all of our access patterns. All queries should 
   - Query on `gsi`
     - SK = `PRODUCT#42/en/2.3.4`
 
-#### All languages
+#### All languages
 
 - Rating 5, all languages
   - Query on `gsi`
@@ -178,9 +178,9 @@ An additional attribute, `auto` is added to the automatically created items so t
 
 ## Problems
 
-It is expected that this simple design will perform well, support lots of traffic and be very economical to run.
+It is expected that this simple design will perform well, support lots of traffic and be very economical to run **if the number of comments posted is hundreds per day.**
 
-We're doing a lot of duplication here. Every comment is written `33` times. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
+The reason for this caveat is we are doing a lot of duplication here. Every comment is written `33` times. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
 
 ```python
 2 ** 5 = 32

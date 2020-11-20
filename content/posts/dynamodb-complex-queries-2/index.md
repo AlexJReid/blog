@@ -12,7 +12,7 @@ series = []
 
 In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was demonstrated. It was not a perfect solution as large number of redundant items were _manually_ created by our code. The number of permutations would increase dramatically if the queries got even slightly more complicated.
 
-Although this isn't a bad trade off if the queries are unlikely to change, we should iterate to see if we can do better. 
+Although this isn't a bad trade off if write volume and is low queries are unlikely to get more complex, we should iterate to see if we can do better. 
 
 > When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable. 
 
@@ -47,7 +47,7 @@ That's a lot more than key attributes than last time! This is because items need
 
 Only a subset of attributes from the table are projected to save space and reduce query costs. This is shown in the following diagrams.
 
-We form the partition key using the pattern: `PRODUCT#<identifier>/<projected filter 1>/<projected filter 2>` and use the sort key to ensure correct ordering. As seen above, we need to use slightly different partition keys to support a range of queries. Discussion around the keys used in each GSI is detailed in the following sections.
+We form the partition key with the pattern `PRODUCT#<identifier>/<projected filter 1>/<projected filter 2>` and use the sort key to ensure correct ordering. As seen above, we need to use slightly different partition keys to support a range of queries. Discussion around the keys used in each GSI is detailed in the following sections.
 
 ### GSI: byLangAndRating
 
@@ -82,7 +82,7 @@ As its name would imply, this index is suitable for getting all comments of any 
 
 ## Queries
 
-Let's see if we can now answer all of the required questions.
+Let's try it out. All queries should have `ScanIndexForward` set to `false` in order to retrieve the most recent comments first, and a `Limit` of `20`.
 
 ### AP1: Show all comments for a product, most recent first
 
@@ -98,17 +98,17 @@ Let's see if we can now answer all of the required questions.
 
 #### a. Single language
 
-- Rating 2, 3 or 5 in English
+- Rating `2, 3 or 5` in language `en`
     - In parallel:
         - Query on `byLangAndRating`
             - GSIPK = `PRODUCT#42/en/2`
-            - Limit = 20
+            - Limit = `20`
         - Query on `byLangAndRating`
             - GSIPK = `PRODUCT#42/en/3`
-            - Limit = 20
+            - Limit = `20`
         - Query on `byLangAndRating`
             - GSIPK = `PRODUCT#42/en/5`
-            - Limit = 20
+            - Limit = `20`
     - Gather results into single collection, sort on `GSISK` and return top N
 
 #### b. Any language
