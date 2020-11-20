@@ -1,16 +1,16 @@
 +++ 
 draft = false
 date = 2020-11-09T17:54:11Z
-title = "Efficient NoSQL filtering and pagination - part 1: DynamoDB"
+title = "Efficient NoSQL filtering and pagination with DynamoDB - part 1"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
-tags = ['aws','dynamodb','data']
+tags = ['nosqlcommments','dynamodb','aws']
 categories = []
 externalLink = ""
 series = []
 +++
 
-It never ceases to amaze me just how much is possible through the seemingly constrained model DynamoDB gives us. It's a fun puzzle to try to support query patterns beyond a simple key value lookup, or the retrieval of an ordered set of items.
+It never ceases to amaze me just how much is possible through the seemingly constrained model DynamoDB gives us. It's a fun puzzle to try to support access patterns beyond a simple key value lookup, or the retrieval of an ordered set of items.
 
 The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication. DynamoDB secondary indexes allow us to automatically duplicate items with different attributes from the item as keys.
 
@@ -20,23 +20,22 @@ In many cases, this is the right approach. However, Elasticsearch, even when man
 
 ## Example scenario: a product comments system
 
-Suppose we want to model the comments section on a product page within an e-commerce site. Each product has a set of comments, shown in reverse date order.
+ We want to model the comments section shown on each product page within an e-commerce site. A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown at first and users can click a next button to paginate through older comments. As the system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
 
-Our query patterns are as follows:
+This can be broken down into the following access patterns.
 
-- **QP1**: show comments in reverse order, i.e. most recent first, regardless of filter
-- **QP2**: show comments in the user's local language, but let them see comments in all languages
-- **QP3**: show comments with any combination of ratings, from 1-5, where 1 is terrible and 5 is excellent
-- **QP4**: show 20 comments per page, with no performance degradation when fetching pages of older comments
-- **QP5**: show a comment directly through its identifier
-- **QP6**: show the most recent positive English comment for product 42
-- **QP7**: delete comment by id
+- AP1: Show all comments for a product, most recent first
+- AP2: Filter by a single language
+- AP3: Filter by any combination of ratings from 1-5
+- AP4: Show an individual comment
+- AP5: Delete a comment
+- AP6: Paginate through comments
 
-## What's wrong with DynamoDB filters
+## What's wrong with DynamoDB filters?
 
-DynamoDB allows us to filter query results before they are returned to our client program. It is possible to filter on any non-key attribute, which sounds liberating at first. However, if a large amount of data is filtered out, we will still consume resources, time and money in order to find the needle in the haystack. This is particularly costly if each item size runs into kilobytes.
+DynamoDB allows us to filter query results before they are returned to our client program. You might think that filters are all we need here as it is possible to filter on any non-key attribute, which sounds liberating at first. However, if a large amount of data is filtered out, we will still consume resources, time and money in order to find the needle in the haystack. This is particularly costly if each item size runs into kilobytes.
 
-Filters do have utility at ensuring data is within bounds (such as enforcing TTL on expired items that might not have been _collected_ yet). They work best when only a small proportion of the items are thrown away by the filter.
+Filters do have utility at ensuring data is within bounds (such as enforcing TTL on expired items that might not have been _collected_ yet) but in summary, they work best when only a small proportion of the items are thrown away by the filter.
 
 ## Table design
 
@@ -60,7 +59,7 @@ Let's elaborate on `sk`. Each `sk` under a comment `pk` represents membership to
 
 `sk` consists of a `/` delimited string. The first element is the type, `PRODUCT#` and its identifier `42`. The second element is the language, such as `en` or `~` to denote _any_. The final element is the rating number, from `1` to `5`.
 
-As per `QP3`, any **combination** of ratings can be specified in addition to the selected language. (If it was acceptable to only show a single rating at a time, a simpler model could be used.)
+Any **combination** of ratings can be specified in addition to a single selected language (or all languages). 
 
 Here are some examples:
 
@@ -71,13 +70,13 @@ Here are some examples:
 - `PRODUCT#42/en/1.2.5` - English only, with a rating of 1, 2 or 5
 - `PRODUCT#42/~/1.2.5` - any language, with a rating of 1, 2 or 5
 
-It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a URI such as `/product/42/comments/en/1.2.3` or `/product/42/comments/~/1.2.3`.
+It might help to think of each `sk` as representing an ordered set of comments. It maps neatly onto a URI such as `/product/42/comments/en/1.2.3` or more likely `/product/42/comments?language=en&rating=1&rating=2&rating=3`.
 
-## What duplicates do we need
+## Duplicates needed
 
 We assume this application will be write light and read heavy, so it is acceptable to store the same comment multiple times in order to provide inexpensive querying.
 
-As per `QP2`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
+As per `QP1`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
 
 `QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`.
 
@@ -111,16 +110,16 @@ It has the side-effect of allowing longer set values to be stored. For instance,
 
 It might seem premature, but shaving bytes off repeated keys and attribute names is considered good practice. The tradeoff is that this portion of the key is less readable by the human eye.
 
-## Query patterns
+## Queries
 
-We should now be able to satisfy all of our query patterns. All queries should have `ScanIndexForward` set to `false` to retrieve the most recent comments first. This is because the `gsi` uses `cd` as its sort key, and the creation dates sort lexicographically.
+We should now be able to satisfy all of our access patterns. All queries should have `ScanIndexForward` set to `false` to retrieve the most recent comments first.
 
-### Show comments in reverse order, i.e. most recent first, regardless of filter
+### AP1: Show all comments for a product, most recent first
 
 - Query on `gsi`
   - SK = `PRODUCT#42/~/~`
 
-### Show comments in the user's local language, but let them see comments in all languages
+### AP2: Filter by a single language
 
 - Local language:
   - Query on `gsi`
@@ -129,7 +128,9 @@ We should now be able to satisfy all of our query patterns. All queries should h
   - Query on `gsi`
     - SK = `PRODUCT#42/~/~`
 
-### Show comments with any combination of ratings
+### AP3: Filter by any combination of ratings from 1-5
+
+#### Single language
 
 - Rating 1
   - Query on `gsi`
@@ -140,26 +141,19 @@ We should now be able to satisfy all of our query patterns. All queries should h
 - Rating 2, 3 or 4
   - Query on `gsi`
     - SK = `PRODUCT#42/en/2.3.4`
+
+#### All languages
+
 - Rating 5, all languages
   - Query on `gsi`
     - SK = `PRODUCT#42/~/5`
 
-### Show 20 comments per page
-
-- Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requested.
-
-### Show a comment directly through its identifier
+### AP4: Show a comment directly through its identifier
 
 - Show comment `100001`
   - Query on table
     - PK = `COMMENT#100001`
     - Limit = 1
-
-### Show the most recent positive English comment for product 42
-
-- Query on `gsi`
-  - SK = `PRODUCT#42/en/4.5`
-  - Limit = 1
 
 ### Delete comment 100001
 
@@ -168,11 +162,13 @@ We should now be able to satisfy all of our query patterns. All queries should h
 
 Delete each value for PK/SK returned in a batch.
 
+### AP6: Paginate through comments
+
+Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requested.
+
 ## Building the table
 
-As we've seen, this approach works by duplicating items with different keys.
-
-Triggers are a great way to automate the creation of these duplicated items. A DynamoDB stream should be setup on the table and connected to a Lambda function.
+This approach works by duplicating redundant items with different keys. Triggers are a great way to automate the creation of these duplicated items. A DynamoDB stream should be setup on the table and connected to a Lambda function.
 
 When a comment is created, the wildcard  `sk` should be used, i.e. `PRODUCT#42/~/~`. We will call this the _primary item_.
 
@@ -182,9 +178,9 @@ An additional attribute, `auto` is added to the automatically created items so t
 
 ## Problems
 
-Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
+It is expected that this simple design will perform well, support lots of traffic and be very economical to run.
 
-There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
+We're doing a lot of duplication here. Every comment is written `33` times. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
 
 ```python
 2 ** 5 = 32
@@ -194,23 +190,25 @@ There will come a point where the number of duplicates ceases to remain feasible
 ...
 ```
 
-As the number of duplicates increases, so does the number of operations and therefore cost. Payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
+As the number of duplicates increases, so does the number of operations and therefore cost. Large payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
+
+Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
 
 ## Summary
 
-It is expected that this system will perform well, support lots of traffic and be very economical to run.
+Despite the identified caveats around excessive redundancy and storage requirements, we've successfully built a filtering solution without needing to use DynamoDB filters. The table is very simple to use: all access patterns can be satisfied with a single query.
 
-Despite the identified caveats, we've successfully built a filtering solution without needing to use the post-query filters provided by DynamoDB. Nothing is free. We have paid for this by duplicating the data and taking on the corresponding compute, write and on-going storage costs.
+Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.
 
-We should not be afraid of duplicating data to make our service work efficiently. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. The rating values `1, 2, 3, 4, 5` are just example _tags_ - they could be a set of any values.
+There is nothing wrong with duplicating data to get efficient queries. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. 
 
 This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how powerful DynamoDB can be.
 
-[I'd be happy to hear your thoughts on Twitter.](https://twitter.com/alexjreid)
+In the [next post](/posts/dynamodb-efficient-filtering-more-gsis/) we look at how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
+
+[Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering)
 
 _Corrections and comments are most welcome._
-
-In a [next post](/posts/cloud-bigtable-paginated-comments/) we look at how the same problem can be approached with [Cloud Bigtable](https://cloud.google.com/bigtable).
 
 ## Links
 
