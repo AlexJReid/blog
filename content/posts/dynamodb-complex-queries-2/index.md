@@ -314,7 +314,7 @@ As we will see in future posts, other NoSQL databases can accommodate the _multi
 
 **We've built a comment filtering solution without needing to use DynamoDB filters and we haven't needed to duplicate data excessively.** We are still duplicating, but are doing so on a far smaller scale. Importantly, the duplication, or rather, index projection, is now handled by DynamoDB. We no longer need Lambda and DynamoDB streams to maintain the table.
 
-The client code is now more complex. There are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that consumers can work at a higher level. This kind of abstraction is recommended even if the table will never be directly accessed by other teams.
+The client code is now more complex. These are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
 
 **When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this solution to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer some more questions efficiently, such as:
 
