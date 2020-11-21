@@ -177,7 +177,7 @@ This logic, along with any parallel query coordination (discussed in the next se
 
 ## Parallel queries
 
-Multiple ratings are required for `AP3`. Our design dictates that this has to be achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages make this fairly straightforward, as shown below.
+Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages make this fairly straightforward, as shown below.
 
 ```go
 func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
@@ -254,7 +254,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 }
 ```
 
-The above function runs multiple queries, collects the results (up to `len(pkValues) * 20` items, combined), reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. This function is also used directly for simpler access patterns.
+The above function runs multiple queries, collects the results (up to `len(pkValues) * 20` items, combined), reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. `performQuery` is also used directly for simpler access patterns that can be answered in a single query.
 
 ```go
 func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoItem, error) {
@@ -316,7 +316,7 @@ As we will see in future posts, other NoSQL databases can accommodate the _multi
 
 **We've built a comment filtering solution without needing to use DynamoDB filters and we haven't needed to duplicate data excessively.** We are still duplicating, but are doing so on a far smaller scale. Importantly, the duplication, or rather, index projection, is now handled by DynamoDB. We no longer need Lambda and DynamoDB streams to maintain the table.
 
-The client code is now more complex. These are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
+The client code is now more complex, but there is a lot of flexibility when DynamoDB and the client work together in unison to provide a _data service_. These are implementation details that consumers of the model should not be exposed to. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
 
 **When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer more questions efficiently, such as:
 
