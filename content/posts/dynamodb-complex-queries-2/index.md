@@ -171,7 +171,7 @@ case allLangSingleRating:
 }
 ```
 
-This logic, along with any parallel query coordination (discussed in the next section), should be written once and distributed to users of this table either as a library or a REST/gRPC API. This abstraction provides a simpler interface through which to interact with the model. As long as the contract is upheld, we can make further changes to our model without needing consumers to have to change their code.
+This logic, along with any parallel query coordination (discussed in the next section), should be written once and provided to consumers either as a library or a REST/gRPC API. This abstraction provides a high level interface to interact with the model. We can also make improvements to the model without needing consumers to have to change their code.
 
 ## Parallel queries
 

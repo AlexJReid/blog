@@ -34,7 +34,7 @@ Although it is very simple to spin up a Bigtable instance, the complexity lies w
 
 ### Power sets
 
-We could port the DynamoDB solution from the previous post to Bigtable. As Bigtable has no sort key in which to store the creation date and therefore support ordering, it should get promoted to be part of the row key. Although simple to implement, this approach will have the same drawbacks as the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process.
+We could port the original DynamoDB solution from the previous post to Bigtable. As Bigtable has no sort key in which to store the creation date and therefore support ordering, it should get promoted to be part of the row key. Although simple to implement, this approach will have the same drawbacks as the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process.
 
 ### Regular expression row filter
 
@@ -222,6 +222,4 @@ As with data models, the best fitting technology depends on the workload and bud
 
 Both solutions are unable to support jumping to arbitrary pages, instead treating the reverse-chronological stream of comments like a tape that gets started, paused, cued and stopped.
 
-The next post will explore the final approach - parallel scanning a separate index and gathering the results.
-
-_Corrections and comments are most welcome.
+_Corrections and comments are most welcome_.
