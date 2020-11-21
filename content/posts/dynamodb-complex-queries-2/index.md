@@ -178,21 +178,6 @@ This logic, along with any parallel query coordination (discussed in the next se
 Multiple ratings are required for `AP3`. This is achieved by issuing multiple queries in parallel, merging the results and sorting them. `go` makes this straightforward, as shown below.
 
 ```go
-// CommentDynamoItem represents an item in the comments2 DynamoDB table.
-type CommentDynamoItem struct {
-	PK       string
-	SK       string
-	GSIPK    string
-	GSISK    string
-	GSI2PK   string
-	GSI3PK   string
-	GSI4PK   string
-	Language string
-    Rating   string
-    Title    string
-    Text     string
-}
-
 func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
 	var wg sync.WaitGroup
 	itemsCh := make(chan []CommentDynamoItem)
