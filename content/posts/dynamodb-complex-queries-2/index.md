@@ -16,13 +16,13 @@ Although this isn't a bad trade off if write volume is low and access patterns a
 
 Previously, we had to write code and use DynamoDB Streams to write duplicate entries. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
 
-In addition there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, perhaps we can end up with an more efficient model.
+In addition there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we can end up with a better model.
 
 Let's apply both of these approaches and see what happens.
 
 ## Access patterns
 
-Here is a recap of the access patterns.
+Firstly let's recap on the access patterns.
 
 - AP1: Show all comments for a product, most recent first
 - AP2: Filter by a single language
