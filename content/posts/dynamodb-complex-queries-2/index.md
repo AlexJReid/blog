@@ -324,7 +324,7 @@ The client code is now more complex. These are implementation details that users
 
 > ... and so on, let me know if you spot any others!
 
-The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). This is a **great** tool which I'd strongly recommend using when working with DynamoDB.
+The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
 
 In the final post, we will add some statistics, pagination and an API. Thanks for following along so far!
 
