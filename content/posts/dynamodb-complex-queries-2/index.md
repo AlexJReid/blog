@@ -140,7 +140,7 @@ Let's try it out. All queries should have `ScanIndexForward` set to `false` in o
 
 ### AP6: Paginate through comments
 
-Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requested.
+This requirement will be covered in the next post.
 
 ## Query planning
 
