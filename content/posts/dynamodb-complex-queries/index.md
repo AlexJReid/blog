@@ -180,7 +180,7 @@ An additional attribute, `auto` is added to the automatically created items so t
 
 It is expected that this simple design will perform well, support lots of traffic and be very economical to run **if the number of comments posted is hundreds per day.**
 
-The reason for this caveat is we are doing a lot of duplication here. Every comment is written `32` times. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
+The reason for this caveat is we are doing a lot of duplication here. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
 
 ```python
 2 ** 5 = 32
@@ -190,7 +190,7 @@ The reason for this caveat is we are doing a lot of duplication here. Every comm
 ...
 ```
 
-As the number of duplicates increases, so does the number of operations and therefore cost. Large payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
+As the number of duplicates increases, so does the number of operations and therefore cost. Changes need to the original record need to be kept in sync. Large payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
 
 Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
 
@@ -198,7 +198,7 @@ Creation of the duplicate items could partially fail. Although the Lambda will r
 
 Despite the identified caveats around excessive redundancy and storage requirements, we've successfully built a filtering solution without needing to use DynamoDB filters. **The table is very simple to use: all access patterns can be satisfied with a single query.**
 
-**Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.** There is nothing wrong with duplicating data to get efficient queries. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. 
+**Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.** There is nothing wrong with duplicating data to get efficient queries. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code.
 
 However, we can do better. The [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
 
