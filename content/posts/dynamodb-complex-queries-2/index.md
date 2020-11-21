@@ -51,9 +51,9 @@ We form the partition key with the pattern `PRODUCT#<identifier>/<projected filt
 
 ![GSI: byLangAndRating](GSI_comments2_byLangAndRating.png)
 
-The partition key contains both the product identifier and comment language. The date, a sortable string, is used as the sort key.
+The partition key contains the product identifier, comment language and rating. The date, a sortable string, is used as the sort key.
 
-This index is suitable for getting all comments for a single rating and single language. Only a subset of attributes from the table are projected to save space and reduce query costs.
+This index is suitable for getting all comments for a single language and single rating. Only a subset of attributes from the table are projected to save space and reduce query costs.
 
 ### GSI: byLang
 
