@@ -12,13 +12,11 @@ series = []
 
 In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was demonstrated. It was not a perfect solution as large number of redundant items were _manually_ created by our code. The number of permutations would increase dramatically if the queries got even slightly more complicated.
 
-Although this isn't a bad trade off if write volume is low and access patterns are unlikely to get more complex, we should iterate to see if we can do better. 
-
 Previously, we had to write code and use DynamoDB Streams to write duplicate entries. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
 
-In addition there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we can end up with a better model.
+In addition there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we might end up with a better model.
 
-Let's apply both of these approaches and see what happens.
+Let's apply both approaches and see what happens.
 
 ## Access patterns
 
@@ -146,20 +144,20 @@ Run any of the above queries with `Limit` set to `20`. Use pagination tokens ret
 
 ## Query planning
 
-Some decision logic is required to choose which access pattern should be used to resolve a query based on the incoming parameters.
+Logic is required to choose which access pattern is best suited to resolve a query based on the provided parameters.
 
-For instance, given the parameters:
+For instance, given:
 
 - `language=en`
 - `rating=1 rating=2 rating=3 rating=4 rating=5`
 
 `AP2` should be used as all ratings are specified, making the filtering a needless cost. The results will be the same for more work.
 
-`AP3a` would be used if only If `rating=2 rating=4` are required.
+`AP3a` would be used if only `rating=2 rating=4` are required.
 
 If no filtering is specified, `AP1` should be used... and so on. 
 
-The following code snippet demonstrates how a basic implementation looks.
+The following code snippet demonstrates shows a basic implementation.
 
 ```go
 baseKey := "PRODUCT#" + productID
@@ -171,15 +169,15 @@ case all:
     items, err = performQuery("GSI4PK", baseKey, "all")
 case allLangSingleRating:
     items, err = performQuery("GSI3PK", appendKeySegment(baseKey, ratings[0]), "byRating")
-//... and so on
+//... etc
 }
 ```
 
-This logic, along with any parallel query coordination (discussed in the next section), should be written once and provided to consumers either as a library or a REST/gRPC API. This abstraction provides a high level interface to interact with the model. We can also make improvements to the model without needing consumers to have to change their code.
+This logic, along with any parallel query coordination (discussed in the next section), should be written once and provided to consumers either as a library or an API. This abstraction provides a high level interface to the model. We can also make improvements without needing consumers to change their code.
 
 ## Parallel queries
 
-Multiple ratings are required for `AP3`. This is achieved by issuing multiple queries in parallel, merging the results and sorting them. `go` makes this straightforward, as shown below.
+Multiple ratings are required for `AP3`. Our design dictates that this has to be achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages make this fairly straightforward, as shown below.
 
 ```go
 func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
