@@ -22,9 +22,9 @@ Add markdown files to the posts directory and edit with any editor or in a brows
 
 When a change is pushed to master, the site is rebuilt and deployed by Google Cloud Build.
 
-- Clone this repo
+- Clone the blog repo
 - Run `hugo` via a custom Cloud Build builder (basically just a [Docker image](https://github.com/AlexJReid/blog/blob/master/_hugo-cloudbuilder) containing the `hugo` binary. The build process assumes that this image has already been built and is available.)
-- Copy the built site to an `nginx` image and push it to a registry
+- Copy the built site to an `nginx` image and push it to the registry
 - Deploy the serving image to Cloud Run
 
 See [cloudbuild.yaml](https://github.com/AlexJReid/blog/blob/master/cloudbuild.yaml) to see how it all fits together.

@@ -57,7 +57,7 @@ The partition key contains the product identifier, comment language and rating. 
 
 This index is suitable for getting all comments for a single language and single rating. Only a subset of attributes from the table are projected to save space and reduce query costs.
 
-### GSI: byLang
+### GSI 2: byLang
 
 ![GSI: byLang](GSI_comments2_byLang.png)
 
@@ -65,7 +65,7 @@ The partition key contains the product identifier and the comment language. The 
 
 This index is suitable for getting all comments for a given language, regardless of rating. This is the default state when a user visits each product page, so will see the most traffic.
 
-### GSI: byRating
+### GSI 3: byRating
 
 ![GSI: byRating](GSI_comments2_byRating.png)
 
@@ -73,7 +73,7 @@ The partition key contains the product identifier and the comment rating. The cr
 
 This index is suitable for getting all comments for a given rating, regardless of language.
 
-### GSI: all
+### GSI 4: all
 
 ![GSI: all](GSI_comments2_all.png)
 
