@@ -198,13 +198,9 @@ Creation of the duplicate items could partially fail. Although the Lambda will r
 
 Despite the identified caveats around excessive redundancy and storage requirements, we've successfully built a filtering solution without needing to use DynamoDB filters. The table is very simple to use: all access patterns can be satisfied with a single query.
 
-Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.
+Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs. There is nothing wrong with duplicating data to get efficient queries. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. 
 
-There is nothing wrong with duplicating data to get efficient queries. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code. 
-
-This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how powerful DynamoDB can be.
-
-In the [next post](/posts/dynamodb-efficient-filtering-2/) we look at how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
+However, we can do better. The [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering)
 
