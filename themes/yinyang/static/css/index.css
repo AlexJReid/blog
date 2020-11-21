@@ -1,5 +1,7 @@
 body {
-    font-family: "Arvo", "Helvetica Neue", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans", sans-serif;
+    /*font-family: "Arvo", "Helvetica Neue", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans", sans-serif;*/
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
     margin: 0 1rem;
 }
 
@@ -27,12 +29,8 @@ a:hover {
 }
 
 /* overwrite github-markdown */
-.markdown-body {
-    font-size: 18px;
-}
-
 .markdown-body .highlight pre, .markdown-body pre {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 /* header */
@@ -75,7 +73,7 @@ a:hover {
 
 .posts-date,
 .posts-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .posts-line {
@@ -110,10 +108,7 @@ a:hover {
     margin-right: 12px;
 }
 
-
 /* post */
-
-
 @media screen and (max-width: 48em) {
     .posts-category {
         display: none;
@@ -132,14 +127,14 @@ a:hover {
     margin-bottom: 55px;
 }
 
-.post-title {
+.post-title, .site-date-catalog {
     font-size: 2.5rem;
-    font-weight: 600;
+    font-family: "Arvo", "Helvetica Neue", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans", sans-serif;
 }
 
 .post-category {
     display: inline;
-    font-weight: 900;
+    font-weight: 600;
     padding: 2px;
     border: #000 2px solid;
 }
@@ -163,7 +158,6 @@ a:hover {
 }
 
 .post-content p {
-    hyphens: auto;
     line-height: 1.8;
     margin-bottom: 1em;
 }
