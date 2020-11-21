@@ -1,4 +1,4 @@
-baseurl = ""
+baseurl = "https://alexjreid.dev/"
 title = "Alex Reid"
 theme = "yinyang"
 languagecode = "en"
