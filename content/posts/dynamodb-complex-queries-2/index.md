@@ -316,7 +316,7 @@ As we will see in future posts, other NoSQL databases can accommodate the _multi
 
 The client code is now more complex. These are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
 
-**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer some more questions we have not considered yet, such as:
+**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer more questions efficiently, such as:
 
 > Show the most recent positive and most recent negative comment for a product
 
@@ -326,7 +326,7 @@ The client code is now more complex. These are implementation details that users
 
 The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
 
-In the final post, we will add some statistics, pagination and an API. Thanks for following along so far!
+In the final post, we will add some statistics, pagination and an API. We will then explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering-2)
 
