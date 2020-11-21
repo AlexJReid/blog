@@ -41,7 +41,7 @@ The below table contains three comments for product `42`. To create a comment, a
 
 ![Table view](comments2.png)
 
-That's a lot more than key attributes than last time! This is because items need to contain a key for each of the indexes they're going to appear in. We reuse `GSISK` across all of the other indexes as it stores the creation date of the comment.
+That's a lot more than key attributes than last time! This is because items need to contain a key for each of the indexes they're going to appear in. We reuse `GSISK` across all of the other indexes as it stores the creation date, the common sort key.
 
 Only a subset of attributes from the table are projected to save space and reduce query costs. This is shown in the following diagrams.
 
