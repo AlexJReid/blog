@@ -22,7 +22,11 @@ Let's apply both of these approaches and see what happens.
 
 ## Access patterns
 
-Firstly let's recap on the access patterns.
+Firstly let's recap on the model we are building.
+
+> We want to model the comments section shown on each product page within an e-commerce site. A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown at first and users can click a next button to paginate through older comments. As the system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
+
+This can be broken down into the following access patterns.
 
 - AP1: Show all comments for a product, most recent first
 - AP2: Filter by a single language
@@ -59,7 +63,7 @@ This index is suitable for getting all comments for a single language and single
 
 ![GSI: byLang](GSI_comments2_byLang.png)
 
-The partition key contains just the comment language. The creation date (stored in `GSISK`) is used as the sort key.
+The partition key contains the product identifier and the comment language. The creation date (stored in `GSISK`) is used as the sort key.
 
 This index is suitable for getting all comments for a given language, regardless of rating. This is the default state when a user visits each product page, so will see the most traffic.
 
@@ -67,7 +71,7 @@ This index is suitable for getting all comments for a given language, regardless
 
 ![GSI: byRating](GSI_comments2_byRating.png)
 
-The partition key contains just the comment rating. The creation date (stored in `GSISK`) is used as the sort key.
+The partition key contains the product identifier and the comment rating. The creation date (stored in `GSISK`) is used as the sort key.
 
 This index is suitable for getting all comments for a given rating, regardless of language.
 
