@@ -171,7 +171,7 @@ case allLangSingleRating:
 }
 ```
 
-This logic, along with any parallel query coordination (discussed in the next section), should be written once and distributed to users of this table either as a library or REST/gRPC API. This abstraction provides a simpler interface through which to interact with the model. As long as the contract is upheld, we can make further changes to our model without needing consumers to have to change their code.
+This logic, along with any parallel query coordination (discussed in the next section), should be written once and distributed to users of this table either as a library or a REST/gRPC API. This abstraction provides a simpler interface through which to interact with the model. As long as the contract is upheld, we can make further changes to our model without needing consumers to have to change their code.
 
 ## Parallel queries
 
@@ -307,9 +307,9 @@ func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoI
 
 ## Building the table
 
-There is nothing to do here. DynamoDB will handle the replication **and** keeping the duplicated items in sync. Deleting a comment is now just a case of deleting the item from the table. This is a huge win.
+**There is nothing to do here. DynamoDB will handle the replication _and_ keep the duplicated items in sync.** Deleting a comment is now just a case of deleting the item from the table. This is a huge win, reducing the risk of inconsistencies while lowering costs.
 
-## It works
+## It works!
 
 A simple UI was built on top of this model. Notice how the query is resolved using different indexes and keys depending on the query parameters.
 
@@ -319,28 +319,30 @@ A simple UI was built on top of this model. Notice how the query is resolved usi
 
 ## Problems
 
-You might have noticed that we're fetching more data than we need in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so for `[1, 2, 3, 4]` we would load up to `80` comments, throwing away `60` of them. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page. (As explained earlier, for `[1, 2, 3, 4, 5]`, the filter is a no-op, so our query planner will bypass this and use a more optimal index.)
+You might have noticed that we're fetching more data than we return in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so `[1, 2, 3, 4]` would load up to `80` comments, throwing away `60`. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page, after the combined results have been sorted by date. (As explained earlier, for `[1, 2, 3, 4, 5]`, the filter is a no-op, so our query planner will bypass this and use a more optimal index.)
 
-You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit per item, allowing us to read up to `4KB`. A comment will be nowhere near that big, so this approach would be cost inefficient. As we will see in the next post, other NoSQL databases can accommodate the _multi-get_ pattern better than DynamoDB.
+You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit per item, allowing us to read a single item up to `4KB`. A comment will be nowhere near that big, so this approach would be cost inefficient. A query, on the other hand, uses read capacity units based on the data read, allowing us to read maybe eight to ten comments with a single RCU.
+
+As we will see in future posts, other NoSQL databases can accommodate the _multi-get_ pattern cheaply.
 
 ## Summary
 
-We've built a comment filtering solution without needing to use DynamoDB filters and we haven't needed to duplicate data excessively. We are still duplicating, but are doing so on a far smaller scale. Importantly, the duplication, or rather, index projection, is now handled by DynamoDB. No no need for Lambda executions and DynamoDB streams. 
+**We've built a comment filtering solution without needing to use DynamoDB filters and we haven't needed to duplicate data excessively.** We are still duplicating, but are doing so on a far smaller scale. Importantly, the duplication, or rather, index projection, is now handled by DynamoDB. We no longer need Lambda and DynamoDB streams to maintain the table.
 
 The client code is now more complex. There are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that consumers can work at a higher level. This kind of abstraction is recommended even if the table will never be directly accessed by other teams.
 
-When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable. We cannot use this solution to meet every new access pattern as we might do with a relational database and some luck, but the model is flexible enough to possibly answer more questions efficiently, such as:
+**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this solution to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer some more questions efficiently, such as:
 
 > Show the most recent positive and most recent negative comment for a product
 
 > When was a product last commented on?
 
-> ... and so on, let me know if you spot any!
+> ... and so on, let me know if you spot any others!
 
-The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). 
+The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). This is a **great** tool which I'd strongly recommend using when working with DynamoDB.
 
-In the final post, we will add pagination and API. Thanks for following along so far!
+In the final post, we will add some statistics, pagination and an API. Thanks for following along so far!
 
-[Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering-more-gsis)
+[Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering-2)
 
 _Comments and corrections are welcome._
