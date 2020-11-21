@@ -53,7 +53,7 @@ We form the partition key with the pattern `PRODUCT#<identifier>/<projected filt
 
 ![GSI: byLangAndRating](GSI_comments2_byLangAndRating.png)
 
-The partition key contains both the product identifier and comment language. The date, as a sortable string, is used as the sort key.
+The partition key contains both the product identifier and comment language. The date, a sortable string, is used as the sort key.
 
 This index is suitable for getting all comments for a single rating and single language. Only a subset of attributes from the table are projected to save space and reduce query costs.
 
@@ -151,11 +151,13 @@ For instance, given the parameters:
 - `language=en`
 - `rating=1 rating=2 rating=3 rating=4 rating=5`
 
-`AP2` should be used as all ratings are specified, making the filtering a needless cost. 
+`AP2` should be used as all ratings are specified, making the filtering a needless cost. The results will be the same for more work.
 
 `AP3a` would be used if only If `rating=2 rating=4` are required.
 
-If no filtering is specified, `AP1` should be used... and so on. The following code snippet demonstrates how a basic implementation looks.
+If no filtering is specified, `AP1` should be used... and so on. 
+
+The following code snippet demonstrates how a basic implementation looks.
 
 ```go
 baseKey := "PRODUCT#" + productID
@@ -267,7 +269,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 }
 ```
 
-The above function runs multiple queries, collects the results, reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. This function is also used directly for simpler access patterns.
+The above function runs multiple queries, collects the results (up to `100` items, combined), reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. This function is also used directly for simpler access patterns.
 
 ```go
 func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoItem, error) {
@@ -319,7 +321,7 @@ A simple UI was built on top of this model. Notice how the query is resolved usi
 
 ## Problems
 
-You might have noticed that we're fetching more data than we need in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so for `[1, 2, 3, 4]` we would load up to `80` comments, throwing away `60` of them. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page. 
+You might have noticed that we're fetching more data than we need in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so for `[1, 2, 3, 4]` we would load up to `80` comments, throwing away `60` of them. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page. (As explained earlier, for `[1, 2, 3, 4, 5]`, the filter is a no-op, so our query planner will bypass this and use a more optimal index.)
 
 You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit per item, allowing us to read up to `4KB`. A comment will be nowhere near that big, so this approach would be cost inefficient. As we will see in the next post, other NoSQL databases can accommodate the _multi-get_ pattern better than DynamoDB.
 
