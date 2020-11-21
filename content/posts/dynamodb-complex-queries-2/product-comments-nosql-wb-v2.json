@@ -3,8 +3,8 @@
   "ModelMetadata": {
     "Author": "Alex Reid",
     "DateCreated": "Nov 10, 2020, 04:27 PM",
-    "DateLastModified": "Nov 21, 2020, 10:12 AM",
-    "Description": "Model described in https://alexjreid.dev/posts/dynamodb-efficient-filtering-2/ blog post.",
+    "DateLastModified": "Nov 21, 2020, 10:25 PM",
+    "Description": "Model described in https://alexjreid.dev/posts/dynamodb-efficient-filtering/ blog post.",
     "AWSService": "Amazon DynamoDB",
     "Version": "2.0"
   },
@@ -273,7 +273,8 @@
             "NonKeyAttributes": [
               "language",
               "rating",
-              "data"
+              "data",
+              "PK"
             ]
           }
         },
