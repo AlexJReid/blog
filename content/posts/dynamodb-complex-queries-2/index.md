@@ -267,7 +267,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 }
 ```
 
-The above function runs multiple queries, collects the results (up to `100` items, combined), reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. This function is also used directly for simpler access patterns.
+The above function runs multiple queries, collects the results (up to `len(pkValues) * 20` items, combined), reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. This function is also used directly for simpler access patterns.
 
 ```go
 func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoItem, error) {
