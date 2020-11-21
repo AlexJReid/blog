@@ -3,7 +3,7 @@ draft = false
 date = 2020-11-20T00:42:00Z
 title = "Efficient NoSQL filtering and pagination with DynamoDB - part 2"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
-slug = "dynamodb-efficient-filtering-more-gsis"
+slug = "dynamodb-efficient-filtering-2"
 tags = ['nosqlcommments','dynamodb']
 categories = []
 externalLink = ""
@@ -87,12 +87,12 @@ Let's try it out. All queries should have `ScanIndexForward` set to `false` in o
 ### AP1: Show all comments for a product, most recent first
 
 - Query on `all`
-    - SK = `PRODUCT#42`
+    - GSI4PK = `PRODUCT#42`
 
 ### AP2: filter by a single language
 
 - Query on `byLang`
-    - GSIPK2 = `PRODUCT#42/en`
+    - GSI2PK = `PRODUCT#42/en`
 
 ### AP3: Filter by any combination of ratings from 1-5
 
@@ -111,11 +111,20 @@ Let's try it out. All queries should have `ScanIndexForward` set to `false` in o
             - Limit = `20`
     - Gather results into single collection, sort on `GSISK` and return top N
 
-#### b. Any language
+#### b. Any language, single rating
 
-- Rating 2
+- Rating `2`
     - Query on `byRating`
-        - GSIPK2 = `PRODUCT#42/2`
+        - GSI3PK = `PRODUCT#42/2`
+
+#### c. Any language, multiple ratings
+
+- Rating `3 or 5`
+    - In parallel:
+        - Query on `byRating`
+            - GSI3PK = `PRODUCT#42/2`
+        - Query on `byRating`
+            - GSI3PK = `PRODUCT#42/5`
 
 ### AP4: Show a comment directly through its identifier
 
@@ -146,40 +155,181 @@ For instance, given the parameters:
 
 `AP3a` would be used if only If `rating=2 rating=4` are required.
 
-If no filtering is specified, `AP1` should be used.
+If no filtering is specified, `AP1` should be used... and so on. The following code snippet demonstrates how a basic implementation looks.
 
-... and so on.
+```go
+baseKey := "PRODUCT#" + productID
 
+// Select strategy based on filter parameters
+// This tells us what index to query, what key to use and its value
+switch findStrategy(language, ratings) {
+case all:
+    items, err = performQuery("GSI4PK", baseKey, "all")
+case allLangSingleRating:
+    items, err = performQuery("GSI3PK", appendKeySegment(baseKey, ratings[0]), "byRating")
+//... and so on
+}
+```
 
-This logic, along with any parallel query coordination (discussed in the next section), should be written once and distributed to users of this table either as a library or REST/gRPC API. This abstraction will allow them to work with a high level interface. As long as the contract is upheld, we can make further changes to our model without needing consumers to have to change their code.
+This logic, along with any parallel query coordination (discussed in the next section), should be written once and distributed to users of this table either as a library or REST/gRPC API. This abstraction provides a simpler interface through which to interact with the model. As long as the contract is upheld, we can make further changes to our model without needing consumers to have to change their code.
 
 ## Parallel queries
 
-`AP3`, when multiple ratings are required, issues queries in parallel. Modern languages make it easy to issue non-blocking calls to services, through promises or goroutines. The following code snippet demonstrates how this pattern might look.
+Multiple ratings are required for `AP3`. This is achieved by issuing multiple queries in parallel, merging the results and sorting them. `go` makes this straightforward, as shown below.
 
 ```go
+// CommentDynamoItem represents an item in the comments2 DynamoDB table.
+type CommentDynamoItem struct {
+	PK       string
+	SK       string
+	GSIPK    string
+	GSISK    string
+	GSI2PK   string
+	GSI3PK   string
+	GSI4PK   string
+	Language string
+    Rating   string
+    Title    string
+    Text     string
+}
 
+func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
+	var wg sync.WaitGroup
+	itemsCh := make(chan []CommentDynamoItem)
+	errorsCh := make(chan error, len(pkValues))
+
+	// Wrap performQuery, sending results to itemsCh
+	batchPerformQuery := func(pkv string) {
+		defer wg.Done()
+		items, err := performQuery(pk, pkv, indexName)
+		if err != nil {
+			errorsCh <- err
+		}
+		itemsCh <- items
+	}
+
+    // Dispatch a query for each `pkValues` item.
+    // They may look like this: PRODUCT#42/en/1, PRODUCT#42/en/3, ...
+	for _, pkv := range pkValues {
+		wg.Add(1)
+		go batchPerformQuery(pkv)
+	}
+
+	// Consume into batchResultCh
+	type batchResult struct {
+		items  []CommentDynamoItem
+		errors []error
+	}
+    batchResultCh := make(chan batchResult)
+    
+	go func() {
+		var allItems []CommentDynamoItem
+		var errors []error
+
+		for items := range itemsCh {
+			allItems = append(allItems, items...)
+		}
+
+		for error := range errorsCh {
+			errors = append(errors, error)
+		}
+
+		if len(errors) > 0 {
+			batchResultCh <- batchResult{errors: errors}
+		} else {
+			// Reverse sort on GSISK
+			sort.Slice(allItems, func(i, j int) bool {
+				return allItems[i].GSISK > allItems[j].GSISK
+			})
+			// Send topN
+			batchResultCh <- batchResult{items: allItems[0:min(20, len(allItems))]}
+		}
+	}()
+
+	// Wait for queries to complete (or fail)
+	wg.Wait()
+	close(itemsCh)
+	close(errorsCh)
+
+	// Collect result and form response, returning any errors that occurred
+	result := <-batchResultCh
+	close(batchResultCh)
+
+	if len(result.errors) > 0 {
+		err := errors.New("unable to make one or more calls to dynamodb")
+		for _, e := range result.errors {
+			err = errors.Wrap(err, e.Error())
+		}
+		return nil, err
+	}
+
+	return result.items, nil
+}
+```
+
+The above function runs multiple queries, collects the results, reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. This function is also used directly for simpler access patterns.
+
+```go
+func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoItem, error) {
+	log.Printf("performQuery: pk=%s, pkValue=%s, indexName=%s", pk, pkValue, indexName)
+
+	q := expression.Key(pk).Equal(expression.Value(aws.String(pkValue)))
+	expr, err := expression.NewBuilder().WithKeyCondition(q).Build()
+	if err != nil {
+		return nil, fmt.Errorf("unable to build expression: %v", err)
+	}
+
+	results, err := client.Query(&dynamodb.QueryInput{
+		TableName:                 aws.String(tableName),
+		IndexName:                 aws.String(indexName),
+		Limit:                     aws.Int64(limit),
+		KeyConditionExpression:    expr.KeyCondition(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeNames:  expr.Names(),
+		ConsistentRead:            aws.Bool(false),
+		ScanIndexForward:          aws.Bool(false),
+    })
+    
+	if err != nil {
+		return nil, fmt.Errorf("unable to complete query: %v", err)
+	}
+
+	var items []CommentDynamoItem
+	err = dynamodbattribute.UnmarshalListOfMaps(results.Items, &items)
+	if err != nil {
+		return nil, fmt.Errorf("unable to unmarshal items: %v", err)
+	}
+	
+	return items, nil
+}
 ```
 
 ## Building the table
 
 There is nothing to do here. DynamoDB will handle the replication **and** keeping the duplicated items in sync. Deleting a comment is now just a case of deleting the item from the table. This is a huge win.
 
+## It works
+
+A simple UI was built on top of this model. Notice how the query is resolved using different indexes and keys depending on the query parameters.
+
+![Product comments UI: all ratings, all languages](ui_all.png)
+
+![Product comments UI, ratings 1, 2, 4 and 5 switched on](ui_3off.png)
+
 ## Problems
 
-You might have noticed that we're fetching more data than we need in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so for `[1, 2, 3, 4]` we would load `80` comments, throwing away `60` of them. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page. 
+You might have noticed that we're fetching more data than we need in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so for `[1, 2, 3, 4]` we would load up to `80` comments, throwing away `60` of them. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page. 
 
-You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` would cost one read capacity unit, allowing us to read up to `4KB`. A comment will be nowhere near that big, so this approach would be cost inefficient. As we will see in the next post, other NoSQL databases can accommodate the _multi-get_ pattern better than DynamoDB.
-
-As discussed in [query planning](#query-planning) if ratings `[1, 2, 3, 4, 5]` were required, query planner would route this query to a more optimal index which can be read from as a single operation.
+You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit per item, allowing us to read up to `4KB`. A comment will be nowhere near that big, so this approach would be cost inefficient. As we will see in the next post, other NoSQL databases can accommodate the _multi-get_ pattern better than DynamoDB.
 
 ## Summary
 
-We've successfully built a filtering solution without needing to use DynamoDB filters. We are still duplicating data but are doing so on a far smaller scale. Importantly the duplication is now fully automated and we have fewer moving parts - no need for Lambda executions and DynamoDB streams. 
+We've built a comment filtering solution without needing to use DynamoDB filters and we haven't needed to duplicate data excessively. We are still duplicating, but are doing so on a far smaller scale. Importantly, the duplication, or rather, index projection, is now handled by DynamoDB. No no need for Lambda executions and DynamoDB streams. 
 
-The client code is now more complex. There are implementation details that users of our table should not care about, on both read and write paths. As previously stated, it is essential to encode this logic into a library or API so that consumers can work at a higher level. This kind of abstraction is recommended even if the table will never be directly accessed by other teams.
+The client code is now more complex. There are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that consumers can work at a higher level. This kind of abstraction is recommended even if the table will never be directly accessed by other teams.
 
-As previously stated, we cannot use this solution to meet every new access pattern as we might do with a relational database, but the model is flexible enough to possibly answer more questions efficiently, such as:
+We cannot use this solution to meet every new access pattern as we might do with a relational database and some luck, but the model is flexible enough to possibly answer more questions efficiently, such as:
 
 > Show the most recent positive and most recent negative comment for a product
 
@@ -187,8 +337,10 @@ As previously stated, we cannot use this solution to meet every new access patte
 
 > ... and so on, let me know if you spot any!
 
-The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json).
+The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). 
 
-In a next post we look at how these patterns can be applied to another NoSQL database, Cloud Bigtable.
+In the final post, we will add pagination and API. Thanks for following along so far!
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering-more-gsis)
+
+_Comments and corrections are welcome._

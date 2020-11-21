@@ -204,7 +204,7 @@ There is nothing wrong with duplicating data to get efficient queries. Coupled w
 
 This is not a complete solution, with certain areas requiring further investigation. Far more flexible querying could be achieved with DynamoDB coupled with Elasticsearch (or of course a relational database), but it proves just how powerful DynamoDB can be.
 
-In the [next post](/posts/dynamodb-efficient-filtering-more-gsis/) we look at how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
+In the [next post](/posts/dynamodb-efficient-filtering-2/) we look at how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering)
 
