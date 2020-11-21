@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2020-11-20T00:42:00Z
+date = 2020-11-21T19:00:00Z
 title = "Efficient NoSQL filtering and pagination with DynamoDB - part 2"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering-2"
