@@ -180,7 +180,7 @@ An additional attribute, `auto` is added to the automatically created items so t
 
 It is expected that this simple design will perform well, support lots of traffic and be very economical to run **if the number of comments posted is hundreds per day.**
 
-The reason for this caveat is we are doing a lot of duplication here. Every comment is written `33` times. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
+The reason for this caveat is we are doing a lot of duplication here. Every comment is written `32` times. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
 
 ```python
 2 ** 5 = 32
