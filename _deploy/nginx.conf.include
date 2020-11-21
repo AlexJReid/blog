@@ -16,7 +16,7 @@ http {
     root /app/site;
 
     location / {
-      try_files $uri $uri.html $uri/;
+      try_files $uri $uri.html $uri/ /404.html;
     }
   }
 
@@ -26,7 +26,7 @@ http {
     root /app/site;
 
     location / {
-      try_files $uri $uri.html $uri/;
+      try_files $uri $uri.html $uri/ /404.html;
     }
   }
   
