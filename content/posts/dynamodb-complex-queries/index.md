@@ -14,7 +14,7 @@ It never ceases to amaze me just how much is possible through the seemingly cons
 
 The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved with data duplication. DynamoDB secondary indexes allow us to automatically duplicate items with different attributes from the item as keys.
 
-This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Stream and a Lambda function.
+This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Streams and a Lambda function.
 
 In many cases, this is the right approach. However, Elasticsearch, even when managed, can be a complex and expensive beast. I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary, so let's explore what is possible with DynamoDB alone.
 
