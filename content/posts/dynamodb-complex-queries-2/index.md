@@ -316,7 +316,7 @@ As we will see in future posts, other NoSQL databases can accommodate the _multi
 
 The client code is now more complex. These are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
 
-**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this solution to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer some more questions efficiently, such as:
+**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer some more questions we have not considered yet, such as:
 
 > Show the most recent positive and most recent negative comment for a product
 
