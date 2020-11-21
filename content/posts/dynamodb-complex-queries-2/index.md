@@ -12,7 +12,7 @@ series = []
 
 In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was demonstrated. It was not a perfect solution as large number of redundant items were _manually_ created by our code. The number of permutations would increase dramatically if the queries got even slightly more complicated.
 
-Although this isn't a bad trade off if write volume and is low queries are unlikely to get more complex, we should iterate to see if we can do better. 
+Although this isn't a bad trade off if write volume is low and access patterns are unlikely to get more complex, we should iterate to see if we can do better. 
 
 Previously, we had to write code and use DynamoDB Streams to write duplicate entries. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
 
