@@ -14,8 +14,6 @@ In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and fi
 
 Although this isn't a bad trade off if write volume and is low queries are unlikely to get more complex, we should iterate to see if we can do better. 
 
-> When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable. 
-
 Previously, we had to write code and use DynamoDB Streams to write duplicate entries. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
 
 In addition there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, perhaps we can end up with an more efficient model.
@@ -331,7 +329,7 @@ We've built a comment filtering solution without needing to use DynamoDB filters
 
 The client code is now more complex. There are implementation details that users of our table should not care about, on both read and write paths. It is essential to encode this logic into a library or API so that consumers can work at a higher level. This kind of abstraction is recommended even if the table will never be directly accessed by other teams.
 
-We cannot use this solution to meet every new access pattern as we might do with a relational database and some luck, but the model is flexible enough to possibly answer more questions efficiently, such as:
+When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable. We cannot use this solution to meet every new access pattern as we might do with a relational database and some luck, but the model is flexible enough to possibly answer more questions efficiently, such as:
 
 > Show the most recent positive and most recent negative comment for a product
 
