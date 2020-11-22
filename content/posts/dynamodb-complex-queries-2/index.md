@@ -181,34 +181,28 @@ Multiple ratings are required for `AP3`. Our design dictates that this is achiev
 
 ```go
 func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
+	type batchResult struct {
+		items  []CommentDynamoItem
+		errors []error
+	}
+
 	var wg sync.WaitGroup
 	itemsCh := make(chan []CommentDynamoItem)
-	errorsCh := make(chan error, len(pkValues))
+	errorsCh := make(chan error, len(pkValues)) // Buffer size is number that could fail
 
-	// Wrap performQuery, sending results to itemsCh
+	// Wrap perform query, sending its output to itemsCh and errorsCh
 	batchPerformQuery := func(pkv string) {
 		defer wg.Done()
 		items, err := performQuery(pk, pkv, indexName)
+		// Log and pass on errors
 		if err != nil {
 			errorsCh <- err
 		}
 		itemsCh <- items
 	}
 
-    // Dispatch a query for each `pkValues` item.
-    // They may look like this: PRODUCT#42/en/1, PRODUCT#42/en/3, ...
-	for _, pkv := range pkValues {
-		wg.Add(1)
-		go batchPerformQuery(pkv)
-	}
-
-	// Consume into batchResultCh
-	type batchResult struct {
-		items  []CommentDynamoItem
-		errors []error
-	}
-    batchResultCh := make(chan batchResult)
-    
+	// Consume items from DynamoDB and send topN
+	batchResultCh := make(chan batchResult)
 	go func() {
 		var allItems []CommentDynamoItem
 		var errors []error
@@ -224,7 +218,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 		if len(errors) > 0 {
 			batchResultCh <- batchResult{errors: errors}
 		} else {
-			// Reverse sort on GSISK
+			// Reverse sort on GSISK/creation date
 			sort.Slice(allItems, func(i, j int) bool {
 				return allItems[i].GSISK > allItems[j].GSISK
 			})
@@ -233,17 +227,21 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 		}
 	}()
 
-	// Wait for queries to complete (or fail)
+	// Begin by dispatching a query for each key in pkValues e.g. PRODUCT#42/1, PRODUCT#42/4
+	for _, pkv := range pkValues {
+		wg.Add(1)
+		go batchPerformQuery(pkv)
+	}
 	wg.Wait()
 	close(itemsCh)
 	close(errorsCh)
 
-	// Collect result and form response, returning any errors that occurred
+	// Collect topN form response, checking for any errors that occurred
 	result := <-batchResultCh
-	close(batchResultCh)
 
 	if len(result.errors) > 0 {
-		err := errors.New("unable to make one or more calls to dynamodb")
+		// Roll errors into one
+		err := errors.New("one or more dynamodb calls failed")
 		for _, e := range result.errors {
 			err = errors.Wrap(err, e.Error())
 		}
