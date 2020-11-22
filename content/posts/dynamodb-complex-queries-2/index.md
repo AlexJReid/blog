@@ -10,11 +10,11 @@ externalLink = ""
 series = []
 +++
 
-In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was demonstrated. It was not a perfect solution as large number of redundant items were _manually_ created by our code. The number of permutations would increase dramatically if the queries got even slightly more complicated.
+In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was demonstrated. It was not a perfect solution as a large number of redundant items were _manually_ created by our code. The number of permutations would increase dramatically if the queries got even slightly more complicated.
 
-Previously, we had to write code and use DynamoDB Streams to write duplicate entries. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
+Previously, we had to write code and use DynamoDB Streams. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
 
-In addition there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we might end up with a better model.
+In addition, there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we might end up with a better model.
 
 Let's apply both approaches and see what happens.
 
