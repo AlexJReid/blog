@@ -145,5 +145,3 @@ And...
 
 ## Conclusion
 It was good to learn more about gVisor and remember some C++ by reading through the ClickHouse code. Not a completely wasted hour or two ... and the ClickHouse and gVisor community took note and fixed the issue I ran into. It just goes to prove that a terrible idea can maybe have a positive effect, after all.
-
-[Discuss on Twitter](https://twitter.com/search?q=mybranch.dev%2Fposts%2Fclickhouse-on-cloud-run)
