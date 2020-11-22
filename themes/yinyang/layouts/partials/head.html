@@ -1,6 +1,7 @@
 <head>
   <meta charset="utf-8" />
   {{ hugo.Generator }}
+
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="author" content="{{ .Site.Author.name }}" />
@@ -10,6 +11,7 @@
   {{- if .Site.Params.staticPrefix -}}
   <link rel="dns-prefetch" href="{{ .Site.Params.staticPrefix }}" />
   {{- end -}}
+  <link rel="preload" href="{{ .Site.Params.staticPrefix }}{{ "js/highlight.pack.js" | relURL }}" as="script" />
 
   {{- if .Site.Params.favicon -}}
   <link rel="apple-touch-icon" href="{{ .Site.Params.favicon }}" />
@@ -41,6 +43,7 @@
   <link rel="stylesheet" href="{{ .Site.Params.staticPrefix }}{{ "css/flexboxgrid-6.3.1.min.css" | relURL }}" />
   {{ if not .IsHome -}}
   <link rel="stylesheet" href="{{ .Site.Params.staticPrefix }}{{ "css/github-markdown.css" | relURL }}" />
+  <link rel="stylesheet" href="{{ .Site.Params.staticPrefix }}{{ "css/highlight/tomorrow.min.css" | relURL }}" />
   {{- end }}
   <link rel="stylesheet" href="{{ "css/index.css" | relURL }}">
 
@@ -50,6 +53,7 @@
 
   <link href="{{ .Site.Params.staticPrefix }}{{ "index.xml" | relURL }}" rel="alternate" type="application/rss+xml"
     title="{{ .Site.Title }}">
+
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   {{ .Site.Params.extraHead | safeHTML }}
