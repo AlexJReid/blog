@@ -16,9 +16,9 @@ The NoSQL gods teach us to store data in a way that mirrors our application's fu
 
 This can get us a long way. However, it is common to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, but replicates to Elasticsearch via DynamoDB Streams and a Lambda function.
 
-In many cases, a hybrid solution is the right approach, particularly when the model is complex and too challenging to fit into DynamoDB. Arguably, the scale DynamoDB provides simply isn't needed for every single access pattern. 
+In many cases, a hybrid solution is the right approach, particularly when the model is complex and too challenging to fit into DynamoDB. Perhaps the scale DynamoDB provides simply isn't needed for every single access pattern. 
 
-Running two stores and replicating them is definitely added complexity. Elasticsearch, even when used as a managed service, can be a complex and expensive beast. What if it wasn't needed? I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
+However, running two stores and replicating one into the other is definitely added complexity. Elasticsearch, even when used as a managed service, can be a complex and expensive beast. What if it wasn't needed? I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
 
 This series of posts explores what is possible with DynamoDB alone, starting naively, demonstrating problems and pitfalls along the way.
 
