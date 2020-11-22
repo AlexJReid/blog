@@ -46,7 +46,9 @@ Filters do have utility at ensuring data is within bounds (such as enforcing TTL
 
 ## Table design
 
-Like most DynamoDB models, only a single table is required. We will call it `comments`. At this stage there is only a single entity, `comments` exists, but others could eventually be stored in this table. We are not providing a model for products in this series of posts, it is assumed to exist already.
+Like most DynamoDB models, only a single table is required. We will call it `comments`. 
+
+Within this table a `COMMENT` entity belongs to a `PRODUCT`. We are not providing a model for products in this series of posts, it is assumed to exist already.
 
 ### Table
 
