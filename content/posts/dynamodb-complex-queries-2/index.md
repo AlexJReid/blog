@@ -339,6 +339,4 @@ The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/develope
 
 In the final post, we will add some statistics, pagination and add an API. After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
 
-[Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering-2)
-
 _Comments and corrections are welcome._

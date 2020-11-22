@@ -213,8 +213,6 @@ Despite the identified caveats around excessive redundancy and storage requireme
 
 We can do better. The [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
 
-[Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering)
-
 _Corrections and comments are most welcome._
 
 ## Links

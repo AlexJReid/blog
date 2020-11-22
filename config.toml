@@ -20,14 +20,11 @@ googleAnalytics = "UA-156939108-1"
     headTitle = "Alex Reid"
     author = "Alex Reid"
     title = "Alex Reid"
-    info = "thoughts on software engineering, clouds and data"
+    info = "Thoughts on software engineering, clouds and data."
     description = "Alex Reid - thoughts on software engineering, clouds and data."
-    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb"
+    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb,java,go,python,dynamodb,bigtable"
     mainSections = ["posts"]
 
-[[params.socials]]
-name = "Twitter"
-link = "https://twitter.com/alexjreid"
 [[params.socials]]
 name = "GitHub"
 link = "https://github.com/alexjreid"
