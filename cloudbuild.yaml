@@ -1,4 +1,6 @@
 steps:
+- name: 'gcr.io/cloud-builders/git'
+  args: ['rev-parse', '--short', 'HEAD', '>', 'public/COMMIT']
 - name: 'gcr.io/$PROJECT_ID/hugo'
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/blog:$SHORT_SHA', '-f', '_build/Dockerfile.nginx', '.']
