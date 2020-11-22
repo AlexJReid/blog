@@ -173,7 +173,7 @@ Delete each value for PK/SK returned in a batch.
 
 ### AP6: Paginate through comments
 
-Run any of the above queries with `Limit` set to `20`. Use `LastEvaluatedKey` returned by DynamoDB to paginate through results by passing it as `ExclusiveStartKey` in the next query request. Performance will be consistent, regardless of the page is being requested. [This is explained in more detail in the DynamoDB docs.](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html).
+Run any of the above queries with `Limit` set to `20`. Use `LastEvaluatedKey` returned by DynamoDB to paginate through results by passing it as `ExclusiveStartKey` in the next query request. Performance will be consistent, regardless of the page is being requested. [This is explained in more detail in the DynamoDB docs.](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html)
 
 ## Building the table
 
