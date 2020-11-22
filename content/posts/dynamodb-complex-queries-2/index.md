@@ -2,9 +2,9 @@
 draft = false
 date = 2020-11-21T19:00:00Z
 title = "Efficient NoSQL filtering and pagination with DynamoDB - part 2"
-description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB. In this post, we improve upon our original design with more GSIs and parallel queries."
+description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB. In this post, we improve upon our original design with more GSIs and parallel queries implemented in a Go client."
 slug = "dynamodb-efficient-filtering-2"
-tags = ['nosqlcommments','dynamodb']
+tags = ['nosql-series','dynamodb','aws','go']
 categories = []
 externalLink = ""
 series = []
