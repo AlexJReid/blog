@@ -4,7 +4,7 @@ date = 2020-11-09T17:54:11Z
 title = "Efficient NoSQL filtering and pagination with DynamoDB - part 1"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
-tags = ['nosqlcommments','dynamodb','aws']
+tags = ['nosql-series','dynamodb','aws']
 categories = []
 externalLink = ""
 series = []
@@ -12,17 +12,20 @@ series = []
 
 It never ceases to amaze me just how much is possible through the seemingly constrained model that DynamoDB gives us. It's a fun puzzle to try to support access patterns beyond a simple key value lookup, or the retrieval of an ordered set of items.
 
-The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved by duplicating data so that it appears in multiple predefined sets. DynamoDB secondary indexes allow us to automatically duplicate items with different attributes from the item as keys.
+The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved by duplicating data so that it appears in multiple predefined sets for inexpensive retrieval. DynamoDB secondary indexes allow us to automatically duplicate items, using different attributes from the item as keys.
 
-This can get us a long way. However, a common approach is to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, sending updates to Elasticsearch via DynamoDB Streams and a Lambda function.
+This can get us a long way. However, it is common to delegate more complex queries to another supplementary system, such as Elasticsearch. DynamoDB remains the source of truth, but replicates to Elasticsearch via DynamoDB Streams and a Lambda function.
 
-In many cases, this hybrid solution is the right approach, particularly when the model is complex or too challenging to fit into DynamoDB. Perhaps the scale DynamoDB provides simply isn't needed for every single access pattern. However, running two stores and replicating them is definitely added complexity. Elasticsearch, even when managed, can be a complex and expensive beast. I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary. 
+In many cases, a hybrid solution is the right approach, particularly when the model is complex and too challenging to fit into DynamoDB. Arguably, the scale DynamoDB provides simply isn't needed for every single access pattern. 
 
-This series of posts explores what is possible with DynamoDB alone.
+Running two stores and replicating them is definitely added complexity. Elasticsearch, even when used as a managed service, can be a complex and expensive beast. What if it wasn't needed? I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
+
+This series of posts explores what is possible with DynamoDB alone, starting naively, demonstrating problems and pitfalls along the way.
 
 ## Example scenario: a product comments system
 
- We want to model the comments section shown on each product page within an e-commerce site. A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown at first and users can click a next button to paginate through older comments. As the system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
+ >We are tasked with producing a data model to support the comments that get shown on each product page within an e-commerce site. 
+ >A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
 
 This can be broken down into the following access patterns.
 
@@ -33,15 +36,17 @@ This can be broken down into the following access patterns.
 - AP5: Delete a comment
 - AP6: Paginate through comments
 
-It might look [something like this](ui.png). Yeah, probably time to hire a UI expert, but you get the idea.
+It might look [something like this](ui.png). Yeah, it is probably time to hire a user interface specialist... but you get the idea.
 
 ## What's wrong with DynamoDB filters?
 
 DynamoDB allows us to filter query results before they are returned to our client program. You might think that filters are all we need here as it is possible to filter on any non-key attribute, which sounds liberating at first. However, if a large amount of data is filtered out, we will still consume resources, time and money in order to find the needle in the haystack. This is particularly costly if each item size runs into kilobytes.
 
-Filters do have utility at ensuring data is within bounds (such as enforcing TTL on expired items that might not have been _collected_ yet) but in summary, they work best when only a small proportion of the items are thrown away by the filter.
+Filters do have utility at ensuring data is within bounds (such as enforcing TTL on expired items that might not have been _collected_ yet) but in summary, **filters work best when only a small proportion of the items are going to be thrown away.**
 
 ## Table design
+
+Like most DynamoDB models, only a single table is required. We will call it `comments`. At this stage there is only a single entity, `comments` exists, but others could eventually be stored in this table. We are not providing a model for products in this series of posts, it is assumed to exist already.
 
 ### Table
 
@@ -112,11 +117,11 @@ As the combination of `rating_5` and `rating_1` is `17`, this could be used as a
 
 It has the side-effect of allowing longer set values to be stored. For instance, if instead of numeric ratings we used `['Poor', 'Fair', 'Good', 'Great', 'Excellent']`, the keys would be longer and we would consume more resources.
 
-It might seem premature, but shaving bytes off repeated keys and attribute names is considered good practice. The tradeoff is that this portion of the key is less readable by the human eye.
+It might seem premature, but shaving bytes off repeated keys and attribute names is sometimes considered good practice. The tradeoff is that this portion of the key is less readable by the human eye and therefore harder to reason about when debugging.
 
 ## Queries
 
-We should now be able to satisfy all of our access patterns. All queries should have `ScanIndexForward` set to `false` in order to retrieve the most recent comments first, and a `Limit` of `20`.
+We should now be able to provide correct data for all of our access patterns. All queries should have `ScanIndexForward` set to `false` in order to retrieve the most recent comments first, and a `Limit` of `20`.
 
 ### AP1: Show all comments for a product, most recent first
 
@@ -168,23 +173,23 @@ Delete each value for PK/SK returned in a batch.
 
 ### AP6: Paginate through comments
 
-Run any of the above queries with `Limit` set to `20`. Use pagination tokens returned by DynamoDB to paginate through results. Performance will remain the same, regardless of what page is being requested.
+Run any of the above queries with `Limit` set to `20`. Use `LastEvaluatedKey` returned by DynamoDB to paginate through results by passing it as `ExclusiveStartKey` in the next query request. Performance will be consistent, regardless of the page is being requested. [This is explained in more detail in the DynamoDB docs.](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html).
 
 ## Building the table
 
-This approach works by duplicating redundant items with different keys. Triggers are a great way to automate the creation of these duplicated items. A DynamoDB stream should be setup on the table and connected to a Lambda function.
+This approach works by creating redundant items with different keys. Triggers are one way of automating the creation of these duplicated items, although as we will see in the [next post](/posts/dynamodb-efficient-filtering-2/), they are not the only way. A DynamoDB stream should be setup on the table and connected to a Lambda function.
 
 When a comment is created, the wildcard  `sk` should be used, i.e. `PRODUCT#42/~/~`. We will call this the _primary item_.
 
-The Lambda function will be invoked with a change payload when the primary item is added, updated or deleted. From the attributes `language` and `rating`, it will generate the duplicate items and add them to the table. If `language` and `rating` subsequently change, previous duplicate items will be removed before the new duplicate set is added. Upon a delete modification, all duplicate items will be removed.
+The Lambda function gets invoked with a change payload when the primary item is added, updated or deleted. From the attributes `language` and `rating`, it will generate the duplicate items and add them to the table. If `language` and `rating` subsequently change, previous duplicate items will be removed before the new duplicate set is added. Upon a delete modification, all duplicate items will be removed.
 
 An additional attribute, `auto` is added to the automatically created items so that the Lambda function knows to take no action in response to items that it has created in the table.
 
 ## Problems
 
-It is expected that this simple design will perform well, support lots of traffic and be very economical to run **if the number of comments posted is hundreds per day.**
+It is expected that this simple design will perform predictably for queries. It is very simple from that perspective.
 
-The reason for this caveat is we are doing a lot of duplication here. There will come a point where the number of duplicates ceases to remain feasible if the _possible values_ as set cardinality increases.
+Writes are a worry, though, as we are doing a lot of duplication. **There will come a point where the number of duplicates ceases to remain feasible as set cardinality increases.**
 
 ```python
 2 ** 5 = 32
@@ -194,17 +199,19 @@ The reason for this caveat is we are doing a lot of duplication here. There will
 ...
 ```
 
-As the number of duplicates increases, so does the number of operations and therefore cost. Changes need to the original record need to be kept in sync. Large payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools.
+As the number of duplicates increases, so does the number of operations and therefore cost. Changes need to the original record need to be kept in sync. 
 
-Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table.
+Large payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools. Comments are likely to be short and not compress well, so this does not make sense to bother with here.
+
+Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table. It is also yet more code to write.
 
 ## Summary
 
-Despite the identified caveats around excessive redundancy and storage requirements, we've successfully built a filtering solution without needing to use DynamoDB filters. **The table is very simple to use: all access patterns can be satisfied with a single query.**
+Despite the identified caveats around excessive redundancy and storage requirements, we've successfully built a filtering solution without needing to use DynamoDB filters. **The table is very simple to use: all access patterns can be satisfied with a single query. The read path will perform predictably.**
 
-**Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.** There is nothing wrong with duplicating data to get efficient queries. Coupled with DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code.
+**Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.** There is nothing wrong with duplicating data to get efficient queries. Using DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code.
 
-However, we can do better. The [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
+We can do better. The [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering)
 
@@ -212,7 +219,7 @@ _Corrections and comments are most welcome._
 
 ## Links
 
-If you found this interesting, you'll enjoy the following even more.
+If you found this interesting, you'll probably enjoy the following even more.
 
 - [When to use (and when not to use) DynamoDB Filter Expressions](https://www.alexdebrie.com/posts/dynamodb-filter-expressions/)
 - [Best Practices for Using Secondary Indexes in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes.html)

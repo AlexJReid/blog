@@ -2,7 +2,7 @@
 draft = false
 date = 2020-11-21T19:00:00Z
 title = "Efficient NoSQL filtering and pagination with DynamoDB - part 2"
-description = "Implementing an efficient paginated and filterable product comments system with DynamoDB."
+description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB. In this post, we improve upon our original design with more GSIs and parallel queries."
 slug = "dynamodb-efficient-filtering-2"
 tags = ['nosqlcommments','dynamodb']
 categories = []
@@ -10,9 +10,11 @@ externalLink = ""
 series = []
 +++
 
-In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was demonstrated. It was not a perfect solution as a large number of redundant items were _manually_ created by our code. The number of permutations would increase dramatically if the queries got even slightly more complicated.
+In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was discussed. It was not a perfect solution as a large number of redundant items were created by code that we would have to maintain. 
 
-Previously, we had to write code and use DynamoDB Streams. DynamoDB has built-in functionality that can achieve more or less the same thing: global secondary indexes.
+**In this post, we will improve upon our original model with more GSIs and parallel queries.**
+
+Previously, we had to create a Lambda function and use DynamoDB Streams. DynamoDB has built-in functionality that can achieve this more effectively: global secondary indexes.
 
 In addition, there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we might end up with a better model.
 
@@ -22,8 +24,8 @@ Let's apply both approaches and see what happens.
 
 Firstly let's recap on the model we are building.
 
-> We want to model the comments section shown on each product page within an e-commerce site. A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown at first and users can click a next button to paginate through older comments. As the system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
-
+>We are tasked with producing a data model to support the comments that get shown on each product page within an e-commerce site. 
+>A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
 This can be broken down into the following access patterns.
 
 - AP1: Show all comments for a product, most recent first
@@ -35,19 +37,23 @@ This can be broken down into the following access patterns.
 
 ## Table design
 
-> Due to space constraints, not all non-indexed item attributes such as the comment title, text and username are not shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
+>To save space, not all non-indexed item attributes such as the comment title, text and username are not shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
 
 ### Table
 
-The below table contains three comments for product `42`. To create a comment, a single item is written to the table with the keys shown.
+The below table contains three comments for product `42`. To create a comment, a single item is written to the table with the keys shown. The write path is out of scope. Imagine it is an API that receives a `POST` request from a web or mobile client, generates an `Item` that conforms to our model and makes the `PutItem` call.
 
 ![Table view](comments2.png)
 
 That's a lot more than key attributes than last time! This is because items need to contain a key for each of the indexes they're going to appear in. We reuse `GSISK` across all of the other indexes as it stores the creation date, the common sort key.
 
-Only a subset of attributes from the table are projected to save space and reduce query costs. This is shown in the following diagrams.
+**DynamoDB handles the projection of necessary keys and attributes into four other indexes on our behalf.** Only a subset of attributes from the table are projected to save space and reduce query costs. This is shown in the following diagrams.
 
-We form the partition key with the pattern `PRODUCT#<identifier>/<projected filter 1>/<projected filter 2>` and use the sort key to ensure correct ordering. As seen above, we need to use slightly different partition keys to support a range of queries. Discussion around the keys used in each GSI is detailed in the following sections.
+We form the partition key with this pattern:
+```
+PRODUCT#<identifier>[/<projected filter 1>/<projected filter 2>]
+``` 
+We populate the sort key with a sortable date string to ensure ordering. As seen above, we need to use slightly different partition keys to support a range of queries. Discussion around the keys used in each GSI is explained in the following sections.
 
 ### GSI: byLangAndRating
 
@@ -82,7 +88,7 @@ As its name would imply, this index is suitable for getting all comments of any 
 
 ## Queries
 
-Let's try it out. All queries should have `ScanIndexForward` set to `false` in order to retrieve the most recent comments first, and a `Limit` of `20`.
+All queries should have `ScanIndexForward` set to `false` in order to retrieve the most recent comments first, and a `Limit` of `20`.
 
 ### AP1: Show all comments for a product, most recent first
 
@@ -109,7 +115,7 @@ Let's try it out. All queries should have `ScanIndexForward` set to `false` in o
         - Query on `byLangAndRating`
             - GSIPK = `PRODUCT#42/en/5`
             - Limit = `20`
-    - Gather results into single collection, sort on `GSISK` and return top N
+    - Gather results into single collection, reverse sort on `GSISK` and return top N
 
 #### b. Any language, single rating
 
@@ -140,7 +146,9 @@ Let's try it out. All queries should have `ScanIndexForward` set to `false` in o
 
 ### AP6: Paginate through comments
 
-This requirement will be covered in the next post.
+Run any of the above queries with `Limit` set to `20`. Use `LastEvaluatedKey` returned by DynamoDB to paginate through results by passing it as `ExclusiveStartKey` in the next query request.
+
+Pagination support for `AP3` is slightly more complicated and will be covered in the next post.
 
 ## Query planning
 
@@ -151,16 +159,16 @@ For instance, given:
 - `language=en`
 - `rating=1 rating=2 rating=3 rating=4 rating=5`
 
-`AP2` should be used as all ratings are specified, making the filtering a needless cost. The results will be the same for more work.
+`AP2` will be used as all ratings are specified, making the filtering a needless cost. The results will be the same for more work.
 
 `AP3a` would be used if only `rating=2 rating=4` are required.
 
-If no filtering is specified, `AP1` should be used... and so on. 
+If no filtering is specified, `AP1` would be used.
 
 The following code snippet demonstrates shows a basic implementation.
 
 ```go
-baseKey := "PRODUCT#" + productID
+baseKey := NewProductKey(productID) // => PRODUCT#42
 
 // Select strategy based on filter parameters
 // This tells us what index to query, what key to use and its value
@@ -168,16 +176,18 @@ switch findStrategy(language, ratings) {
 case all:
     items, err = performQuery("GSI4PK", baseKey, "all")
 case allLangSingleRating:
-    items, err = performQuery("GSI3PK", appendKeySegment(baseKey, ratings[0]), "byRating")
+    items, err = performQuery("GSI3PK", baseKey.Append(ratings[0]), "byRating") // => PRODUCT#42/5
 //... etc
 }
 ```
+
+Databases have query planners. If you've ever prefixed a SQL query with `EXPLAIN` and tried to make sense of the output, you have just asked the database how it will satisfy your query. This is the work the database will do if it were to execute the query. Although the example above is a crude switch statement, it is performing the same role. Given `input` use `index` with `key(s)`.
 
 This logic, along with any parallel query coordination (discussed in the next section), should be written once and provided to consumers either as a library or an API. This abstraction provides a high level interface to the model. We can also make improvements without needing consumers to change their code.
 
 ## Parallel queries
 
-Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages make this fairly straightforward, as shown below.
+Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages like Go make this fairly straightforward, as demonstrated below. A similar outcome could be achieved with promises, futures or threads in other languages.
 
 ```go
 func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
@@ -188,9 +198,9 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 
 	var wg sync.WaitGroup
 	itemsCh := make(chan []CommentDynamoItem)
-	errorsCh := make(chan error, len(pkValues)) // Buffer size is number that could fail
+	errorsCh := make(chan error, len(pkValues)) // Buffered to not block
 
-	// Wrap perform query, sending its output to itemsCh and errorsCh
+	// Wrap perform query, yielding its output to itemsCh and errorsCh
 	batchPerformQuery := func(pkv string) {
 		defer wg.Done()
 		items, err := performQuery(pk, pkv, indexName)
@@ -201,7 +211,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 		itemsCh <- items
 	}
 
-	// Consume items from DynamoDB and send topN
+	// Consume items from DynamoDB and yield topN
 	batchResultCh := make(chan batchResult)
 	go func() {
 		var allItems []CommentDynamoItem
@@ -232,11 +242,12 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 		wg.Add(1)
 		go batchPerformQuery(pkv)
 	}
+	// Wait for queries to complete or fail. Close channels to stop above consumer.
 	wg.Wait()
 	close(itemsCh)
 	close(errorsCh)
 
-	// Collect topN form response, checking for any errors that occurred
+	// Collect the aggregated output from the consumer, checking for any errors that occurred.
 	result := <-batchResultCh
 
 	if len(result.errors) > 0 {
@@ -306,9 +317,9 @@ A simple UI was built on top of this model. Notice how the query is resolved usi
 
 You might have noticed that we're fetching more data than we return in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so `[1, 2, 3, 4]` would load up to `80` comments, throwing away `60`. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page, after the combined results have been sorted by date. (As explained earlier, for `[1, 2, 3, 4, 5]`, the filter is a no-op, so our query planner will bypass this and use a more optimal index.)
 
-You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit per item, allowing us to read a single item up to `4KB`. A comment will be nowhere near that big, so this approach would be cost inefficient. A query, on the other hand, uses read capacity units based on the data read, allowing us to read maybe eight to ten comments with a single RCU.
+You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit (RCU) per item, allowing us to read a single item up to `4KB`. A comment will be nowhere near that big, so this approach would be wasteful. A query, on the other hand, consumes RCUs based on the actual data read, allowing us to read at least ten comments with a single RCU.
 
-As we will see in future posts, other NoSQL databases can accommodate the _multi-get_ pattern cheaply.
+In addition, a product may have comments with only `5` and `1` ratings. There is no point in looking for other ratings. We can improve on these potentially wasted calls by maintaining counters for each rating. A query for comments with rating `3` can be skipped if the corresponding count is `zero`. This has will be explored in the next post.
 
 ## Summary
 
@@ -326,7 +337,7 @@ The client code is now more complex, but there is a lot of flexibility when Dyna
 
 The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
 
-In the final post, we will add some statistics, pagination and an API. We will then explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
+In the final post, we will add some statistics, pagination and add an API. After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
 
 [Discuss on Twitter](https://twitter.com/search?q=alexjreid.dev%2Fposts%2Fdynamodb-efficient-filtering-2)
 
