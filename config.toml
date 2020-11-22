@@ -26,6 +26,12 @@ googleAnalytics = "UA-156939108-1"
     mainSections = ["posts"]
 
 [[params.socials]]
+name = "RSS Feed"
+link = "/index.xml"
+[[params.socials]]
+name = "About"
+link = "/about/"
+[[params.socials]]
 name = "GitHub"
 link = "https://github.com/alexjreid"
 [[params.socials]]

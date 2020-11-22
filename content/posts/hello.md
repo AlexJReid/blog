@@ -2,9 +2,9 @@
 draft = false
 date = 2020-01-19T21:05:54Z
 title = "Hello Hugo and Cloud Run!"
-description = "Moving my blog from Medium to hugo and Google Cloud Run"
+description = "Running a hugo blog with GitHub, Google Cloud Build and Google Cloud Run"
 slug = "hello" 
-tags = ['meta', 'gcp', 'cloud run', 'cloud build', 'medium']
+tags = ['meta', 'hugo', 'gcp', 'cloud run', 'cloud build', 'medium']
 categories = []
 externalLink = ""
 series = []
@@ -18,19 +18,20 @@ The page you're seeing is coming from `nginx` image hosted on Google Cloud Run, 
 
 Add markdown files to the posts directory and edit with any editor or in a browser through GitHub. Manage changes with git branches, collaborate through PRs. Content as code. Couldn't be much simpler.
 
-## Deploy steps
+## Deployment steps
 
-When a change is pushed to master, the site is rebuilt and deployed by Google Cloud Build.
+When a change is pushed to master, Google Cloud Build receives a notification from GitHub. It then:
 
-- Clone the blog repo
-- Run `hugo` via a custom Cloud Build builder (basically just a [Docker image](https://github.com/AlexJReid/blog/blob/master/_hugo-cloudbuilder) containing the `hugo` binary. The build process assumes that this image has already been built and is available.)
-- Copy the built site to an `nginx` image and push it to the registry
-- Deploy the serving image to Cloud Run
+- Clones the blog repo
+- Runs `hugo` via a custom Cloud Build builder (basically just a [Docker image](https://github.com/AlexJReid/blog/blob/master/_hugo-cloudbuilder) containing the `hugo` binary. The build process assumes that this image has already been built and is available.)
+- Copies the built site from `public/` to an image extending `nginx` and pushes it to the `gcr.io` registry
+- It replaces the running container in Cloud Build with the new one
 
 See [cloudbuild.yaml](https://github.com/AlexJReid/blog/blob/master/cloudbuild.yaml) to see how it all fits together.
 
 One thing I'd like to improve is the removal of old builds I'll never want to run again. Cloud Run keeps these to allow for easy rollback, among other things. As this is just my blog, I don't really have a particular SLA to uphold, but it's good to know it's there.
 
-## Why Cloud Run
+## Why Cloud Run?
 
-I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has nice monitoring and dead simple support for custom domains and certificate provisioning. This makes a refreshing change.
+I really liked using Cloud Run for another project and it seemed a simple way of getting off Medium. It has good monitoring, simple support for custom domains and automatic certificate provisioning. Cloud Run is astonishingly good.
+
