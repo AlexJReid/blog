@@ -337,6 +337,6 @@ The client code is now more complex, but there is a lot of flexibility when Dyna
 
 The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
 
-In the final post, we will add some statistics, pagination and add an API. After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
+In the final post, we will add some statistics, pagination and an API. After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
 
 _Comments and corrections are welcome._
