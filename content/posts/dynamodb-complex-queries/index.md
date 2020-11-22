@@ -33,6 +33,8 @@ This can be broken down into the following access patterns.
 - AP5: Delete a comment
 - AP6: Paginate through comments
 
+It might look [something like this](ui.png). Yeah, probably time to hire a UI expert, but you get the idea.
+
 ## What's wrong with DynamoDB filters?
 
 DynamoDB allows us to filter query results before they are returned to our client program. You might think that filters are all we need here as it is possible to filter on any non-key attribute, which sounds liberating at first. However, if a large amount of data is filtered out, we will still consume resources, time and money in order to find the needle in the haystack. This is particularly costly if each item size runs into kilobytes.
