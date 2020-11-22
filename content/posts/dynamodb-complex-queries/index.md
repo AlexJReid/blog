@@ -89,7 +89,7 @@ As per `QP1`, a user can choose to show _all_ languages or select a single langu
 
 `QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`.
 
-Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialised to an ordered, `.`-delimited string such as `1.2.3.4.5`.
+Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialized to an ordered, `.`-delimited string such as `1.2.3.4.5`.
 
 You could think about each of the ratings being toggle switches that are set low or high.
 
@@ -201,7 +201,7 @@ Writes are a worry, though, as we are doing a lot of duplication. **There will c
 
 As the number of duplicates increases, so does the number of operations and therefore cost. Changes need to the original record need to be kept in sync. 
 
-Large payloads could be compressed with `snappy` or `bz` to potentially reduce consumed capacity units. This has the drawback of making the data illegible in the DynamoDB console and other tools. Comments are likely to be short and not compress well, so this does not make sense to bother with here.
+Large or complex payloads that can remain opaque to DynamoDB could be serialized as a `protobuf`, or similar. This will reduce consumed read capacity units as attribute names do not have to be included in each item, just the data itself. This has the drawback of making the data illegible in the DynamoDB console. It also means additional work in ensuring that the serialized value can be correctly deserialized as its schema evolves.
 
 Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table. It is also yet more code to write.
 
