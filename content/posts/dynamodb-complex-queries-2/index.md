@@ -243,6 +243,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 		go batchPerformQuery(pkv)
 	}
 	// Wait for queries to complete or fail. Close channels to stop above consumer.
+	// There are other ways to achieve this!
 	wg.Wait()
 	close(itemsCh)
 	close(errorsCh)
