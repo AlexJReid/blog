@@ -320,6 +320,8 @@ You might have noticed that we're fetching more data than we return in `AP3`. Pa
 
 You might think that it would be more efficient to perform a query to get `60` keys and then do a `BatchGetItem` on the top `20`. This will cost more as a `BatchGetItem` _charges_ a minimum of one read capacity unit (RCU) per item, allowing us to read a single item up to `4KB`. A comment will be nowhere near that big, so this approach would be wasteful. A query, on the other hand, consumes RCUs based on the actual data read, allowing us to read at least ten comments with a single RCU.
 
+To maximise how many comments we can read in an RCU, large or complex payloads (such as a nested map) that can remain opaque to DynamoDB should be serialized as a `protobuf`, or similar. This might reduce consumed read capacity units as the same nested attribute names do not have to be included in each item, just the data itself. This has the drawback of making the data illegible in the DynamoDB console and other tools. It also means additional work in ensuring that the serialized value can be correctly deserialized as its schema evolves. That said, this approach should benchmarked to understand the benefits it might bring.
+
 In addition, a product may have comments with only `5` and `1` ratings. There is no point in looking for other ratings. We can improve on these potentially wasted calls by maintaining counters for each rating. A query for comments with rating `3` can be skipped if the corresponding count is `zero`. This has will be explored in the next post.
 
 ## Summary

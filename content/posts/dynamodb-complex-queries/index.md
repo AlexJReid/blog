@@ -199,9 +199,7 @@ Writes are a worry, though, as we are doing a lot of duplication. **There will c
 ...
 ```
 
-As the number of duplicates increases, so does the number of operations and therefore cost. Changes need to the original record need to be kept in sync. 
-
-Large or complex payloads that can remain opaque to DynamoDB could be serialized as a `protobuf`, or similar. This will reduce consumed read capacity units as attribute names do not have to be included in each item, just the data itself. This has the drawback of making the data illegible in the DynamoDB console. It also means additional work in ensuring that the serialized value can be correctly deserialized as its schema evolves.
+As the number of duplicates increases, so does the number of operations and therefore cost. Changes need to the original record need to be kept in sync.
 
 Creation of the duplicate items could partially fail. Although the Lambda will retry, it is possible that the table will be left in an inconsistent state. An hourly Lambda function could check the table, processing recent changes. Larger repair jobs implemented with Step Functions or EMR could be written to check integrity, but these may be costly to run on a large table. It is also yet more code to write.
 
