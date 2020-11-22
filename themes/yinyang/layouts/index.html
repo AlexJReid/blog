@@ -11,7 +11,6 @@
           {{ range (where site.RegularPages "Type" "in" site.Params.mainSections).GroupByDate "2006" -}}
           <section>
             <h1 class="site-date-catalog">{{ .Key }}</h1>
-
             {{ range .Pages }}
             <div class="row posts-line">
               <div class="posts-date col-xs-3 col-sm-2">
@@ -41,8 +40,6 @@
       </div>
     </div>
   </article>
-
   {{ partial "scripts.html" . }}
 </body>
-
 </html>

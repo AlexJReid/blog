@@ -41,6 +41,7 @@ a:hover {
 
 /* header */
 .site-title {
+    font-family: 'Bebas Neue', sans-serif;
     font-size: 3rem;
     margin-top: 32px;
 }
@@ -50,7 +51,6 @@ a:hover {
 }
 
 .signatures {
-    font-family: "Arvo", sans-serif;
     font-weight: 600;
 }
 
@@ -133,9 +133,12 @@ a:hover {
     margin-bottom: 55px;
 }
 
-.post-title, .site-date-catalog {
+.post-title {
     font-size: 2.5rem;
-    font-family: "Arvo", "Helvetica Neue", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans", sans-serif;
+}
+
+.site-date-catalog {
+    font-size: 2em;
 }
 
 .post-category {
@@ -146,8 +149,7 @@ a:hover {
 }
 
 .post-date {
-    font-weight: 800;
-    font-style: italic;
+    font-weight: 600;
 }
 
 .post-author {
