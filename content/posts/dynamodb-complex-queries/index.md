@@ -12,7 +12,7 @@ series = []
 
 It never ceases to amaze me just how much is possible through the seemingly constrained model that DynamoDB gives us. It's a fun puzzle to try to support access patterns beyond a simple key value lookup, or the retrieval of an ordered set of items.
 
-The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved by duplicating data so that it appears in multiple predefined sets for inexpensive retrieval. DynamoDB secondary indexes allow us to automatically duplicate items, using different attributes from the item as keys.
+The NoSQL gods teach us to store data in a way that mirrors our application's functionality. This is often achieved by duplicating data so that it appears in multiple predefined sets for inexpensive retrieval.
 
 This can get us a long way. However, it is common to delegate more complex queries to a secondary store, such as Elasticsearch or MySQL. DynamoDB remains the source of truth, but replicates to the secondary store via DynamoDB Streams and a Lambda function.
 
