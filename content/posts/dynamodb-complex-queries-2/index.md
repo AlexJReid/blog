@@ -225,7 +225,7 @@ func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexNa
 				return allItems[i].GSISK > allItems[j].GSISK
 			})
 			// Send topN
-			queryOutputCh <- &CommentQueryOutput{Items: allItems[0:min(20, len(allItems))]}
+			queryOutputCh <- &CommentQueryOutput{Items: allItems[0:min(pageSize, len(allItems))]}
 		}
 	}()
 
