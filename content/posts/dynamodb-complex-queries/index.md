@@ -87,9 +87,9 @@ It might help to think of each `sk` as representing an ordered set of comments. 
 
 We will assume this application will be write light and read heavy, so it is acceptable to store the same comment multiple times in order to provide inexpensive querying.
 
-As per `QP1`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
+As per `AP1`, a user can choose to show _all_ languages or select a single language. This can be met by double-writing the item with different `sk` values, once with `~` as the language element, and once with the actual language of the comment, such as `en`.
 
-`QP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`.
+`AP3` is more complicated as any combination of ratings can be requested. A user could select `1` to only see bad comments, or `5` to only see the good comments - or any combination of those. To achieve this, a _power set_ is calculated to generate keys for the possible combinations. The number of items in a power set is `2 ** len(values_in_set)` so in this case `2 ** len({1,2,3,4,5}) = 32` so the power set size is `32`. We can remove any items from the set that do not contain the rating of the comment being posted. This brings the set size down to `16`.
 
 Ultimately, we write the comment to the table `32` times with a `sk` representing each combination of ratings, once for all languages and once for the actual language. A set containing multiple ratings is serialized to an ordered, `.`-delimited string such as `1.2.3.4.5`.
 
@@ -119,7 +119,7 @@ As the combination of `rating_5` and `rating_1` is `17`, this could be used as a
 
 It has the side-effect of allowing longer set values to be stored. For instance, if instead of numeric ratings we used `['Poor', 'Fair', 'Good', 'Great', 'Excellent']`, the keys would be longer and we would consume more resources.
 
-It might seem premature, but shaving bytes off repeated keys and attribute names is sometimes considered good practice. The tradeoff is that this portion of the key is less readable by the human eye and therefore harder to reason about when debugging.
+It might seem premature, but shaving bytes off repeated keys and attribute names is sometimes considered good practice as less data needs to be stored and transferred per item. The tradeoff is that this portion of the key is less readable by the human eye and therefore harder to reason about when debugging.
 
 ## Queries
 
