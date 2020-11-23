@@ -211,9 +211,7 @@ func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexNa
 		for i := 0; i < len(partitionKeyValues); i++ {
 			select {
 			case workerOutput := <-workerOutputCh:
-				if workerOutput != nil {
-					allItems = append(allItems, workerOutput.Items...)
-				}
+				allItems = append(allItems, workerOutput.Items...)
 			case workerError := <-workerErrorsCh:
 				errors = append(errors, workerError)
 			}
@@ -237,8 +235,9 @@ func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexNa
 			queryOutput, err := query(partitionKeyName, keyValue, indexName)
 			if err != nil {
 				workerErrorsCh <- err
+			} else {
+				workerOutputCh <- queryOutput
 			}
-			workerOutputCh <- queryOutput
 		})(pkv)
 	}
 
