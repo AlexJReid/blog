@@ -331,7 +331,7 @@ In addition, a product may have comments with only `5` and `1` ratings. There is
 
 The client code is now more complex, but there is a lot of flexibility when DynamoDB and the client work together in unison to provide a _data service_. These are implementation details that consumers of the model should not be exposed to. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
 
-**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database, but the model is flexible enough to answer more questions efficiently, such as:
+**When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database. However, the model _is_ flexible enough to answer more questions efficiently, such as:
 
 > Show the most recent positive and most recent negative comment for a product
 
@@ -339,10 +339,10 @@ The client code is now more complex, but there is a lot of flexibility when Dyna
 
 > ... and so on, let me know if you spot any others!
 
+Like our original approach, maintaining an index is not not free. Every eligible item written to the table is also written to the index. In the final post, we will look at economising by overloading GSIs, generating some statistics and maybe more.
+
+Thanks for following along so far!
+
 The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
-
-In the final post, we will add some statistics, pagination and an API. 
-
-After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
 
 _Comments and corrections are welcome._
