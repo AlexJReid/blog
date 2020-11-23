@@ -175,14 +175,16 @@ baseKey := NewProductKey(productID) // => PRODUCT#42
 // This tells us what index to query, what key to use and its value
 switch findStrategy(language, ratings) {
 case all:
-    items, err = performQuery("GSI4PK", baseKey, "all")
+    queryOutput, err = query("GSI4PK", baseKey, "all")
 case allLangSingleRating:
-    items, err = performQuery("GSI3PK", baseKey.Append(ratings[0]), "byRating") // => PRODUCT#42/5
+    queryOutput, err = query("GSI3PK", baseKey.Append(ratings[0]), "byRating") // => PRODUCT#42/5
 //... etc
 }
 ```
 
-Databases have query planners. If you've ever prefixed a SQL query with `EXPLAIN` and tried to make sense of the output, you have just asked the database how it will satisfy your query. This is the work the database will do if it were to execute the query. Although the example above is a crude switch statement, it is performing the same role. Given `input` use `index` with `key(s)`.
+Databases have query planners. If you've ever prefixed a SQL query with `EXPLAIN` and tried to make sense of the output, you have just asked the database how it will satisfy your query. This is the work the database will do if it were to execute the query. Although the example above is a crude switch statement, it is performing the same role. 
+
+>Given `input` use `index` with `key(s)`.
 
 This logic, along with any parallel query coordination (discussed in the next section), should be written once and provided to consumers either as a library or an API. This abstraction provides a high level interface to the model. We can also make improvements without needing consumers to change their code.
 
@@ -191,92 +193,78 @@ This logic, along with any parallel query coordination (discussed in the next se
 Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages like Go make this fairly straightforward, as demonstrated below. The same could be achieved with promises, futures or threads in other languages.
 
 ```go
-func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
-	type batchResult struct {
-		items  []CommentDynamoItem
-		errors []error
-	}
+func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexName string) (*CommentQueryOutput, error) {
+	workerOutputCh := make(chan *CommentQueryOutput)
+	errorsCh := make(chan error)
 
-	var wg sync.WaitGroup
-	itemsCh := make(chan []CommentDynamoItem)
-	errorsCh := make(chan error, len(pkValues)) // Buffered to not block
+	queryOutputCh := make(chan *CommentQueryOutput)
 
-	// Consumer: accept items from DynamoDB producer below and yield topN to batchResultCh
-	batchResultCh := make(chan batchResult)
+	// Consume responses
 	go func() {
 		var allItems []CommentDynamoItem
 		var errors []error
 
-		for items := range itemsCh {
-			allItems = append(allItems, items...)
-		}
-
-		for error := range errorsCh {
-			errors = append(errors, error)
+		for i := 0; i < len(partitionKeyValues); i++ {
+			select {
+			case workerOutput := <-workerOutputCh:
+				allItems = append(allItems, workerOutput.Items...)
+			case workerError := <-errorsCh:
+				errors = append(errors, workerError)
+			}
 		}
 
 		if len(errors) > 0 {
-			batchResultCh <- batchResult{errors: errors}
+			queryOutputCh <- &CommentQueryOutput{BulkErrors: errors}
 		} else {
 			// Reverse sort on GSISK/creation date
 			sort.Slice(allItems, func(i, j int) bool {
 				return allItems[i].GSISK > allItems[j].GSISK
 			})
-			// Send topN
-			batchResultCh <- batchResult{items: allItems[0:min(20, len(allItems))]}
+			// Yield topN
+			queryOutputCh <- &CommentQueryOutput{Items: allItems[0:min(20, len(allItems))]}
 		}
 	}()
 
-	// Wrap perform query, yielding its output to itemsCh and errorsCh
-	batchPerformQuery := func(pkv string) {
-		defer wg.Done()
-		items, err := performQuery(pk, pkv, indexName)
-		// Log and pass on errors
-		if err != nil {
-			errorsCh <- err
-		}
-		itemsCh <- items
+	// Dispatch a query for each key in partitionKeyValues e.g. PRODUCT#42/1, PRODUCT#42/4
+	for _, pkv := range partitionKeyValues {
+		go (func(partitionKeyValue string) {
+			queryOutput, err := query(partitionKeyName, partitionKeyValue, indexName)
+			if err != nil {
+				errorsCh <- err
+			}
+			workerOutputCh <- queryOutput
+		})(pkv)
 	}
 
-	// Producer. Dispatch a query for each key in pkValues e.g. PRODUCT#42/1, PRODUCT#42/4
-	for _, pkv := range pkValues {
-		wg.Add(1)
-		go batchPerformQuery(pkv)
-	}
-	// Wait for queries to complete or fail. Close channels to stop above consumer.
-	wg.Wait()
-	close(itemsCh)
-	close(errorsCh)
-
-	// Collect the aggregated output from the consumer, checking for any errors that occurred.
-	result := <-batchResultCh
-
-	if len(result.errors) > 0 {
-		// Roll errors into one
+	// Collect and form response. If errors, roll into one.
+	queryOutput := <-queryOutputCh
+	if len(queryOutput.BulkErrors) > 0 {
 		err := errors.New("one or more dynamodb calls failed")
-		for _, e := range result.errors {
+		for _, e := range queryOutput.BulkErrors {
 			err = errors.Wrap(err, e.Error())
 		}
 		return nil, err
 	}
 
-	return result.items, nil
+	return &CommentQueryOutput{Items: queryOutput.Items}, nil
 }
 ```
 
-The above function runs multiple queries, collects the results (up to `len(pkValues) * 20` items, combined), reverse date sorts them and returns the top N items. It makes multiple calls to `performQuery` which actually runs the query. `performQuery` is also used directly for simpler access patterns that can be answered in a single query.
+The above function runs multiple queries, collects the results (up to `len(pkValues) * 20` items, combined), reverse date sorts them and returns the top N items.
+
+It makes multiple calls to `query` which is also used directly for simpler access patterns that can be answered in a single query.
 
 ```go
-func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoItem, error) {
-	log.Printf("performQuery: pk=%s, pkValue=%s, indexName=%s", pk, pkValue, indexName)
+func query(partitionKeyName string, partitionKeyValue string, indexName string) (*CommentQueryOutput, error) {
+	log.Printf("query: pk=%s, pkValue=%s, indexName=%s", partitionKeyName, partitionKeyValue, indexName)
 
-	q := expression.Key(pk).Equal(expression.Value(aws.String(pkValue)))
+	q := expression.Key(partitionKeyName).Equal(expression.Value(aws.String(partitionKeyValue)))
 	expr, err := expression.NewBuilder().WithKeyCondition(q).Build()
 	if err != nil {
 		return nil, fmt.Errorf("unable to build expression: %v", err)
 	}
 
-	results, err := client.Query(&dynamodb.QueryInput{
+	queryOutput, err := client.Query(&dynamodb.QueryInput{
 		TableName:                 aws.String(tableName),
 		IndexName:                 aws.String(indexName),
 		Limit:                     aws.Int64(limit),
@@ -286,19 +274,25 @@ func performQuery(pk string, pkValue string, indexName string) ([]CommentDynamoI
 		ExpressionAttributeNames:  expr.Names(),
 		ConsistentRead:            aws.Bool(false),
 		ScanIndexForward:          aws.Bool(false),
-    })
-    
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("unable to complete query: %v", err)
 	}
 
-	var items []CommentDynamoItem
-	err = dynamodbattribute.UnmarshalListOfMaps(results.Items, &items)
+	output := CommentQueryOutput{}
+
+	err = dynamodbattribute.UnmarshalListOfMaps(queryOutput.Items, &output.Items)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unmarshal items: %v", err)
 	}
-	
-	return items, nil
+
+	err = dynamodbattribute.ConvertFromMap(queryOutput.LastEvaluatedKey, &output.LastEvaluatedKey)
+	if err != nil {
+		return nil, fmt.Errorf("unable to unmarshal last evaluated key item: %v", err)
+	}
+
+	return &output, nil
 }
 ```
 
