@@ -169,16 +169,18 @@ If no filtering is specified, `AP1` would be used.
 The following code snippet demonstrates shows a basic implementation.
 
 ```go
-baseKey := NewProductKey(productID) // => PRODUCT#42
+baseKey := "PRODUCT#" + productID
 
-// Select strategy based on filter parameters
-// This tells us what index to query, what key to use and its value
+// Select strategy based on filter parameters. This tells us what index to use.
+// Index name, PK and SK are encoded inside instances of Index, which we can query.
 switch findStrategy(language, ratings) {
 case all:
-    queryOutput, err = query("GSI4PK", baseKey, "all")
+	queryOutput, err = allIndex.Query(baseKey)
 case allLangSingleRating:
-    queryOutput, err = query("GSI3PK", baseKey.Append(ratings[0]), "byRating") // => PRODUCT#42/5
-//... etc
+	queryOutput, err = byRatingIndex.Query(baseKey, ratings[0])
+case langSingleRating:
+	queryOutput, err = byLangAndRatingIndex.Query(baseKey, language, ratings[0])
+// ...etc
 }
 ```
 
@@ -194,12 +196,14 @@ Multiple ratings are required for `AP3`. Our design dictates that this is achiev
 
 ```go
 func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexName string) (*CommentQueryOutput, error) {
+	log.Printf("queryMultiple: pk=%s, pkValue=%s, indexName=%s", partitionKeyName, partitionKeyValues, indexName)
+
 	workerOutputCh := make(chan *CommentQueryOutput)
-	errorsCh := make(chan error)
+	workerErrorsCh := make(chan error)
 
 	queryOutputCh := make(chan *CommentQueryOutput)
 
-	// Consume responses
+	// Consume responses from DynamoDB
 	go func() {
 		var allItems []CommentDynamoItem
 		var errors []error
@@ -207,8 +211,10 @@ func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexNa
 		for i := 0; i < len(partitionKeyValues); i++ {
 			select {
 			case workerOutput := <-workerOutputCh:
-				allItems = append(allItems, workerOutput.Items...)
-			case workerError := <-errorsCh:
+				if workerOutput != nil {
+					allItems = append(allItems, workerOutput.Items...)
+				}
+			case workerError := <-workerErrorsCh:
 				errors = append(errors, workerError)
 			}
 		}
@@ -220,17 +226,17 @@ func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexNa
 			sort.Slice(allItems, func(i, j int) bool {
 				return allItems[i].GSISK > allItems[j].GSISK
 			})
-			// Yield topN
+			// Send topN
 			queryOutputCh <- &CommentQueryOutput{Items: allItems[0:min(20, len(allItems))]}
 		}
 	}()
 
 	// Dispatch a query for each key in partitionKeyValues e.g. PRODUCT#42/1, PRODUCT#42/4
 	for _, pkv := range partitionKeyValues {
-		go (func(partitionKeyValue string) {
-			queryOutput, err := query(partitionKeyName, partitionKeyValue, indexName)
+		go (func(keyValue string) {
+			queryOutput, err := query(partitionKeyName, keyValue, indexName)
 			if err != nil {
-				errorsCh <- err
+				workerErrorsCh <- err
 			}
 			workerOutputCh <- queryOutput
 		})(pkv)
