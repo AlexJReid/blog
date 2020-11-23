@@ -38,7 +38,7 @@ This can be broken down into the following access patterns.
 
 ## Table design
 
->To save space in the diagrams below, not all non-indexed item attributes such as the comment title, text and username are not shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
+>To save space in the diagrams below, not all non-indexed item attributes such as the comment title, text and username are shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
 
 ### Table
 
