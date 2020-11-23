@@ -24,8 +24,9 @@ Let's apply both approaches and see what happens.
 
 Firstly let's recap on the model we are building.
 
->We are tasked with producing a data model to support the comments that get shown on each product page within an e-commerce site. 
->A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
+ >We are tasked with producing a data model to store and retrieve the comments shown on each product page within an e-commerce site.
+ >A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
+
 This can be broken down into the following access patterns.
 
 - AP1: Show all comments for a product, most recent first
@@ -37,7 +38,7 @@ This can be broken down into the following access patterns.
 
 ## Table design
 
->To save space, not all non-indexed item attributes such as the comment title, text and username are not shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
+>To save space in the diagrams below, not all non-indexed item attributes such as the comment title, text and username are not shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
 
 ### Table
 
@@ -340,6 +341,8 @@ The client code is now more complex, but there is a lot of flexibility when Dyna
 
 The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
 
-In the final post, we will add some statistics, pagination and an API. After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
+In the final post, we will add some statistics, pagination and an API. 
+
+After that we will explore how we can solve the same problem with another NoSQL database, Cloud Bigtable. Thanks for following along so far!
 
 _Comments and corrections are welcome._

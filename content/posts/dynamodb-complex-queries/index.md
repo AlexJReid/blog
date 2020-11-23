@@ -24,7 +24,7 @@ This series of posts explores what is possible with DynamoDB alone, starting nai
 
 ## Example scenario: a product comments system
 
- >We are tasked with producing a data model to support the comments that get shown on each product page within an e-commerce site. 
+ >We are tasked with producing a data model to store and retrieve the comments shown on each product page within an e-commerce site.
  >A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
 
 This can be broken down into the following access patterns.
