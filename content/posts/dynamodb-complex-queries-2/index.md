@@ -188,7 +188,7 @@ This logic, along with any parallel query coordination (discussed in the next se
 
 ## Parallel queries
 
-Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages like Go make this fairly straightforward, as demonstrated below. A similar outcome could be achieved with promises, futures or threads in other languages.
+Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages like Go make this fairly straightforward, as demonstrated below. The same could be achieved with promises, futures or threads in other languages.
 
 ```go
 func performQueryMultiple(pk string, pkValues []string, indexName string) ([]CommentDynamoItem, error) {
@@ -201,18 +201,7 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 	itemsCh := make(chan []CommentDynamoItem)
 	errorsCh := make(chan error, len(pkValues)) // Buffered to not block
 
-	// Wrap perform query, yielding its output to itemsCh and errorsCh
-	batchPerformQuery := func(pkv string) {
-		defer wg.Done()
-		items, err := performQuery(pk, pkv, indexName)
-		// Log and pass on errors
-		if err != nil {
-			errorsCh <- err
-		}
-		itemsCh <- items
-	}
-
-	// Consume items from DynamoDB and yield topN
+	// Consumer: accept items from DynamoDB producer below and yield topN to batchResultCh
 	batchResultCh := make(chan batchResult)
 	go func() {
 		var allItems []CommentDynamoItem
@@ -238,13 +227,23 @@ func performQueryMultiple(pk string, pkValues []string, indexName string) ([]Com
 		}
 	}()
 
-	// Begin by dispatching a query for each key in pkValues e.g. PRODUCT#42/1, PRODUCT#42/4
+	// Wrap perform query, yielding its output to itemsCh and errorsCh
+	batchPerformQuery := func(pkv string) {
+		defer wg.Done()
+		items, err := performQuery(pk, pkv, indexName)
+		// Log and pass on errors
+		if err != nil {
+			errorsCh <- err
+		}
+		itemsCh <- items
+	}
+
+	// Producer. Dispatch a query for each key in pkValues e.g. PRODUCT#42/1, PRODUCT#42/4
 	for _, pkv := range pkValues {
 		wg.Add(1)
 		go batchPerformQuery(pkv)
 	}
 	// Wait for queries to complete or fail. Close channels to stop above consumer.
-	// There are other ways to achieve this!
 	wg.Wait()
 	close(itemsCh)
 	close(errorsCh)
@@ -345,4 +344,4 @@ Thanks for following along so far!
 
 The [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) model is [available for download](product-comments-nosql-wb-v2.json). NoSQL Workbench is a **great** tool, try it out if you haven't already.
 
-_Comments and corrections are welcome._
+_Comments and corrections are welcome. I am working on making the diagrams exported from NoSQL Workbench more accessible._

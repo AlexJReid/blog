@@ -211,9 +211,9 @@ Despite the identified caveats around excessive redundancy and storage requireme
 
 **Nothing is free of course, we have paid for this by duplicating the data and taking on the corresponding compute, write and storage costs.** There is nothing wrong with duplicating data to get efficient queries. Using DynamoDB Streams and Lambda functions, duplicates are automatically maintained, without cluttering client code.
 
-We can do better. The [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
+Excessive, manual duplication is still a concern, so the [next post](/posts/dynamodb-efficient-filtering-2/) will investigate how we can reduce the storage footprint with some additional GSIs and a slightly more complicated client program.
 
-_Corrections and comments are most welcome._
+_Comments and corrections are welcome. I am working on making the diagrams exported from NoSQL Workbench more accessible._
 
 ## Links
 
