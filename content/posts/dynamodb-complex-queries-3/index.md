@@ -99,7 +99,7 @@ Putting [DAX](https://aws.amazon.com/dynamodb/dax/) in between our client and Dy
 
 ### Pagination context size
 
-The pagination context is fairly large, weighing in at a few hundred bytes. For simplicity, we have simply exposed the structure DynamoDB expects. As there is some duplication in the JSON, it may compress well. People might also find the resulting URL ugly compared with say `?page=23`. This is debatable: if you bookmarked page `23` of the result set and visited it several days later, what are you expecting to see? There is a good chance the content is now totally different as older reviews would have been pushed down to later pages.
+The pagination context is fairly large, weighing in at a few hundred bytes, depending on how many partitions need to be queried. For simplicity, we have simply exposed the structure DynamoDB expects. As there is some duplication in the JSON, it may compress well. Some people may find a URL with a base64 encoded parameter to be ugly.
 
 ## Summary
 
