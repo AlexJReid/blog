@@ -28,7 +28,7 @@ We require a user to be able to paginate through comments that have been written
 
 DynamoDB supports pagination by giving us a reference point in a query response to use for the next set of results, if there are any. This is called `LastEvaluatedKey`.
 
-When querying a GSI, as we are, this takes the form of map of: 
+When querying a GSI, as we are, this takes the form of key value map, containing: 
 - GSI partition key
 - GSI sort key
 - table partition key
