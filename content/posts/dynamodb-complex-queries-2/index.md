@@ -261,7 +261,9 @@ In addition, a product may have comments with only `5` and `1` ratings. There is
 
 **We've built a comment filtering solution without needing to use DynamoDB filters and we haven't needed to duplicate data excessively.** We are still duplicating, but are doing so on a far smaller scale. Importantly, the duplication, or rather, index projection, is now handled by DynamoDB. We no longer need Lambda and DynamoDB streams to maintain the table.
 
-The client code is now more complex, but there is a lot of flexibility when DynamoDB and the client work together in unison to provide a _data service_. These are implementation details that consumers of the model should not be exposed to. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
+This was achieved ith **global secondary indexes** and **parallel queries**. **GSIs** provide automatic projection of table items into indexes with different keys, which allows us to organise the data into predefined sets that are cheap to query. **Parallel queries** allow us to fetch multiple result sets and merge them, meaning we no longer need to store every possible combination to answer _or_ queries.
+
+The client code is now more complex, but there is a lot of flexibility when DynamoDB and the client work together in unison to provide a _data service_. Model implementation details should be abstracted. It is essential to encode this logic into a library or API so that all consumers can work at a higher level.
 
 **When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database. However, the model _is_ flexible enough to answer more questions efficiently, such as:
 
