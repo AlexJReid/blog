@@ -50,7 +50,7 @@ The grid below assumes a page size of three comments per page, and a filter of r
 
 `9` comments of ratings `3` or `5` are distributed, in reverse order of creation, across `3` pages. Each page request results in `2` requests to DynamoDB, one for both selected partitions in the `byRating` index. 
 
-Rows with a grey background are discarded by the pagination process. 
+Rows with a grey background have been discarded by the pagination process. 
 
 Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading. **We do this by generating a `LastEvaluatedKey` for the last visible item from each partition.**
 
@@ -90,26 +90,32 @@ After loading some randomised data into the table, the model worked as expected.
 
 ### Discarded items
 
-This approach discards results returned from DynamoDB that do not fit onto the page. In the below example, the item at `12:04` in partition `PRODUCT#42/3` will be discarded **twice**, before finally appearing on page `3`. Rows with a grey background are discarded by the pagination process. 
+This approach discards results returned from DynamoDB that do not fit onto the page. In the below example, the item at `12:04` in partition `PRODUCT#42/3` will be discarded **twice**, before finally appearing on page `3`. 
+
+**Rows with a grey background have been discarded by the pagination process.**
 
 ![Pagination](pagination.png)
 
-Performing random accesses by key is an expensive approach with DynamoDB:
+Maybe we could project to an index with very small items, containing just the item keys. Once we have a set of keys for items we definitely want to return. we would fetch the full comment in a `BatchGetItem` request.
+
+However, performing random accesses by key is an expensive approach with DynamoDB:
 >... a `BatchGetItem` _charges_ a minimum of one read capacity unit (RCU) per item, allowing us to read a single item up to `4KB`. A comment will be nowhere near that big, so this approach would be wasteful. A query, on the other hand, consumes RCUs based on the actual data read, allowing us to read at least ten comments with a single RCU.
 
-This would be a step backwards as in this example, the discarded items are unlikely to make much difference to cost, beyond a small amount of extra data transfer from DynamoDB to our client. (Client does not mean the end user, it means the program that connects to DynamoDB, such as an API running in a container.)
+This would be a backward step. When querying, the discarded items are unlikely to make a huge difference to cost, beyond a small amount of extra data transfer from DynamoDB to our client. (Client does not mean the end user, it means the program that connects to DynamoDB, such as an API running in a container.)
 
 It might be tempting to implement a cache within the client to retain these discarded rows and display them later. This is an interesting approach, but it is likely to add complexity for little return. It starts to make our client stateful and harder to scale.
 
 Putting [DAX](https://aws.amazon.com/dynamodb/dax/) in between our client and DynamoDB could be a simple and effective solution to this concern, with likely performance improvements as well.
 
+This approach is better than using DynamoDB filters. Imagine a product that received many hundreds of `5` or `4` rated comments, but the user wanted to see `1` ratings. If the most recent `1` rated comment was in 2017 and the next in 2014, a large number of rows would need to be read and filtered. This would be costly in slow. The dedicated `byRatings` index allows rapid access to these comments, regardless of how they are distributed in time.
+
 ### Pagination context size
 
-The pagination context is fairly large, weighing in at a few hundred bytes, depending on how many partitions need to be queried. For simplicity, we have simply exposed the structure DynamoDB expects. As there is some duplication in the JSON, it may compress well. Some people may find a URL with a base64 encoded parameter to be ugly.
+The pagination context is fairly large, weighing in at a few hundred bytes, depending on how many partitions need to be queried. For simplicity, we have exposed the structure DynamoDB expects. As there is some duplication in the JSON, it may compress well. Some people may find a URL with a base64 encoded parameter to be ugly.
 
 ## Summary
 
-In the next post we will explore some low hanging fruit: that is, some unplanned access patterns that have accidentally fallen out of our design.
+In the next post we will explore some low hanging fruit: some unplanned access patterns that have accidentally fallen out of our design.
 
 ## Links
 
