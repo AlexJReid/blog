@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2020-11-09T17:54:11Z
-title = "Efficient NoSQL filtering and pagination with DynamoDB - part 1"
+title = "Filtering without using filters in DynamoDB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
 tags = ['nosql-series','dynamodb','aws']
@@ -21,6 +21,16 @@ In many cases, a hybrid solution is the right approach, particularly when the mo
 However, running two stores and replicating one into the other is definitely added complexity. Elasticsearch, even when used as a managed service, can be a complex and expensive beast. What if it wasn't needed? I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
 
 This series of posts explores what is possible with DynamoDB alone, starting naively, demonstrating problems and pitfalls along the way.
+
+This series of posts explores fast, economical and efficient filtering and pagination with DynamoDB.
+
+Part 1: **Duplicating data with Lambda and DynamoDB streams to support filtering**
+
+Part 2: [Using global secondary indexes and parallel queries to reduce storage footprint and write less code](/posts/dynamodb-efficient-filtering-2/)
+
+Part 3: [How to make pagination work when the output of multiple queries have been combined](/posts/dynamodb-efficient-filtering-3/)
+
+-----
 
 ## Example scenario: a product comments system
 
@@ -187,7 +197,7 @@ The Lambda function gets invoked with a change payload when the primary item is 
 
 An additional attribute, `auto` is added to the automatically created items so that the Lambda function knows to take no action in response to items that it has created in the table.
 
-## Problems
+## Discussion
 
 It is expected that this simple design will perform predictably for queries. It is very simple from that perspective.
 

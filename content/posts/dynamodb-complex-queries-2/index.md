@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2020-11-21T19:00:00Z
-title = "Efficient NoSQL filtering and pagination with DynamoDB - part 2"
+title = "Filtering with GSIs and parallel queries in Dynamo DB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB. In this post, we improve upon our original design with more GSIs and parallel queries implemented in a Go client."
 slug = "dynamodb-efficient-filtering-2"
 tags = ['nosql-series','dynamodb','aws','go']
@@ -10,11 +10,21 @@ externalLink = ""
 series = []
 +++
 
-In the [previous post](/posts/dynamodb-efficient-filtering/), a paginated and filtered data model representing product comments was discussed. It was not a perfect solution as a large number of redundant items were created by code that we would have to maintain. 
+This series of posts demonstrates efficient filtering and pagination with DynamoDB.
+
+Part 1: [Duplicating data with Lambda and DynamoDB streams to support filtering](/posts/dynamodb-efficient-filtering/)
+
+Part 2: **Using global secondary indexes and parallel queries to reduce storage footprint and write less code**
+
+Part 3: [How to make pagination work when the output of multiple queries have been combined](/posts/dynamodb-efficient-filtering-3/)
+
+-----
+
+The approach taken in [previous post](/posts/dynamodb-efficient-filtering/) was not a perfect solution as a large number of redundant items were created by code that we would have to maintain. 
 
 **In this post, we will improve upon our original model with more GSIs and parallel queries.**
 
-Previously, we had to create a Lambda function and use DynamoDB Streams. DynamoDB has built-in functionality that can achieve this more effectively: global secondary indexes.
+Previously, we had to create a Lambda function and use DynamoDB Streams. DynamoDB has built-in functionality that can achieve this: global secondary indexes.
 
 In addition, there was a desire to keep the client program simple and get an answer from a single request to DynamoDB. If we relax that possibly misguided notion and allow ourselves to issue multiple queries in parallel, gathering and processing the small amount of returned data within our client, we might end up with a better model.
 
@@ -247,7 +257,7 @@ A simple UI was built on top of this model. Notice how the query is resolved usi
 
 ![Product comments UI, ratings 1, 2, 4 and 5 switched on](ui_3off.png)
 
-## Problems
+## Discussion
 
 You might have noticed that we're fetching more data than we return in `AP3`. Page size is `20` comments, yet we are loading `20 * number_of_rating_values`, so `[1, 2, 3, 4]` would load up to `80` comments, throwing away `60`. We _overscan_ so that we can be sure we have enough records from each rating to fill up the page, after the combined results have been sorted by date. (As explained earlier, for `[1, 2, 3, 4, 5]`, the filter is a no-op, so our query planner will bypass this and use a more optimal index.)
 
