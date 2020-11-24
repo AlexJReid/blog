@@ -72,9 +72,9 @@ This structure is used as a combined `LastEvaluatedKey`.
 
 When the user clicks on the _next_ link, their request will contain this collection of two `LastEvaluatedKey`s, in addition to the other original parameters. Of course, DynamoDB won't understand it as is. 
 
-The [query planner](/posts/dynamodb-efficient-filtering-2/#query-planning) will again determine that two parallel queries to `PRODUCT#42/5` and `PRODUCT#42/3` are needed. When building the queries, it will look for a `LastEvaluatedKey` to use from the above structure. If one exists, it will extract it and pass it as the `StartExclusiveKey` in the corresponding query.
+The [query planner](/posts/dynamodb-efficient-filtering-2/#query-planning) will again determine that two parallel queries to `PRODUCT#42/5` and `PRODUCT#42/3` are needed. 
 
-Not all of our access patterns need to take this approach. The ones that do not require multiple queries can use the conventional 
+When building the queries, our client will look for a `LastEvaluatedKey` to use from the above structure. If one exists, it will extract it and include it as the `StartExclusiveKey` in the corresponding query.
 
 ## Encoding pagination context
 
@@ -84,7 +84,7 @@ A common way of passing the above pagination context between _pages_ is to encod
 
 ### Discarded items
 
-This approach discards results returned from DynamoDB that do not fit onto the page. In the below example, the item at `12:04` in partition `PRODUCT#42/3` will be discarded twice, before finally appearing on page `3`.
+This approach discards results returned from DynamoDB that do not fit onto the page. In the below example, the item at `12:04` in partition `PRODUCT#42/3` will be discarded **twice**, before finally appearing on page `3`.
 
 ![Pagination](pagination.png)
 
