@@ -22,8 +22,6 @@ However, running two stores and replicating one into the other is definitely add
 
 This series of posts explores what is possible with DynamoDB alone, starting naively, demonstrating problems and pitfalls along the way.
 
-This series of posts explores fast, economical and efficient filtering and pagination with DynamoDB.
-
 Part 1: **Duplicating data with Lambda and DynamoDB streams to support filtering**
 
 Part 2: [Using global secondary indexes and parallel queries to reduce storage footprint and write less code](/posts/dynamodb-efficient-filtering-2/)
