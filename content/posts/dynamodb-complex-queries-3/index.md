@@ -95,7 +95,7 @@ This would be a step backwards as in this example, the discarded items are unlik
 
 It might be tempting to implement a cache within the client to retain these discarded rows and display them later. This is an interesting approach, but it is likely to add complexity for little return. It starts to make our client stateful and harder to scale.
 
-Putting DAX in between our client and DynamoDB could be a simple and effective solution to this concern, with likely performance improvements as well.
+Putting [DAX](https://aws.amazon.com/dynamodb/dax/) in between our client and DynamoDB could be a simple and effective solution to this concern, with likely performance improvements as well.
 
 ### Pagination context size
 
