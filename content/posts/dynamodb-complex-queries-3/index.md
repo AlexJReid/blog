@@ -55,16 +55,16 @@ Rows with a grey background are discarded by the pagination process.
 Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading. **We do this by generating a `LastEvaluatedKey` for the last visible item from each partition.**
 
 ```json
-{"GSI3PK": "PRODUCT#42/5", "GSISK":"12:20", "PK":"COMMENT#9", "SK":"COMMENT#9"}
 {"GSI3PK": "PRODUCT#42/3", "GSISK":"12:30", "PK":"COMMENT#8", "SK":"COMMENT#8"}
+{"GSI3PK": "PRODUCT#42/5", "GSISK":"12:20", "PK":"COMMENT#7", "SK":"COMMENT#7"}
 ```
 
 This gets wrapped into a map, keyed by the active GSI PK. 
 
 ```json
 {
-    "PRODUCT#42/5": {"GSI3PK": "PRODUCT#42/5", "GSISK":"12:20", "PK":"COMMENT#9", "SK":"COMMENT#9"},
-    "PRODUCT#42/3": {"GSI3PK": "PRODUCT#42/3", "GSISK":"12:30", "PK":"COMMENT#8", "SK":"COMMENT#8"}
+    "PRODUCT#42/3": {"GSI3PK": "PRODUCT#42/3", "GSISK":"12:30", "PK":"COMMENT#8", "SK":"COMMENT#8"},
+    "PRODUCT#42/5": {"GSI3PK": "PRODUCT#42/5", "GSISK":"12:20", "PK":"COMMENT#7", "SK":"COMMENT#7"}
 }
 ```
 
