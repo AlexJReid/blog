@@ -43,7 +43,6 @@ The pattern is simple for many of our access patterns. If you get a `LastEvaluat
 In the [previous post](/posts/dynamodb-efficient-filtering-2/), access pattern `AP3` required us to display comments of multiple ratings, such as `3` or `5`. Our table design meant that we performed multiple queries and merged the results in our DynamoDB client code.
 
 Now we have (at least) two `LastEvaluatedKey`s to choose from. How do we paginate through the combined result set? 
-A simple approach is to **generate one for each result set** based on the **final item displayed from each partition.**
 
 The grid below assumes a page size of three comments per page, and a filter of rating `3` or `5`.
 
@@ -53,9 +52,7 @@ The grid below assumes a page size of three comments per page, and a filter of r
 
 Rows shown in grey are discarded by the pagination process. 
 
-Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading.
-
-We do this by taking the last **visible** item for each.
+Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading. **We do this by generating a `LastEvaluatedKey` for the last visible item from each partition.**
 
 ```json
 {"GSI3PK": "PRODUCT#42/5", "GSISK":"12:20", "PK":"COMMENT#9", "SK":"COMMENT#9"}
