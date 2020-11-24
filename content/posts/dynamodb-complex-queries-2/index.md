@@ -277,11 +277,9 @@ The client code is now more complex, but there is a lot of flexibility when Dyna
 
 **When working with DynamoDB it is better to directly address known access patterns instead of trying to build something overly generic and reusable.** We cannot use this model to meet every new access pattern as we might do with a relational database. However, the model _is_ flexible enough to answer more questions efficiently, such as:
 
-> Show the most recent positive and most recent negative comment for a product
-
-> When was a product last commented on?
-
-> ... and so on, let me know if you spot any others!
+- Show the most recent positive and most recent negative comment for a product
+- When was a product last commented on?
+- ...let me know if you spot any others!
 
 Like our original approach, maintaining an index is not not free. Every eligible item written to the table is also written to the index. [In the next post, we will look more closely at pagination](/posts/dynamodb-efficient-filtering-3/).
 
