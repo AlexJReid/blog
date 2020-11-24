@@ -107,7 +107,7 @@ It might be tempting to implement a cache within the client to retain these disc
 
 Putting [DAX](https://aws.amazon.com/dynamodb/dax/) in between our client and DynamoDB could be a simple and effective solution to this concern, with likely performance improvements as well.
 
-This approach is better than using DynamoDB filters. Imagine a product that received many hundreds of `5` or `4` rated comments, but the user wanted to see `1` ratings. If the most recent `1` rated comment was in 2017 and the next in 2014, a large number of rows would need to be read and filtered. This would be costly in slow. The dedicated `byRatings` index allows rapid access to these comments, regardless of how they are distributed in time.
+This approach is better than using DynamoDB filters. Imagine a product that received many hundreds of `5` or `4` rated comments, but the user wanted to see `1` ratings. If the most recent `1` rated comment was in 2017 and the next in 2014, a large number of rows would need to be read and filtered. This would be costly and slow. The dedicated `byRatings` index allows rapid access to these comments, regardless of how they are distributed in time.
 
 ### Pagination context size
 
