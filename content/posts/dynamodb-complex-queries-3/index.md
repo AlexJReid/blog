@@ -50,7 +50,7 @@ The grid below assumes a page size of three comments per page, and a filter of r
 
 `9` comments of ratings `3` or `5` are distributed, in reverse order of creation, across `3` pages. Each page request results in `2` requests to DynamoDB, one for both selected partitions in the `byRating` index. 
 
-Rows shown in grey are discarded by the pagination process. 
+Rows with a grey background are discarded by the pagination process. 
 
 Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading. **We do this by generating a `LastEvaluatedKey` for the last visible item from each partition.**
 
@@ -84,7 +84,7 @@ A common way of passing the above pagination context between _pages_ is to encod
 
 ### Discarded items
 
-This approach discards results returned from DynamoDB that do not fit onto the page. In the below example, the item at `12:04` in partition `PRODUCT#42/3` will be discarded **twice**, before finally appearing on page `3`.
+This approach discards results returned from DynamoDB that do not fit onto the page. In the below example, the item at `12:04` in partition `PRODUCT#42/3` will be discarded **twice**, before finally appearing on page `3`. Rows with a grey background are discarded by the pagination process. 
 
 ![Pagination](pagination.png)
 
