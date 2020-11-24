@@ -29,11 +29,8 @@ googleAnalytics = "UA-156939108-1"
 name = "RSS Feed"
 link = "/index.xml"
 [[params.socials]]
-name = "About"
-link = "/about/"
-[[params.socials]]
-name = "GitHub"
-link = "https://github.com/alexjreid"
+name = "Twitter"
+link = "https://twitter.com/alexjreid"
 [[params.socials]]
 name = "LinkedIn"
 link = "https://www.linkedin.com/in/alexjreid/"
