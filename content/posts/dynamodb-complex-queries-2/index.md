@@ -283,7 +283,7 @@ The client code is now more complex, but there is a lot of flexibility when Dyna
 
 > ... and so on, let me know if you spot any others!
 
-Like our original approach, maintaining an index is not not free. Every eligible item written to the table is also written to the index. In the final post, we will look more closely at pagination.
+Like our original approach, maintaining an index is not not free. Every eligible item written to the table is also written to the index. [In the next post, we will look more closely at pagination](/posts/dynamodb-efficient-filtering-3/).
 
 Thanks for following along so far!
 
