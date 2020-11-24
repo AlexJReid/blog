@@ -195,6 +195,8 @@ This logic, along with any parallel query coordination (discussed in the next se
 Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages make this fairly straightforward with goroutines, promises, or similar. An example is shown below.
 
 ```go
+// queryMultiple runs queries for every key in partitionKeyValues, combines the results, and returns the topN.
+// If one of the queries fails, the whole call does.
 func queryMultiple(index *DynamoIndex, partitionKeyValues []string, cursor string) (*CommentQueryOutput, error) {
 	log.Printf("queryMultiple: pk=%s, pkValue=%s, indexName=%s", index.PK, partitionKeyValues, index.Name)
 
