@@ -192,112 +192,44 @@ This logic, along with any parallel query coordination (discussed in the next se
 
 ## Parallel queries
 
-Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages like Go make this fairly straightforward, as demonstrated below. The same could be achieved with promises, futures or threads in other languages.
+Multiple ratings are required for `AP3`. Our design dictates that this is achieved by issuing multiple queries. Doing this in parallel can reduce latency. Modern languages make this fairly straightforward with goroutines, promises, or similar. An example is shown below.
 
 ```go
-func queryMultiple(partitionKeyName string, partitionKeyValues []string, indexName string) (*CommentQueryOutput, error) {
-	log.Printf("queryMultiple: pk=%s, pkValue=%s, indexName=%s", partitionKeyName, partitionKeyValues, indexName)
+func queryMultiple(index *DynamoIndex, partitionKeyValues []string, cursor string) (*CommentQueryOutput, error) {
+	log.Printf("queryMultiple: pk=%s, pkValue=%s, indexName=%s", index.PK, partitionKeyValues, index.Name)
 
-	workerOutputCh := make(chan *CommentQueryOutput)
-	workerErrorsCh := make(chan error)
+	g, _ := errgroup.WithContext(context.Background())
+	queryOutputs := make([]*CommentQueryOutput, len(partitionKeyValues))
 
-	queryOutputCh := make(chan *CommentQueryOutput)
-
-	// Consume responses from DynamoDB
-	go func() {
-		var allItems []CommentDynamoItem
-		var errors []error
-
-		for i := 0; i < len(partitionKeyValues); i++ {
-			select {
-			case workerOutput := <-workerOutputCh:
-				allItems = append(allItems, workerOutput.Items...)
-			case workerError := <-workerErrorsCh:
-				errors = append(errors, workerError)
+	// Get multiple result sets for PRODUCT#42/3, PRODUCT#42/5 ...
+	for i, partitionKeyValue := range partitionKeyValues {
+		pkv := partitionKeyValue
+		idx := i
+		g.Go(func() error {
+			result, err := query(index, pkv, cursor) // Send query to DynamoDB
+			if err == nil {
+				queryOutputs[idx] = result
 			}
-		}
-
-		if len(errors) > 0 {
-			queryOutputCh <- &CommentQueryOutput{BulkErrors: errors}
-		} else {
-			// Reverse sort on GSISK/creation date
-			sort.Slice(allItems, func(i, j int) bool {
-				return allItems[i].GSISK > allItems[j].GSISK
-			})
-			// Send topN
-			queryOutputCh <- &CommentQueryOutput{Items: allItems[0:min(pageSize, len(allItems))]}
-		}
-	}()
-
-	// Dispatch a query for each key in partitionKeyValues e.g. PRODUCT#42/1, PRODUCT#42/4
-	for _, pkv := range partitionKeyValues {
-		go (func(keyValue string) {
-			queryOutput, err := query(partitionKeyName, keyValue, indexName)
-			if err != nil {
-				workerErrorsCh <- err
-			} else {
-				workerOutputCh <- queryOutput
-			}
-		})(pkv)
+			return err
+		})
 	}
 
-	// Collect and form response. If errors, roll into one.
-	queryOutput := <-queryOutputCh
-	if len(queryOutput.BulkErrors) > 0 {
-		err := errors.New("one or more dynamodb calls failed")
-		for _, e := range queryOutput.BulkErrors {
-			err = errors.Wrap(err, e.Error())
-		}
+	// Wait for all to complete, cancel on first error.
+	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 
-	return &CommentQueryOutput{Items: queryOutput.Items}, nil
-}
-```
-
-The above function runs multiple queries, collects the results (up to `len(pkValues) * 20` items, combined), reverse date sorts them and returns the top N items.
-
-It makes multiple calls to `query` which is also used directly for simpler access patterns that can be answered in a single query.
-
-```go
-func query(partitionKeyName string, partitionKeyValue string, indexName string) (*CommentQueryOutput, error) {
-	log.Printf("query: pk=%s, pkValue=%s, indexName=%s", partitionKeyName, partitionKeyValue, indexName)
-
-	q := expression.Key(partitionKeyName).Equal(expression.Value(aws.String(partitionKeyValue)))
-	expr, err := expression.NewBuilder().WithKeyCondition(q).Build()
-	if err != nil {
-		return nil, fmt.Errorf("unable to build expression: %v", err)
+	// Combine and reverse sort the result sets and return topN.
+	var combined []CommentDynamoItem
+	for _, qo := range queryOutputs {
+		combined = append(combined, qo.Items...)
 	}
-
-	queryOutput, err := client.Query(&dynamodb.QueryInput{
-		TableName:                 aws.String(tableName),
-		IndexName:                 aws.String(indexName),
-		Limit:                     aws.Int64(limit),
-		KeyConditionExpression:    expr.KeyCondition(),
-		ExpressionAttributeValues: expr.Values(),
-		FilterExpression:          expr.Filter(),
-		ExpressionAttributeNames:  expr.Names(),
-		ConsistentRead:            aws.Bool(false),
-		ScanIndexForward:          aws.Bool(false),
+	sort.Slice(combined, func(i, j int) bool {
+		return combined[i].GSISK > combined[j].GSISK
 	})
+	topN := combined[0:min(pageSize, len(combined))]
 
-	if err != nil {
-		return nil, fmt.Errorf("unable to complete query: %v", err)
-	}
-
-	output := CommentQueryOutput{}
-
-	err = dynamodbattribute.UnmarshalListOfMaps(queryOutput.Items, &output.Items)
-	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal items: %v", err)
-	}
-
-	err = dynamodbattribute.ConvertFromMap(queryOutput.LastEvaluatedKey, &output.LastEvaluatedKey)
-	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal last evaluated key item: %v", err)
-	}
-
-	return &output, nil
+	return &CommentQueryOutput{Items: topN}, nil
 }
 ```
 
