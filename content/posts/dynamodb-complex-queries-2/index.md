@@ -207,7 +207,7 @@ Multiple ratings are required for `AP3`. Our design dictates that this is achiev
 ```go
 // queryMultiple runs queries for every key in partitionKeyValues, combines the results, and returns the topN.
 // If one of the queries fails, the whole call does.
-func queryMultiple(index *DynamoIndex, partitionKeyValues []string, cursor string) (*CommentQueryOutput, error) {
+func queryMultiple(index *DynamoIndex, partitionKeyValues []string) (*CommentQueryOutput, error) {
 	log.Printf("queryMultiple: pk=%s, pkValue=%s, indexName=%s", index.PK, partitionKeyValues, index.Name)
 
 	g, _ := errgroup.WithContext(context.Background())
@@ -218,7 +218,7 @@ func queryMultiple(index *DynamoIndex, partitionKeyValues []string, cursor strin
 		pkv := partitionKeyValue
 		idx := i
 		g.Go(func() error {
-			result, err := query(index, pkv, cursor) // Send query to DynamoDB
+			result, err := query(index, pkv) // Send query to DynamoDB
 			if err == nil {
 				queryOutputs[idx] = result
 			}
