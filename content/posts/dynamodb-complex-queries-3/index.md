@@ -80,6 +80,12 @@ When building the queries, our client will look for a `LastEvaluatedKey` to use 
 
 A common way of passing the above pagination context between _pages_ is to encode it as a _cursor_ URL parameter. This is often done by compressing and base64 encoding it. You might also choose to encrypt it if you are worried about leaking details about your data model to the outside world.
 
+## It works
+
+After loading some randomised data into the table, the model worked as expected.
+
+![UI](ui.png)
+
 ## Discussion
 
 ### Discarded items
