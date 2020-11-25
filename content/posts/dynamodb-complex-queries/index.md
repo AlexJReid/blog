@@ -28,6 +28,8 @@ Part 2: [Using global secondary indexes and parallel queries to reduce storage f
 
 Part 3: [How to make pagination work when the output of multiple queries have been combined](/posts/dynamodb-efficient-filtering-3/)
 
+Part 4: [Storage and retrieval of comment statistics using index overloading and sparse indexes](/posts/dynamodb-efficient-filtering-4/)
+
 -----
 
 ## Example scenario: a product comments system
