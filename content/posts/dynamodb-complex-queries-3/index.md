@@ -82,9 +82,18 @@ A common way of passing the above pagination context between _pages_ is to encod
 
 ## It works
 
-After loading some randomised data into the table, the model worked as expected.
+After loading some randomised data into the table, the model worked as expected when tested within a small `gin` web application. `~8ms` latency.
 
-![UI](ui.png)
+![UI](ui.jpg)
+
+A quick `ab -n 1000 -c 20 "http://127.0.0.1:8000/comments/42 ..."` (on a `t2.medium` instance) shows:
+
+- `Requests per second: 782.96 [#/sec] (mean)` with no filters, same with one single language/rating
+- `Requests per second: 268.47 [#/sec] (mean)` with `1`, `4` or `5` ratings
+
+Roughly `50` RCUs were used according to the graphs. At $0.283/million, this probably won't break the bank.
+
+Not a scientific test (the same query is being run repeatedly and the comment sizes are small), but encouraging. This includes HTML template rendering, URL parsing, etc.
 
 ## Discussion
 
