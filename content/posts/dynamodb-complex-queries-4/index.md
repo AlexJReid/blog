@@ -32,7 +32,7 @@ So far, we have built a commenting system that allows users to filter by any com
 - `AP8` - comment count by rating for a product, filtered by one language
 - `AP9` - grand total of comments for a product
 - `AP10` - grand total of comments for a product, filtered by one language
-- `AP11` - a leaderboard of the top N products that the most 5-rated comments
+- `AP11` - a leaderboard of the top N products that have the most 5-rated comments
 
 ## Storage
 
@@ -74,7 +74,7 @@ See `AP7`, read attribute `count_total`.
 
 See `AP8`, read attribute `count_total`.
 
-### AP8: a leaderboard of the top N products that the most 5-rated comments
+### AP8: a leaderboard of the top N products that have the most 5-rated comments
 
 - Query on `gsi`
   - PK = `LEADERS`
