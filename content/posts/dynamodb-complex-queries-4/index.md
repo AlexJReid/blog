@@ -98,7 +98,7 @@ All we have done is add more items and thought up some new queries. No existing 
 
 **Index overloading** was used when we repurposed an existing GSI to store the leaderboard.
 
-**Sparse indexes** were used to ensure the statistics items do not appear in GSIs as we have not set any GSI keys. This saves on replication costs and provides a natural filter, as statistics access patterns only query the table. The exception is the `S` statistics item, which does set `GSIPK` to `LEADER` and `GSISK` to the count of `5`-rated comments. This is so it appears in `GSI`, in order.
+**Sparse indexes** were used to ensure the statistics items do not appear in GSIs as we have not set any GSI keys. This saves on replication costs and provides a natural filter, as statistics access patterns only query the table. The exception is the `S` statistics item, which does set `GSIPK` to `LEADER` and `GSISK` to the count of `5`-rated comments. This is so it appears in `GSI`, in order. `GSISK` is used to store the creation date in the **context** of `GSIPK: 'PRODUCT#42/...'` items. It's used for something entirely different in the **context** of `GSIPK: 'LEADER'` items.
 
 In the next post we will explore the write path alluded to above.
 
