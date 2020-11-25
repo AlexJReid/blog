@@ -96,26 +96,33 @@ This approach discards results returned from DynamoDB that do not fit onto the p
 
 ![Pagination](pagination.png)
 
-Maybe we could project to an index with very small items, containing just the item keys. Once we have a set of keys for items we definitely want to return. we would fetch the full comment in a `BatchGetItem` request.
+This approach is still better than using DynamoDB filters on an index that contains comments of all ratings. Imagine a product that received many hundreds of `5` or `4` rated comments, but the user wanted to see `1` ratings. If the most recent `1` rated comment was in 2017 and the next in 2014, a large number of rows would need to be read and filtered. This would be costly and slow. The dedicated `byRatings` index allows rapid access to these comments, regardless of how they are distributed in time.
 
-However, performing random accesses by key is an expensive approach with DynamoDB:
+Maybe we could project only keys to an index, resulting in very small items. Reading these multiple times would cost less. Once we have a set of keys for items we definitely want to return. we would fetch the full comment item with a `BatchGetItem` request.
+
+However, performing multi-get random accesses on a key is an expensive approach:
 >... a `BatchGetItem` _charges_ a minimum of one read capacity unit (RCU) per item, allowing us to read a single item up to `4KB`. A comment will be nowhere near that big, so this approach would be wasteful. A query, on the other hand, consumes RCUs based on the actual data read, allowing us to read at least ten comments with a single RCU.
 
-This would be a backward step. When querying, the discarded items are unlikely to make a huge difference to cost, beyond a small amount of extra data transfer from DynamoDB to our client. (Client does not mean the end user, it means the program that connects to DynamoDB, such as an API running in a container.)
+This would be a backward step. When querying with the proposed model, the discarded items are unlikely to make a huge difference to cost, beyond a small amount of extra data transfer from DynamoDB to our client. (Client does not mean the end user, it means the program that connects to DynamoDB, such as an API running in a container.)
 
 It might be tempting to implement a cache within the client to retain these discarded rows and display them later. This is an interesting approach, but it is likely to add complexity for little return. It starts to make our client stateful and harder to scale.
 
-Putting [DAX](https://aws.amazon.com/dynamodb/dax/) in between our client and DynamoDB could be a simple and effective solution to this concern, with likely performance improvements as well.
-
-This approach is better than using DynamoDB filters. Imagine a product that received many hundreds of `5` or `4` rated comments, but the user wanted to see `1` ratings. If the most recent `1` rated comment was in 2017 and the next in 2014, a large number of rows would need to be read and filtered. This would be costly and slow. The dedicated `byRatings` index allows rapid access to these comments, regardless of how they are distributed in time.
+A DynamoDB cache is a solved problem. Putting [DAX](https://aws.amazon.com/dynamodb/dax/) in between our client and DynamoDB could be a simple and effective solution to this concern, with likely performance improvements as well.
 
 ### Pagination context size
 
-The pagination context is fairly large, weighing in at a few hundred bytes, depending on how many partitions need to be queried. For simplicity, we have exposed the structure DynamoDB expects. As there is some duplication in the JSON, it may compress well. Some people may find a URL with a base64 encoded parameter to be ugly.
+The pagination context is fairly large, weighing in at a few hundred bytes, depending on how many partitions need to be queried. For simplicity, we have exposed the structure DynamoDB expects. As there is some duplication in the JSON, it may compress well. Rather than JSON, it could be serialised as a `protobuf`. It is debatable whether this is worth the effort and a proof of concept would be needed to measure payload size of compressed JSON vs a protobuf. In addition, some people may find a URL with a base64 encoded parameter to be ugly.
 
 ## Summary
 
-In the next post we will explore some low hanging fruit: some unplanned access patterns that have accidentally fallen out of our design.
+**We've added pagination to all access patterns. The first iteration of our model is now complete.** 
+
+In the next post we will explore some low hanging fruit: 
+
+- looking at some unplanned access patterns that have accidentally fallen out of our model design
+- deploying a simple data service as a container that exposes the model to a web and API client
+- populating the table with some random data
+- a very simple load test to understand resource utilisation and costs
 
 ## Links
 
