@@ -24,7 +24,7 @@ Part 4: **Storage and retrieval of comment statistics using index overloading an
 
 In this post we will explore how to store and retrieve count statistics relating to the comments a product has. **We will do it without making any changes or adding new indexes.**
 
-We have built a commenting system that allows users to filter by any combination of rating (1-5) and a single language. Displaying counts for a given criteria will provide a better user experience by displaying them in the UI. These statistics will also allow the query planner to make more efficient queries by skipping sub-queries when the count is zero.
+So far, we have built a commenting system that allows users to filter by any combination of rating (1-5) and a single language. Displaying counts for a given criteria will provide a better user experience. The statistics will also allow the query planner to make more efficient queries by skipping sub-queries when the count is zero.
 
 ## New access patterns
 
