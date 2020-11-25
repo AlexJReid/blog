@@ -126,7 +126,7 @@ The pagination context is fairly large, weighing in at a few hundred bytes, depe
 
 **We've added pagination to all access patterns. The first iteration of our model is now complete.** 
 
-In the next post we will explore some low hanging fruit: looking at some unplanned access patterns that have accidentally fallen out of our model design. It will also summarise the key lessons learnt.
+In the next post we will explore some low hanging fruit: looking at some unplanned access patterns that have accidentally fallen out of our model design.
 
 Thanks for reading.
 
