@@ -44,11 +44,11 @@ The below table shows two new partitions in our existing table for `PRODUCT#42` 
 
 ![Table partition](table.png)
 
-Under the `S` item, an existing GSI is overloaded. `GSIPK` is set to a single partition called `LEADERS` and `GSISK` is set to the the number of comments with rating `5`. The leader board emerges when we view the GSI.
+To support the leaderboard (`AP11`), under the `S` item, an existing GSI is overloaded. `GSIPK` is set to a single partition called `LEADERS` and `GSISK` is set to the the number of comments with rating `5`. The leader board emerges when we view the GSI. If this product does not have any `5`-rated comments, the item will not be created.
 
 ![GSI](gsi.png)
 
-We have stored the number of `5`-rated comments in the sort key, so order will be maintained. When we query this GSI for `AP10`, we will do set `ScanIndexForward` to `false` to get the highest numbers first. The `LEADERS` item will only appear in this GSI.
+We have stored the number of `5`-rated comments in the sort key, so order will be maintained. When we query this GSI for `AP11`, we will set `ScanIndexForward` to `false` to get the highest numbers first. The `LEADERS` item will only appear in this GSI.
 
 ## Queries
 
@@ -88,7 +88,7 @@ See `AP8`, read attribute `count_total`.
 
 ## Write path
 
-DynamoDB Streams and a simple Lambda function would be used to ensure the _statistics_ items are recalculated upon each change event. If this feature was being added after the system originally went live, Step Functions or EMR could be used to parallel scan the table and retroactively populate the statistics.
+DynamoDB Streams and a Lambda function would be used to ensure the _statistics_ items are recalculated upon each change event. If this feature was being added after the system originally went live, Step Functions or EMR could be used to parallel scan the table and retroactively populate the statistics.
 
 ## Summary
 
