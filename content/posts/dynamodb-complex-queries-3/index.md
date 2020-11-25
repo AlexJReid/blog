@@ -91,6 +91,8 @@ After loading some randomised data into the table, the model worked as expected 
 - `Requests per second: 782.96 [#/sec] (mean)` with no filters, same with one single language/rating
 - `Requests per second: 268.47 [#/sec] (mean)` with `1`, `4` or `5` ratings
 
+This is with a single client process.
+
 Roughly `50` RCUs were used according to the graphs. At $0.283/million, this probably won't break the bank.
 
 Not a scientific test (the same query is being run repeatedly and the comment sizes are small), but encouraging. This includes HTML template rendering, URL parsing, etc.
