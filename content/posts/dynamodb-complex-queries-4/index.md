@@ -44,7 +44,7 @@ The below table shows two new partitions in our existing table for `PRODUCT#42` 
 
 ![Table partition](table.png)
 
-To support the leaderboard (`AP11`), under the `S` item, an existing GSI is overloaded. `GSIPK` is set to a single partition called `LEADERS` and `GSISK` is set to the the number of comments with rating `5`. The leader board emerges when we view the GSI. If this product does not have any `5`-rated comments, the item will not be created.
+To support the leaderboard (`AP11`), under the `S` item, an existing GSI is overloaded. `GSIPK` is set to a single partition called `LEADERS` and `GSISK` is set to the number of comments with rating `5`. The leader board emerges when we view the GSI. If this product does not have any `5`-rated comments, the `LEADERS` item will not be created.
 
 ![GSI](gsi.png)
 
@@ -98,7 +98,7 @@ All we have done is add more items and thought up some new queries. No existing 
 
 **Index overloading** was used when we repurposed an existing GSI to store the leaderboard.
 
-**Sparse indexes** were used to ensure the statistics items do not appear in GSIs as we have not set any GSI keys. This saves on replication costs and provides a natural filter, as statistics access patterns use the table. The exception is the `S` statistics item, which does set `GSIPK` to `LEADER` and `GSISK` to the count of `5`-rated comments. This is so it appears in `GSI`, in order.
+**Sparse indexes** were used to ensure the statistics items do not appear in GSIs as we have not set any GSI keys. This saves on replication costs and provides a natural filter, as statistics access patterns only query the table. The exception is the `S` statistics item, which does set `GSIPK` to `LEADER` and `GSISK` to the count of `5`-rated comments. This is so it appears in `GSI`, in order.
 
 In the next post we will explore the write path alluded to above.
 
