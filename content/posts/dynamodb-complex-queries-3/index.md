@@ -82,11 +82,11 @@ A common way of passing the above pagination context between _pages_ is to encod
 
 ## It works
 
-After loading some randomised data into the table, the model worked as expected when tested within a small `gin` web application. `~8ms` latency.
+After loading some randomised data into the table, the model worked as expected when tested within a small `gin` web application. 
 
 ![UI](ui.jpg)
 
-A quick `ab -n 1000 -c 20 "http://127.0.0.1:8000/comments/42 ..."` (on a `t2.medium` instance) shows:
+`~8ms` latency? A quick `ab -n 1000 -c 20 "http://127.0.0.1:8000/comments/42 ..."` (on a `t2.medium` instance) shows:
 
 - `Requests per second: 782.96 [#/sec] (mean)` with no filters, same with one single language/rating
 - `Requests per second: 268.47 [#/sec] (mean)` with `1`, `4` or `5` ratings
