@@ -126,12 +126,9 @@ The pagination context is fairly large, weighing in at a few hundred bytes, depe
 
 **We've added pagination to all access patterns. The first iteration of our model is now complete.** 
 
-In the next post we will explore some low hanging fruit: 
+In the next post we will explore some low hanging fruit: looking at some unplanned access patterns that have accidentally fallen out of our model design. It will also summarise the key lessons learnt.
 
-- looking at some unplanned access patterns that have accidentally fallen out of our model design
-- deploying a simple data service as a container that exposes the model to a web and API client
-- populating the table with some random data
-- a very simple load test to understand resource utilisation and costs
+Thanks for reading.
 
 ## Links
 
