@@ -36,7 +36,7 @@ When querying a GSI, as we are, this takes the form of key value map, containing
 - table partition key
 - table sort key
 
-When querying a table, only the table partition key and sort key is returned.
+When querying a table, only the table partition key and sort key are included in this structure.
 
 The pattern is simple for many of our access patterns. If you get a `LastEvaluatedKey`, include it in the next query as `ExclusiveStartKey`.
 
