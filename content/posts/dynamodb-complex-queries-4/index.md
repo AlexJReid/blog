@@ -36,7 +36,7 @@ So far, we have built a commenting system that allows users to filter by any com
 
 ## Storage
 
-In our existing table we will create new items to store statistics alongside the comments. They are added with partition key `PRODUCT#<idenfitier>`. 
+In our existing table we will create new items to store statistics alongside the comments. As the new items will represent aggregated statistics from comments relating to a `PRODUCT`, they are added with partition key `PRODUCT#<idenfitier>`. 
 
 The table sort key will store a coded description of what the _statistics_ item represents. `S#<language>` with an item for each applicable language. The total across all languages will be stored with sort key `S`. The item has `count_*` attributes containing a count for each applicable rating.
 
