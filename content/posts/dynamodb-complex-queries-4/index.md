@@ -90,7 +90,11 @@ See `AP8`, read attribute `count_total`.
 
 ## Write path
 
-DynamoDB Streams and a Lambda function would be used to ensure the _statistics_ items are recalculated upon each change event. If this feature was being added after the system originally went live, Step Functions or EMR could be used to parallel scan the table and retroactively populate the statistics.
+DynamoDB Streams and a Lambda function would be used to ensure the _statistics_ items are recalculated upon each change event. 
+
+**Updating statistics in an event driven manner means it is inexpensive to get the count by simply reading the relevant items.**
+
+If this feature was being added after the system originally went live, Step Functions or EMR could be used to parallel scan the table and retroactively populate the statistics.
 
 ## Summary
 
