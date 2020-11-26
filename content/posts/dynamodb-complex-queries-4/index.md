@@ -36,21 +36,21 @@ So far, we have built a commenting system that allows users to filter by any com
 
 ## Storage
 
-We will create a new partition for each `PRODUCT` by setting the partition key to `PRODUCT#<idenfitier>`. The table sort key will store a coded description of what the _statistics_ item represents. 
+In our existing table we will create new items to store statistics alongside the comments. A new partition for each `PRODUCT` is created by the partition key to `PRODUCT#<idenfitier>`. 
 
-The sort key will contain `S#<language>` with an item for each applicable language. The total across all languages will be stored with sort key `S`. The item has `count_*` attributes containing a count for each applicable rating.
+The table sort key will store a coded description of what the _statistics_ item represents. `S#<language>` with an item for each applicable language. The total across all languages will be stored with sort key `S`. The item has `count_*` attributes containing a count for each applicable rating.
 
 The below table shows two new partitions in our existing table for `PRODUCT#42` and `PRODUCT#43`.
 
 ![Table partition](table.png)
 
-To support the leaderboard (`AP11`), under the `S` item, an existing GSI is overloaded. `GSIPK` is set to a single partition called `LEADERS` and `GSISK` is set to the number of comments with rating `5`. The leader board emerges when we view the GSI. If this product does not have any `5`-rated comments, the `LEADERS` item will not be created.
+To support the leaderboard in `AP11`, under the `S` item, an existing GSI is overloaded. `GSIPK` is set to a single partition called `LEADERS` and `GSISK` is set to the number of comments with rating `5`. The leader board emerges when we view the GSI. If this product does not have any `5`-rated comments, the `LEADERS` item will not be created.
 
 ![GSI](gsi.png)
 
-We have stored the number of `5`-rated comments in the sort key, so order will be maintained. When we query this GSI for `AP11`, we will set `ScanIndexForward` to `false` to get the highest numbers first. The `LEADERS` item will only appear in this GSI. 
+We have stored the number of `5`-rated comments in the sort key, so order will be maintained. When we query this GSI, we will set `ScanIndexForward` to `false` to get the highest numbers first. The `LEADERS` item will only appear in this GSI. 
 
-Regional leaderboards are not in scope, but would be simple to achieve by populating `GSKPK` with a language suffix, for example `LEADERS#en`, in the subsequent items.
+Regional leaderboards are not in scope, but would be possible to achieve by populating `GSKPK` with a language suffix, for example `LEADERS#en`, in the subsequent items.
 
 ## Queries
 
