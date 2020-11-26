@@ -36,7 +36,7 @@ So far, we have built a commenting system that allows users to filter by any com
 
 ## Storage
 
-We will create a new partition for each `PRODUCT` by setting the partition key to `PRODUCT#<idenfitier>`. The table sort key will store a coded description of what the _statistics_ row represents. 
+We will create a new partition for each `PRODUCT` by setting the partition key to `PRODUCT#<idenfitier>`. The table sort key will store a coded description of what the _statistics_ item represents. 
 
 The sort key will contain `S#<language>` with an item for each applicable language. The total across all languages will be stored with sort key `S`. The item has `count_*` attributes containing a count for each applicable rating.
 
@@ -50,7 +50,8 @@ To support the leaderboard (`AP11`), under the `S` item, an existing GSI is over
 
 We have stored the number of `5`-rated comments in the sort key, so order will be maintained. When we query this GSI for `AP11`, we will set `ScanIndexForward` to `false` to get the highest numbers first. The `LEADERS` item will only appear in this GSI. 
 
-Regional leaderboards are not in scope, but would be simple to achieve by populating`GSKPK` with a language suffix: `LEADERS#en` in the subsequent items.
+Regional leaderboards are not in scope, but would be simple to achieve by populating `GSKPK` with a language `LEADERS#en` in the subsequent items.
+
 ## Queries
 
 ### AP7: comment count by rating for a product
@@ -99,7 +100,7 @@ All we have done is add more items and thought up some new queries. No existing 
 
 **Index overloading** was used when we repurposed an existing GSI to store the leaderboard.
 
-**Sparse indexes** were used to ensure the statistics items do not appear in GSIs as we have not set any GSI keys. This saves on replication costs and provides a natural filter, as statistics access patterns only query the table. The exception is the `S` statistics item, which does set `GSIPK` to `LEADER` and `GSISK` to the count of `5`-rated comments. This is so it appears in `GSI`, in order. `GSISK` is used to store the creation date in the **context** of `GSIPK: 'PRODUCT#42/...'` items. It's used for something entirely different in the **context** of `GSIPK: 'LEADER'` items.
+**Sparse indexes** were used to ensure the statistics items do not appear in GSIs as we have not set any GSI keys. This saves on replication costs and provides a natural filter, as statistics access patterns only query the table. The exception is the `S` statistics item, which **does** set `GSIPK` to `LEADER` and `GSISK` to the count of `5`-rated comments. This is so it appears in `GSI`, in order. `GSISK` is used to store the creation date in the **context** of `GSIPK: 'PRODUCT#42/...'` items. It's used for something entirely different in the **context** of `GSIPK: 'LEADER'` items.
 
 In the next post we will explore the write path alluded to above.
 
