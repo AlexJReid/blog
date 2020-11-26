@@ -50,7 +50,7 @@ To support the leaderboard (`AP11`), under the `S` item, an existing GSI is over
 
 We have stored the number of `5`-rated comments in the sort key, so order will be maintained. When we query this GSI for `AP11`, we will set `ScanIndexForward` to `false` to get the highest numbers first. The `LEADERS` item will only appear in this GSI. 
 
-Regional leaderboards are not in scope, but would be simple to achieve by populating `GSKPK` with a language `LEADERS#en` in the subsequent items.
+Regional leaderboards are not in scope, but would be simple to achieve by populating `GSKPK` with a language suffix, for example `LEADERS#en`, in the subsequent items.
 
 ## Queries
 
