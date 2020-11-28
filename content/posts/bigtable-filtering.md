@@ -66,7 +66,7 @@ However, rather than projecting the entire comment across indexes, we will manua
 
 The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. 
 
-The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/). **The biggest difference is that acceptable to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
+The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/). **The biggest difference is that it is more acceptable to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
 
 The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think orchestrating parallel queries as Bigtable handles that.
 
