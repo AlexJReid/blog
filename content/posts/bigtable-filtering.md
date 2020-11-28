@@ -99,7 +99,7 @@ Bigtable has no secondary indexes, so comment creation time needs to be embedded
 
 Bigtable does not support reverse scans and to meet `AP1` we need to show the most recent comments first. A trick to achieve this is to subtract the actual timestamp from a timestamp 100 years (or more) into the future.
 
-The first element of our key `PRODUCT#42` ensures that all comments for a given product are contiguous. If this was a multi-tenant application, could be prefixed with a tenant ID. The second element is a reverse timestamp, ensuring reverse time ordering of comments for that product.
+The first element of our key `PRODUCT#<product-id>` ensures that all comments for a given product are contiguous. If this was a multi-tenant application, the first segment could be prefixed with a tenant identifier (although care also needs to be taken if your customer base is made up over four big tenants and thousands of smaller ones.) The second element is a reverse timestamp, ensuring reverse time ordering of comments for that product.
 
 The next two elements are the language and ratings attributes. Row keys have to be unique, so an identifier for the comment is appended as the last element. 
 
