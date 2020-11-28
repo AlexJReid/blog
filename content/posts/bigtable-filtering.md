@@ -48,7 +48,7 @@ There are several strategies we could take to bring the DynamoDB model over to B
 
 ### Power sets
 
-We could port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable, in other words, we would duplicate a comment a large number times with different row keys to support all access patterns. As Bigtable has no dedicated sort key in which to store the creation date and therefore support ordering, this would have to be promoted to be part of the row key. 
+We could port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable, in other words, we would duplicate a comment a large number times with different row keys to support all access patterns.
 
 Although simple to implement, this approach will have worse maintenance costs compared to the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process. We would also need to consider an access pattern for the sweeper to use so that it can only read rows from its high watermark, rather than performing a full table scan.
 
@@ -117,7 +117,7 @@ Assuming comment `1` for product `42` is in `language=en` and has `rating=5`, th
 
 `PRODUCT#42/2497057062123/en/5/COMMENT#1`.
 
-There is a drawback to promoting the timestamp to the first element of the key which we will discuss later on.
+There is a drawback to promoting the timestamp to the first element of the key. We cannot directly access all comments of a given rating or country without some degree of filtering. Changing the order of the segments within the row key would allow this, but would require us to change how we query the table. This is discussed more later.
 
 ## Queries
 
@@ -228,18 +228,18 @@ If a product has uniform distribution of ratings and languages, this isn't much 
 
 This could be mitigated with a different row key to reduce the number of rows that need to be read and filtered. By promoting `rating` to come before the timestamp in the row key, we would have a more selective index for filtering by rating. The downside is that rows would be sorted by `rating` and then timestamp. This is ideal if we only wanted to show a single rating, but would require parallel queries to satsify a query requiring ratings `[1, 2, 5]`.
 
-We should not be afraid of duplication, particularly if it allows us to optimise for the most frequent access patterns and make them less costly. A simple solution would be to project the comment rows into another table with an alternate row key. We would then use a simple query planner, as we did in the DynamoDB solution, to select the table to use.
+We should not be afraid of duplication, particularly if it allows us to optimise for the most frequent access patterns and make them less costly. A simple solution inspired by DynamoDB GSIs would be to project the comment rows into another table with an alternate row key. We would then use a simple query planner, as we did in the DynamoDB solution, to select the table (index) to use.
 
 ## Summary
 
 We have taken a design originally for DynamoDB and applied it Cloud Bigtable. While Cloud Bigtable has fewer features than DynamoDB, its design and raw performance at the lowest level of capacity has allowed us to think differently.
 
-As with data models, the best fitting technology depends on the workload, budget and prior investment in AWS or GCP. If all your services live in AWS, Bigtable could be a harder sell due to increased data transfer costs.
+As with data models, the best fitting technology depends on the workload, budget and prior investment in either cloud. If all your services live in AWS, Bigtable would be a harder sell due to increased data transfer costs.
 
-DynamoDB and Cloud Bigtable both force us to think at a lower level to maximise efficiency and therefore increase performance and lower costs. Both are overkill for sites where a handful of comments are received per project, however it is easy to imagine the patterns presented here being useful on higher volume applications.
+DynamoDB and Cloud Bigtable both force us to think at a lower level than a relational database to maximise efficiency. As previously stated, use of Cloud Bigtable would be overkill for a comments section unless the number of comments is incredibly high.
 
-DynamoDB hits a sweet spot by being incredibly economical for very small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them. A single node is the smallest billing increment. 
+DynamoDB hits a sweet spot by being incredibly economical (possibly even free) for very small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them. A single node is the smallest billing increment. 
 
 As an answer to that, Google has other, more on-demand NoSQL products such as Firebase. DynamoDB has an on-demand model, making it a versatile choice for workloads of all sizes - with provisioned pricing options to save money when the workload is better understood. As scale increases, the price differential will likely narrow.
 
-In the next post we will explore implementing the [index and multi-get](#index-and-multi-get) approach.
+In the next post we will explore implementing the [index and multi-get](#index-and-multi-get) approach to make the Cloud Bigtable solution more effcient.
