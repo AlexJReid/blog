@@ -1,5 +1,5 @@
 +++
-draft = false
+draft = true
 date = 2020-11-28T00:00:00Z
 title = "Filtering and pagination with Cloud Bigtable"
 description = "Building a paginated and filterable comments data model with Cloud Bigtable."
@@ -52,35 +52,31 @@ We could port the [original DynamoDB solution](/posts/dynamodb-efficient-filteri
 
 Although simple to implement, this approach will have worse maintenance costs compared to the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process. We would also need to consider an access pattern for the sweeper to use so that it can only read rows from its high watermark, rather than performing a full table scan.
 
-### Duplicate and multi get
-
-Another approach is to [take inspiration from the final indexing strategy used with DynamoDB](/posts/dynamodb-efficient-filtering-2/). 
-
-However, rather than projecting the entire comment across indexes, we will manually (through code) add non-covering _index_ rows into another table. This index table will store pointers back to rows in the main comment table. The query algorithm is a not rocket science but has a few steps:
-
-- Parallel scan the index table for each requested rating, i.e. `1, 2, 4` up to the number of comments per page such as `20`
-- Gather the comment row keys in the client and order by their sort key, in memory (this is only `60` rows)
-- Extract the row key for the `topN` rows
-- Perform a multi get operation to fetch the candidate rows by their key
-- Gather the results and order again on sort key
-
-The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. 
-
-The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/). **The biggest difference is that it is more acceptable to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
-
-The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think orchestrating parallel queries as Bigtable handles that.
-
-There will also be a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
-
 ### Regular expression row filter
 
 Filters in Bigtable are maybe more acceptable than with DynamoDB. **The big difference with Bigtable is the fact that the lowest possibly amount of capacity is a single node. It is a _sunk cost_, reading tens of thousands of rows maybe does not matter, when a single node is capable of scanning up to 220mb/sec.** Of course, this inefficiency might catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
 
 So, instead of creating millions of duplicates, we could use row filers. By providing a start and end key, Bigtable will only scan the relevant products, in order. **This effectively partitions our data set so that we only scan comments for a given product.** If the key also contains the language, the query becomes more selective as only those rows will be scanned. 
 
-When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan. Rows are filtered out through the evaluation of a regular expression against the row key. In a sense this is similar to a DynamoDB filter: the database is reading the whole row and only sending results that pass the filter back to the client program.
+When using a filter, it is essential to whittle down the possible results as much as possible using keys and a range scan. 
 
-We will investigate this solution first.
+If a product has uniform distribution of ratings and languages, this isn't much of a problem, nor is simply showing everything. However, filtering for comments with a `1` rating when there are `20000` rows between the first `1`-rated comment and the next, will result in noticeable latency. Potentially the query will scan to the end of the comments for that product. This isn't a full table scan, but a _hot_ product with a lot of comments may make this approach less viable.
+
+### Secondary indexes
+
+The final approach is to [take inspiration from the final indexing strategy used with DynamoDB](/posts/dynamodb-efficient-filtering-2/). 
+
+The query algorithm is exactly the same:
+
+- Parallel scan the index table for each requested rating, i.e. `1, 2, 4` up to the number of comments per page such as `20`
+- Gather the comments order by their sort key, in memory (this is only `60` rows)
+- Extract the row key for the `topN` rows
+
+The pagination approach would be similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/).
+
+The parallel aspects of the client program are far simpler, as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think orchestrating parallel queries as Bigtable handles that.
+
+There will also be a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
 
 ## Access patterns
 
@@ -117,7 +113,16 @@ Assuming comment `1` for product `42` is in `language=en` and has `rating=5`, th
 
 `PRODUCT#42/2497057062123/en/5/COMMENT#1`.
 
-There is a drawback to promoting the timestamp to the first element of the key. We cannot directly access all comments of a given rating or country without some degree of filtering. Changing the order of the segments within the row key would allow this, but would require us to change how we query the table. This is discussed more later.
+There is a drawback to promoting the timestamp to the first element of the key. We cannot directly access all comments of a given rating or country without some degree of filtering. Changing the order of the segments within the row key would allow this, but would require us to change how we query the table.
+
+By promoting `rating` to come before the timestamp in the row key, we would have a more selective index for filtering by rating. The downside is that rows would be sorted by `rating` and then timestamp. This is ideal if we only wanted to show a single rating, but requires parallel queries to satsify a query requiring multiple ratings.
+
+The solution is to project the `comment` row multiple five more times:
+
+- `PRODUCT#<product-id>/~/~/<timestamp>/C#<comment-id>` // All, no filters
+- `PRODUCT#<product-id>/<language>/~/<timestamp>/C#<comment-id>` // By language
+- `PRODUCT#<product-id>/~/<rating>/<timestamp>/C#<comment-id>` // By rating
+- `PRODUCT#<product-id>/<language>/<rating>/<timestamp>/C#<comment-id>` // By language and rating
 
 ## Queries
 
@@ -218,17 +223,10 @@ err := tbl.ReadRows(ctx, bigtable.NewRange(startKey, endKey), func(row bigtable.
 
 ## Discussion
 
-The solution presented here is simplistic. We exploit the fact that Cloud Bigtable orders rows by key. Comments for the same product are stored near each other, reverse sorted by time. This makes ordered scanning for pages of comments simple to achieve.
-
 Pagination is a matter of passing the `startTime` to start reading from. This is very efficient so performance will not degrade when paginating through earlier rows as scanning begins at the explicitly set start key.
 
-We don't need to store the comment multiple times for different access patterns. However, the biggest drawback is our use of filtering over a potentially large number of rows. The read pattern is simply to scan _all_ comments **for a given product**, from an optional starting date, up to a page size limit of `20`. 
+The biggest drawback is our use of filtering over a potentially large number of rows. The read pattern is simply to scan _all_ comments **for a given product**, from an optional starting date, up to a page size limit of `20`. 
 
-If a product has uniform distribution of ratings and languages, this isn't much of a problem, nor is simply showing everything. However, filtering for comments with a `1` rating when there are `20000` rows between the first `1`-rated comment and the next, will result in noticeable latency. Potentially the query will scan to the end of the comments for that product. This isn't a full table scan, but a _hot_ product with a lot of comments may make this approach less viable.
-
-This could be mitigated with a different row key to reduce the number of rows that need to be read and filtered. By promoting `rating` to come before the timestamp in the row key, we would have a more selective index for filtering by rating. The downside is that rows would be sorted by `rating` and then timestamp. This is ideal if we only wanted to show a single rating, but would require parallel queries to satsify a query requiring ratings `[1, 2, 5]`.
-
-We should not be afraid of duplication, particularly if it allows us to optimise for the most frequent access patterns and make them less costly. A simple solution inspired by DynamoDB GSIs would be to project the comment rows into another table with an alternate row key. We would then use a simple query planner, as we did in the DynamoDB solution, to select the table (index) to use.
 
 ## Summary
 
