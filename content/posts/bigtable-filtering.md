@@ -58,9 +58,9 @@ However, rather than projecting the entire comment across indexes, we will manua
 - Perform a multi get operation to fetch the candidate rows by their key
 - Gather the results and order again on sort key
 
-The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering/). **The biggest difference is that there is less cost implication of performing multi-gets or `BatchGetItem` with Bigtable, therefore we can afford to project and duplicate less.**
+The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering/). **The biggest difference is that it is not costly to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.**
 
-The parallel aspects require the client program are far simpler this time, as the Bigtable API supports queries over multiple ranges in a single request.
+The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request.
 
 The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. This is not a costly operation. 
 
