@@ -12,11 +12,15 @@ series = []
 
 In the [previous series of posts](/posts/dynamodb-efficient-filtering/), we built data model capable of filtering and paginating product comments with DynamoDB.
 
-This post explores how we could solve the same problem with [Cloud Bigtable](https://cloud.google.com/bigtable). We will see some similarities and differences. You might wonder why another technology is now being discussed, but it is my belief that a lot of the _thinking_ that goes into a data model design is somewhat portable, whether it be DynamoDB, Cloud Bigtable, Cassandra, HBase... or maybe even Redis.
+This post explores how we could solve the same problem with [Cloud Bigtable](https://cloud.google.com/bigtable). 
+
+You might wonder why another technology is now being discussed, but it is my belief that a lot of the _thinking_ that goes into a data model design is somewhat portable, whether it be DynamoDB, Cloud Bigtable, Cassandra, HBase... or maybe even Redis.
 
 It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data due to fairly high entry-level cost and optimizations that it can only perform at scale. It is huge overkill in many scenarios. However some of the modelling techniques presented here might apply to larger volume and velocity usage scenarios. 
 
 I am not suggesting you actually use Cloud Bigtable to build a comments section. Use DynamoDB, Firebase, MySQL or one of the many alternatives. **But** maybe if _comment sections as a service_ for other developers to plug into their high traffic sites was your primary business, Cloud Bigtable could start to make more sense.
+
+As could DynamoDB, of course. The point is that DynamoDB is versatile in that it can support workloads of varying sizes.
 
 ## Cloud Bigtable
 
