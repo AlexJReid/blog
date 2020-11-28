@@ -42,9 +42,9 @@ There are several strategies we could take to bring the DynamoDB model over to B
 
 ### Power sets
 
-We could port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable, in other words, we could a comment a large number times with different row keys to support all access. As Bigtable has no dedicated sort key in which to store the creation date and therefore support ordering, it would have to be promoted to be part of the row key. 
+We could port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable, in other words, we would duplicate a comment a large number times with different row keys to support all access patterns. As Bigtable has no dedicated sort key in which to store the creation date and therefore support ordering, this would have to be promoted to be part of the row key. 
 
-Although simple to implement, this approach will have the same maintenance drawbacks as the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process. We would also need to consider an access pattern for the sweeper to use so that it can only read rows from its high watermark, rather than performing a full table scan.
+Although simple to implement, this approach will have worse maintenance costs compared to the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process. We would also need to consider an access pattern for the sweeper to use so that it can only read rows from its high watermark, rather than performing a full table scan.
 
 ### Index and multi get
 
