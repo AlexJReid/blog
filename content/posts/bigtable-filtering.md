@@ -64,11 +64,11 @@ However, rather than projecting the entire comment across indexes, we will manua
 - Perform a multi get operation to fetch the candidate rows by their key
 - Gather the results and order again on sort key
 
-The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. This is not a costly operation. 
+The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. 
 
-The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/). **The biggest difference is that it is not costly to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
+The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/). **The biggest difference is that acceptable to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
 
-The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think about parallel queries.
+The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think orchestrating parallel queries as Bigtable handles that.
 
 There will also be a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
 
