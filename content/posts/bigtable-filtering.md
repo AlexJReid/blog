@@ -78,7 +78,7 @@ We will investigate this solution first.
 
 ## Access patterns
 
-To recap, these are are query patterns.
+To recap, these are the access patterns.
 
 - **AP1**: show comments in reverse order, i.e. most recent first, regardless of filter
 - **AP2**: show comments in the user's local language, but let them see comments in all languages
