@@ -16,7 +16,7 @@ This post explores how we could solve the same problem with [Cloud Bigtable](htt
 
 It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data due to fairly high entry-level cost and optimizations that it can only perform at scale. It is huge overkill in many scenarios. However some of the modelling techniques presented here might apply to larger volume and velocity usage scenarios. 
 
-I am not suggesting you actually use Cloud Bigtable to build your comments section. Use DynamoDB, Firebase, MySQL and so on. **But** maybe if _comment sections as a service_ for other developers to plug into their high traffic sites was your primary business, Cloud Bigtable could start to make more sense.
+I am not suggesting you actually use Cloud Bigtable to build a comments section. Use DynamoDB, Firebase, MySQL or one of the many alternatives. **But** maybe if _comment sections as a service_ for other developers to plug into their high traffic sites was your primary business, Cloud Bigtable could start to make more sense.
 
 ## Cloud Bigtable
 
