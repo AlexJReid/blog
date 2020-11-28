@@ -242,4 +242,4 @@ DynamoDB hits a sweet spot by being incredibly economical (possibly even free) f
 
 As an answer to that, Google has other, more on-demand NoSQL products such as Firebase. DynamoDB has an on-demand model, making it a versatile choice for workloads of all sizes - with provisioned pricing options to save money when the workload is better understood. As scale increases, the price differential will likely narrow.
 
-In the next post we will explore implementing the [index and multi-get](#duplicate-and-multi-get) approach to make the Cloud Bigtable solution more effcient.
+In the next post we will explore implementing the [duplicate and multi-get](#duplicate-and-multi-get) approach to make the Cloud Bigtable solution more effcient.
