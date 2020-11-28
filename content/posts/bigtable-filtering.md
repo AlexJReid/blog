@@ -18,7 +18,7 @@ You might wonder why another technology is now being discussed, but it is my bel
 
 It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data due to fairly high entry-level cost and optimizations that it can only perform at scale. It is huge overkill in many scenarios. However some of the modelling techniques presented here might apply to larger volume and velocity usage scenarios. 
 
-I am not suggesting you actually use Cloud Bigtable to build a comments section. Use DynamoDB, Firebase, MySQL or one of the many alternatives. **But** maybe if _comment sections as a service_ for other developers to plug into their high traffic sites was your primary business, Cloud Bigtable could start to make more sense.
+I am not suggesting you actually use Cloud Bigtable to build a comments section. Use DynamoDB, Firebase, MySQL or one of the many alternatives. **But** maybe if _comment sections as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
 
 As could DynamoDB, of course. The point is that DynamoDB is versatile in that it can support workloads of varying sizes.
 
@@ -52,7 +52,7 @@ We could port the [original DynamoDB solution](/posts/dynamodb-efficient-filteri
 
 Although simple to implement, this approach will have worse maintenance costs compared to the DynamoDB version. There is no equivalent of DynamoDB Streams to create the duplicates in an event-driven manner, meaning this work will be pushed out to the client program, or a sweeper process running on a schedule, introducing some latency to our indexing process. We would also need to consider an access pattern for the sweeper to use so that it can only read rows from its high watermark, rather than performing a full table scan.
 
-### Index and multi get
+### Duplicate and multi get
 
 Another approach is to [take inspiration from the final indexing strategy used with DynamoDB](/posts/dynamodb-efficient-filtering-3/). 
 
@@ -64,13 +64,13 @@ However, rather than projecting the entire comment across indexes, we will manua
 - Perform a multi get operation to fetch the candidate rows by their key
 - Gather the results and order again on sort key
 
-The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering/). **The biggest difference is that it is not costly to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.**
-
-The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request.
-
 The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. This is not a costly operation. 
 
-As with the DynamoDB solution, there is also a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
+The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering/). **The biggest difference is that it is not costly to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
+
+The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think about parallel queries.
+
+As with the DynamoDB solutio, there will also be a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
 
 ### Regular expression row filter
 
