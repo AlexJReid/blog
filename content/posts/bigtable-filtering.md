@@ -54,7 +54,7 @@ Although simple to implement, this approach will have worse maintenance costs co
 
 ### Duplicate and multi get
 
-Another approach is to [take inspiration from the final indexing strategy used with DynamoDB](/posts/dynamodb-efficient-filtering-3/). 
+Another approach is to [take inspiration from the final indexing strategy used with DynamoDB](/posts/dynamodb-efficient-filtering-2/). 
 
 However, rather than projecting the entire comment across indexes, we will manually (through code) add non-covering _index_ rows into another table. This index table will store pointers back to rows in the main comment table. The query algorithm is a not rocket science but has a few steps:
 
@@ -66,11 +66,11 @@ However, rather than projecting the entire comment across indexes, we will manua
 
 The reason for having to order the results twice is because both parallel operations will potentially yield their results out of order. This is not a costly operation. 
 
-The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering/). **The biggest difference is that it is not costly to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
+The pagination approach is very similar to [what we used in the final solution with DynamoDB](/posts/dynamodb-efficient-filtering-3/). **The biggest difference is that it is not costly to perform random lookups on a set of row keys with Bigtable, therefore we can afford to project and duplicate less data.** In other words, it is OK to use the Cloud Bigtable equivalent of `BatchGetItem`.
 
 The parallel aspects of the client program are far simpler this time as the Bigtable API supports queries over multiple ranges in a single request. There is no need for us to think about parallel queries.
 
-As with the DynamoDB solutio, there will also be a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
+There will also be a small amount of waste during pagination across complex queries. We are collecting `n * rows per page` where `n` is the number of ratings in our filter. In other words, we will read up to `100` index rows and up to `20` comment rows to satisfy the query. As the index rows are very small, this is likely to be acceptable.
 
 ### Regular expression row filter
 
@@ -238,7 +238,7 @@ As with data models, the best fitting technology depends on the workload, budget
 
 DynamoDB and Cloud Bigtable both force us to think at a lower level than a relational database to maximise efficiency. As previously stated, use of Cloud Bigtable would be overkill for a comments section unless the number of comments is incredibly high.
 
-DynamoDB hits a sweet spot by being incredibly economical (possibly even free) for very small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them. A single node is the smallest billing increment. 
+DynamoDB hits a sweet spot by being incredibly economical (possibly even free) for small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them. A single node is the smallest billing increment. 
 
 As an answer to that, Google has other, more on-demand NoSQL products such as Firebase. DynamoDB has an on-demand model, making it a versatile choice for workloads of all sizes - with provisioned pricing options to save money when the workload is better understood. As scale increases, the price differential will likely narrow.
 
