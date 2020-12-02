@@ -189,7 +189,7 @@ Throughout the import and read test CPU use remained low.
 ![read throughput](readtp.png)
 ![cpu](cpu.png)
 
-These tests should be taken with a pinch of salt as they are in not realstic. However, they certainly prove that the data model works on Cloud Bigtable and does not work a single node cluster too hard.
+These tests should be taken with a pinch of salt as they are not realstic. However, they do prove that the data model works on Cloud Bigtable and does not work a single node cluster too hard.
 
 ## Summary
 
