@@ -54,7 +54,7 @@ The grid below assumes a page size of three comments per page, and a filter of r
 
 Rows with a grey background have been discarded by the pagination process. 
 
-Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading. **We do this by generating a `LastEvaluatedKey` for the last visible item from each partition.**
+Page `1` is filled up by the comments at `12:32` and `12:20` from partition `PRODUCT#42/5` the one at `12:30`. For a user to navigate to page `2`, we need to generate `LastEvaluatedKey`s for **both** of the partitions that we are reading. We do this by generating a `LastEvaluatedKey` for the last visible item from each partition. If there is no visible item (for instance, all of the `5`-rated comments from a `[1, 2, 5]` query come first in the merged set), the key of the first _invisible_ item is used.
 
 ```json
 {"GSI3PK": "PRODUCT#42/3", "GSISK":"12:30", "PK":"COMMENT#8", "SK":"COMMENT#8"}
@@ -70,7 +70,7 @@ This gets wrapped into a map, keyed by the active GSI PK.
 }
 ```
 
-This structure is used as a combined `LastEvaluatedKey`. 
+This structure is used as a combined `LastEvaluatedKey`.
 
 When the user clicks on the _next_ link, their request will contain this collection of two `LastEvaluatedKey`s, in addition to the other original parameters. Of course, DynamoDB won't understand it as is. 
 
@@ -128,7 +128,7 @@ The pagination context is fairly large, weighing in at a few hundred bytes, depe
 
 ## Summary
 
-**We've added pagination to all access patterns. The first iteration of our model is now complete.** 
+**We've added pagination to all access patterns. The first iteration of our model is now complete.**
 
 In the [next post](/posts/dynamodb-efficient-filtering-4/) we will add statistics about the comments stored for a product.
 
