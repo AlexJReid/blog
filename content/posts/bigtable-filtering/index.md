@@ -18,11 +18,11 @@ You might wonder why another technology is now being discussed. It is my belief 
 
 It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data. It has a fairly high entry-level cost and optimizations that it can only perform at scale, making it overkill in many scenarios. That said, some of the modelling techniques presented here will apply to the larger volume and velocity scenarios where Cloud Bigtable makes more sense.
 
-I am not suggesting you actually use Cloud Bigtable to build a product comments system, unless it was to be at a massive scale. Use DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
+Instead use DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
 
 ## Cloud Bigtable
 
-Cloud Bigtable is a managed NoSQL offering from Google Cloud, similar to the internal Bigtable service that powers some huge Google properties, including search and GMail.
+Cloud Bigtable is a managed NoSQL database from Google Cloud, similar to the internal Bigtable service that powers some huge Google properties, including search and GMail.
 
 >Cloud Bigtable stores data in massively scalable tables, each of which is a sorted key/value map. The table is composed of rows, each of which typically describes a single entity, and columns, which contain individual values for each row. Each row is indexed by a single row key, and columns that are related to one another are typically grouped together into a column family. Each column is identified by a combination of the column family and a column qualifier, which is a unique name within the column family. [More..](https://cloud.google.com/bigtable/docs/overview#storage-model)
 
@@ -46,15 +46,15 @@ A few approaches were considered before settling upon a port of the final Dynamo
 
 ### Power sets
 
-The first option is to port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable. In other words, we would duplicate a comment a large number times with different row keys to support all access patterns.
+The first option is to port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable. In other words, duplicate a comment a large number times with different row keys to support all access patterns.
 
 Although simple to implement, this approach will have a higher maintenance overhead than the DynamoDB version. There is no equivalent of DynamoDB Streams to create the projections in an event-driven manner, meaning this work has to be pushed out to the client program.
 
-It would be possible to accept changes into a PubSub topic and have Cloud Functions or Cloud Run to update Cloud Bigtable. This has the drawback of making comment submission fire and forget: the comment will be accepted onto the topic, but will not be confirmed as having been written to the table.
+It would be possible to accept changes into a PubSub topic and have Cloud Functions or Cloud Run update Cloud Bigtable. This has the drawback of making comment submission fire and forget: the comment will be accepted onto the topic, but will not be confirmed as having been written to the database.
 
 ### Regular expression row filter
 
-Within reason, filters in Cloud Bigtable are more acceptable than with DynamoDB. **The big difference with Bigtable is the fact that a capacity increment is a single node. It is a _sunk cost_, so reading tens of thousands of rows maybe does not matter, when a single node is capable of scanning up to 220mb/sec.** Of course, this inefficiency will catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
+Within reason, filters in Cloud Bigtable can be used more freely. **The big difference with Bigtable is the fact that a capacity increment is a single node. It is a _sunk cost_, so reading tens of thousands of rows maybe does not matter, when a single node is capable of scanning up to 220mb/sec.** Of course, this inefficiency will catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
 
 This solution differs as instead of creating many projections, we rely on row filters over a partition of comments for a product. By providing a start and end key, Bigtable will only scan rows relating to the relevant product. **This effectively partitions our data set so that we only scan comments for a given product.** If the key also contains the language, the query becomes more selective as only those rows will be scanned.
 
