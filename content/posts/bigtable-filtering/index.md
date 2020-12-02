@@ -48,9 +48,9 @@ A few approaches were considered before settling upon a port of the final Dynamo
 
 The first option is to port the [original DynamoDB solution](/posts/dynamodb-efficient-filtering/) to Bigtable. In other words, we would duplicate a comment a large number times with different row keys to support all access patterns.
 
-Although simple to implement, this approach will have worse maintenance overhead than the DynamoDB version. There is no equivalent of DynamoDB Streams to create the projections in an event-driven manner, meaning this work has to be pushed out to the client program.
+Although simple to implement, this approach will have a higher maintenance overhead than the DynamoDB version. There is no equivalent of DynamoDB Streams to create the projections in an event-driven manner, meaning this work has to be pushed out to the client program.
 
-It would be possible to accept changes into a PubSub topic and have Cloud Functions or Cloud Run perform the Cloud Bigtable mutations. This has the drawback of making comment submission fire and forget: the comment will be accepted onto the topic, but will not be confirmed as having been written to the table. Bigtable is already capable of ingesting a large number of rows rapidly, making the buffer that PubSub gives us superflous. Whether this approach is acceptable depends on the application.
+It would be possible to accept changes into a PubSub topic and have Cloud Functions or Cloud Run to update Cloud Bigtable. This has the drawback of making comment submission fire and forget: the comment will be accepted onto the topic, but will not be confirmed as having been written to the table.
 
 ### Regular expression row filter
 
