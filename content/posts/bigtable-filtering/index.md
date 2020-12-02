@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-In the [previous series of posts](/posts/dynamodb-efficient-filtering/), we built data model capable of filtering and paginating product comments with DynamoDB.
+In the [previous series of posts](/posts/dynamodb-efficient-filtering/), we built a data model capable of filtering and paginating product comments with DynamoDB.
 
 This post explores how we could solve the same problem with [Cloud Bigtable](https://cloud.google.com/bigtable).
 
