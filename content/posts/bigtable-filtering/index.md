@@ -54,9 +54,9 @@ It would be possible to accept changes into a PubSub topic and have Cloud Functi
 
 ### Regular expression row filter
 
-Within reason, filters in Cloud Bigtable are more acceptable than with DynamoDB. **The big difference with Bigtable is the fact that the lowest possibly amount of capacity is a single node. It is a _sunk cost_, so reading tens of thousands of rows maybe does not matter, when a single node is capable of scanning up to 220mb/sec.** Of course, this inefficiency will catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
+Within reason, filters in Cloud Bigtable are more acceptable than with DynamoDB. **The big difference with Bigtable is the fact that a capacity increment is a single node. It is a _sunk cost_, so reading tens of thousands of rows maybe does not matter, when a single node is capable of scanning up to 220mb/sec.** Of course, this inefficiency will catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
 
-This solution differs from the above as instead of creating many projections, we rely on row filters over a partition of comments for a product. By providing a start and end key, Bigtable will only scan the relevant product. **This effectively partitions our data set so that we only scan comments for a given product.** If the key also contains the language, the query becomes more selective as only those rows will be scanned.
+This solution differs as instead of creating many projections, we rely on row filters over a partition of comments for a product. By providing a start and end key, Bigtable will only scan rows relating to the relevant product. **This effectively partitions our data set so that we only scan comments for a given product.** If the key also contains the language, the query becomes more selective as only those rows will be scanned.
 
 When using a filter, it is essential to whittle down the possible results as much as possible using a range or prefix scan.
 
