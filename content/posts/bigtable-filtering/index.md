@@ -18,7 +18,7 @@ You might wonder why another technology is now being discussed. It is my belief 
 
 It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data. It has a fairly high entry-level cost and optimizations that it can only perform at scale, making it overkill in many scenarios. That said, some of the modelling techniques presented here will apply to the larger volume and velocity scenarios where Cloud Bigtable excels.
 
-Instead use DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
+Consider using DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
 
 ## Cloud Bigtable
 
