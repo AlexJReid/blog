@@ -82,7 +82,7 @@ This can be broken down into the following access patterns.
 
 In order to port the DynamoDB solution, we need to rethink some aspects of the design.
 
-Bigtable has no secondary indexes, so comment creation time needs to be embedded into the row key in order to show the newest comments first. As we need to filter on `language` and a set of selected `rating`s, these also need to be promoted into the key.
+Bigtable rows have no dedicated sort key, so comment creation time needs to be embedded into the row key in order to show the newest comments first. As we need to filter on `language` and a set of selected `rating`s, these also need to be promoted into the key.
 
 Bigtable does not support reverse scans and we need to show the most recent comments first. A trick to achieve this is to subtract the actual timestamp from a timestamp 100 years (or more) into the future.
 
