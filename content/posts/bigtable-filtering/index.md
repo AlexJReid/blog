@@ -16,7 +16,7 @@ This post explores how we could solve the same problem with [Cloud Bigtable](htt
 
 You might wonder why another technology is now being discussed. It is my belief that a lot of the _thinking_ that goes into a data model design is somewhat portable, whether it be DynamoDB, Cloud Bigtable, Cassandra, HBase, or maybe even Redis.
 
-It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data. It has a [fairly high entry-level cost](https://cloud.google.com/bigtable/pricing#example-single-node) and optimizations that it can only perform at scale, making it overkill in many scenarios. That said, some of the modelling techniques presented here will apply to the larger volume and velocity scenarios where Cloud Bigtable excels.
+It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data. It has a [fairly high entry-level cost](https://cloud.google.com/bigtable/pricing#example-single-node) and optimizations that it can only perform at scale, making it overkill in many scenarios. That said, some of the modelling techniques presented here will apply to the larger volume and velocity scenarios where Cloud Bigtable excel, such as multi-dimensional timeseries, ad-tech, analytics and financial use cases.
 
 First consider using DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
 
