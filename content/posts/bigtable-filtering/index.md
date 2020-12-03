@@ -98,7 +98,7 @@ The next two elements are the language and ratings attributes. Row keys have to 
 
 So, assuming comment `1` for product `42` is in `language=en` and has `rating=5`, the following row key will be used:
 
-- `P#42/2497057062123/en/5/COMMENT#1`.
+- `P#42/2497057062/en/5/C#1`.
 
 There is a drawback to promoting the timestamp to the first element of the key. Although it provides us with global ordering for comments within a product, we cannot directly access all comments of a given rating or language without some degree of scanning and filtering. Changing the order of the segments within the row key would provide this locality, but would require us to change how we query the table.
 
