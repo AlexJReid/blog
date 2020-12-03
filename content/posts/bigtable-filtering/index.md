@@ -16,9 +16,9 @@ This post explores how we could solve the same problem with [Cloud Bigtable](htt
 
 You might wonder why another technology is now being discussed. It is my belief that a lot of the _thinking_ that goes into a data model design is somewhat portable, whether it be DynamoDB, Cloud Bigtable, Cassandra, HBase, or maybe even Redis.
 
-It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data. It has a fairly high entry-level cost and optimizations that it can only perform at scale, making it overkill in many scenarios. That said, some of the modelling techniques presented here will apply to the larger volume and velocity scenarios where Cloud Bigtable excels.
+It is worth pointing out that unlike DynamoDB, Cloud Bigtable is a poor fit for small amounts of data. It has a [fairly high entry-level cost](https://cloud.google.com/bigtable/pricing#example-single-node) and optimizations that it can only perform at scale, making it overkill in many scenarios. That said, some of the modelling techniques presented here will apply to the larger volume and velocity scenarios where Cloud Bigtable excels.
 
-Consider using DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
+First consider using DynamoDB, [Firestore](https://cloud.google.com/firestore), MySQL or one of the many alternatives. **However** ... if _comments as a service_ was your primary business offering, Cloud Bigtable could start to make more sense.
 
 ## Cloud Bigtable
 
@@ -195,7 +195,7 @@ These tests should be taken with a pinch of salt as they are not realistic. Howe
 
 We have taken a design originally for DynamoDB and applied it Cloud Bigtable. While Cloud Bigtable has fewer features than DynamoDB, its design and raw performance at the lowest level of capacity has allowed us to think differently.
 
-One notable Cloud Bigtable feature is its very simple integration with BigQuery. This provides a way of writing SQL queries against data held in Cloud Bigtable. There are many uses for this including batch aggregations, integrity checking jobs and ad hoc reporting. It would not be an approach you would use to power a production application, but it is a very low code way of performing operations against data held in Cloud Bigtable. DynamoDB supports similar with an EMR, but this is a truly serverless approach.
+One notable Cloud Bigtable feature is its very simple integration with BigQuery. This provides a way of writing SQL queries against data held in Cloud Bigtable. There are many uses for this including batch aggregations, integrity checking jobs and ad hoc reporting. It would not be an approach you would use to power a production application, but it is a very low code way of performing operations against data held in Cloud Bigtable. DynamoDB supports similar when coupled to an EMR cluster, but this is a truly serverless approach.
 
 Cloud Bigtable's API is gRPC based. Rows are streamed to the client over HTTP2, instead of being paginated into JSON responses split over many HTTP requests. No measurements were made, but the gRPC API is likely to have less protocol overhead.
 
