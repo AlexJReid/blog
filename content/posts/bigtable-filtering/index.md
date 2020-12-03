@@ -162,11 +162,11 @@ For the first page, read `20` rows. Find the row key of row `20` to use as a ref
 
 To fetch the next page, repeat the process by reading from that exclusive start key, with the same end key.
 
-The approach for paging is the same taken for DynamoDB and is [explained in this post](/posts/dynamodb-efficient-filtering-3/). Cloud Bigtable does not return a value for `LastEvaluatedKey` like DynamoDB, but we can create one by simply inspecting the key for the last row displayed. As we are considering start keys to be _exclusive_, like DynamoDB, the key is appended with `\x00` to increment it so that the scan commences with the _next_ row.
+The approach for paging is the same taken for DynamoDB and is [explained in this post](/posts/dynamodb-efficient-filtering-3/#parallel-request-pagination). Cloud Bigtable does not return a value for `LastEvaluatedKey` like DynamoDB, but we can create one by simply inspecting the key for the last row displayed. As we are considering start keys to be _exclusive_, like DynamoDB, the key is appended with `\x00` to increment it so that the scan commences with the _next_ row.
 
-If none of the results from a subquery are visible, the first available key from that query will be used. As this row has not been displayed yet, we treat it like a normal _inclusive_ row key, so use it as-is.
+If none of the results from a subquery are visible, the first available key from that query will be used. As this row has not been displayed yet, we treat it as an _inclusive_ row key, so do not increment it.
 
-If no results are found for a subquery, no `LastEvaluatedKey` is included for it.
+If no results are found for a subquery, no `LastEvaluatedKey` is created.
 
 As there is only one `LastEvaluatedKey` for each query, these are encoded into an array which is base64 encoded and used as the _pagination cursor_. When there are no more combined results, this array will be empty and no pagination links will be displayed.
 
