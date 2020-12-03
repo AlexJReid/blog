@@ -38,7 +38,7 @@ There are several differences for a developer coming from DynamoDB. Most of note
 
 Spinning up a Bigtable instance is near-instantenous through a single command. The only real dial to turn is adding more nodes and choosing between SSD or HDD storage. The bulk of the work lies with optimally modelling the data, with particularly careful thought around the row keys.
 
-**Compute and storage are separate in Bigtable.** All nodes read data from a shared file system, meaning that there is no need to _load_ data onto a node so that it can answer queries about a partition of the dataset. In non-scientific terms, Bigtable arranges the workload based on the access patterns that we throw at it.
+**Compute and storage are separate in Bigtable.** All nodes read data from a shared file system, meaning that there is no need to _load_ data onto a node so that it can answer queries about a partition of the dataset. In non-scientific terms, Bigtable arranges the workload based on the access patterns that we throw at it. As nodes appear more or less immediately, [autoscaling is possible with some additional tooling](https://engineering.atspotify.com/2018/12/18/bigtable-autoscaler-saving-money-and-time-using-managed-storage/).
 
 ## Rejected approaches
 
