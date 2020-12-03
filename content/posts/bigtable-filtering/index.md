@@ -180,7 +180,7 @@ Some small utilities were created to load a Cloud Bigtable instance with dummy d
 
 ![dummy data](dummy.png)
 
-Piping its output through `impbt` imports the rows into the Cloud Bigtable table. 50,000 rows were added in about a minute. The utility was run on Cloud Shell, so it is possible that network bandwidth was the limiting factor.
+Piping its output through `impbt` imports the rows into the Cloud Bigtable table. 50,000 rows were added in about a minute. The command was run on Cloud Shell, so it is possible that network bandwidth and a parallelism of `1` was a limiting factor.
 
 ![import](import.png)
 
