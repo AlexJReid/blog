@@ -112,6 +112,8 @@ Inspired by DynamoDB global secondary indexes, the solution is to manually _proj
 - `P#<product-id>/~/<rating>/<timestamp>/C#<comment-id>` By rating
 - `P#<product-id>/<language>/<rating>/<timestamp>C#<comment-id>` By language and rating
 
+Understanding what the most commonly used access patterns are allows us to optimise in that direction. Less frequently used patterns may tolerate being less efficient, so we should not feel obligated to make every single query perform equally, particularly if additional projections are required.
+
 It is up to the write path to ensure incoming comments are written to these rows. The read path will assume they are there and issue queries accordingly.
 
 Bigtable has no atomicity between writes to multiple rows. There is a chance that a comment will fail to appear in all indexes. This can be rectified with a periodic check and repair job.
