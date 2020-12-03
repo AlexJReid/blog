@@ -211,7 +211,7 @@ The best fitting technology depends on the workload, budget and investment in ei
 
 Both DynamoDB and Cloud Bigtable both force us to think at a lower level than a relational database to maximise efficiency. As previously stated, use of Cloud Bigtable would be overkill for a comments section unless the number of comments is incredibly high.
 
-DynamoDB hits a sweet spot by being incredibly economical (possibly even free) for small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them. A single node is the smallest billing increment.
+DynamoDB hits a sweet spot by being incredibly economical (possibly even free) for small workloads. Cloud Bigtable has a high initial price point of $0.65/hr for a single node cluster. A single Cloud Bigtable node can support a respectable number of operations, but this is only economical if you actually utilise them.
 
 As an answer to that, Google has other, higher level NoSQL products such as [Firestore](https://cloud.google.com/firestore) with flexible pricing and free quotas. DynamoDB has an on-demand, provisioned and autoscaling models, making it a versatile choice for workloads of all sizes.
 
