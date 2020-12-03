@@ -34,7 +34,7 @@ There are several differences for a developer coming from DynamoDB. Most of note
 - no automatically maintained secondary indexes
 - no reverse scans
 - no triggers to fan out the creation of duplicate records
-- pay per node (minimum of $0.65/hr so around $450 a month for a single node, plus storage) rather than capacity units
+- pay per node (minimum of $0.65/hr so around $475 a month for a single node, **plus storage**) rather than capacity units
 
 Spinning up a Bigtable instance is near-instantenous through a single command. The only real dial to turn is adding more nodes and choosing between SSD or HDD storage. The bulk of the work lies with optimally modelling the data, with particularly careful thought around the row keys. A [key visualizer](https://cloud.google.com/bigtable/docs/keyvis-overview) tool compliments the excellent observability features.
 
