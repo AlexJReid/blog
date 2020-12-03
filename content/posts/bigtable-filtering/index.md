@@ -54,7 +54,7 @@ It would be possible to accept changes into a PubSub topic and have Cloud Functi
 
 ### Regular expression row filter
 
-Within reason, filters in Cloud Bigtable can be used more freely. **The big difference with Bigtable is the fact that a capacity increment is a single node. It is a _sunk cost_, so reading tens of thousands of rows maybe does not matter, when a single node is capable of scanning up to 220mb/sec.** Of course, this inefficiency will catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
+Within reason, filters in Cloud Bigtable can be used more freely. **The big difference with Bigtable is the fact that a capacity increment is a single node. It is a _sunk cost_, so reading tens of thousands of rows maybe does not matter, when a single node is [capable of scanning up to 220mb/sec](https://cloud.google.com/bigtable/docs/performance).** Of course, this inefficiency will catch up with us as volume and concurrent access increases. Node resources are not infinite and scanning excessively will make query performance less predictable.
 
 This solution differs as instead of creating many projections, we rely on row filters over a partition of comments for a product. By providing a start and end key, Bigtable will only scan rows relating to the relevant product. **This effectively partitions our data set so that we only scan comments for a given product.** If the key also contains the language, the query becomes more selective as only those rows will be scanned.
 
@@ -193,7 +193,7 @@ These tests should be taken with a pinch of salt as they are not realistic. Howe
 
 ## Summary
 
-We have taken a design originally for DynamoDB and applied it Cloud Bigtable. While Cloud Bigtable has fewer features than DynamoDB, its design and raw performance at the lowest level of capacity has allowed us to think differently.
+We have taken a design originally for DynamoDB and applied it Cloud Bigtable. While Cloud Bigtable has fewer features than DynamoDB, its design and [raw performance](https://cloud.google.com/bigtable/docs/performance) at the lowest level of capacity has allowed us to think differently.
 
 One notable Cloud Bigtable feature is its very simple integration with BigQuery. This provides a way of writing SQL queries against data held in Cloud Bigtable. There are many uses for this including batch aggregations, integrity checking jobs and ad hoc reporting. It would not be an approach you would use as the backend for user-facing endpoints, but it is a very low code way of performing batch operations against data held in Cloud Bigtable. DynamoDB supports similar when coupled to an EMR cluster, but this is a truly serverless approach.
 
