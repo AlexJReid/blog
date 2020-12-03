@@ -170,7 +170,7 @@ If no results are found for a subquery, no `LastEvaluatedKey` is included for it
 
 As there is only one `LastEvaluatedKey` for each query, these are encoded into an array which is base64 encoded and used as the _pagination cursor_. When there are no more combined results, this array will be empty and no pagination links will be displayed.
 
-There is a chance that rows from a sub-query are never actually displayed. Imagine a scenario where there was a faulty batch of a product in 2017, resulting in a lot of low-rated comments. All other comments for the product are generally positive. When reverse scanning comments of rating `1` or `5`, the same set of `1`-rated comments will be returned continually, until the user gets to that period in 2017. This is slightly wasteful. Generating and using statistics around the comment distribution would allow a query to be planned more effectively. However, the queries are cheap and data transfer minimal, so it is not a bad tradeoff to not prematurely optimise.
+There is a chance that rows from a subquery are continually requested but not displayed. Imagine a scenario where there was a faulty batch of a product in 2017, resulting in a lot of low-rated comments. All other comments for the product are generally positive. When reverse scanning comments of rating `1` or `5`, the same set of `1`-rated comments will be returned continually, until the user gets to that period in 2017. This is slightly wasteful. Generating and using statistics around the comment distribution would allow a query to be planned more effectively. However, the queries are cheap and data transfer minimal, so it is not a bad tradeoff to not prematurely optimise.
 
 ## Testing it out
 
