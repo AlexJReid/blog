@@ -215,4 +215,4 @@ DynamoDB hits a sweet spot by being incredibly economical (possibly even free) f
 
 As an answer to that, Google has other, higher level NoSQL products such as [Firestore](https://cloud.google.com/firestore) with flexible pricing and free quotas. DynamoDB has an on-demand, provisioned and autoscaling models, making it a versatile choice for workloads of all sizes.
 
-As workload size increases, the price differential between DynamoDB and Cloud Bigtable is likely to narrow. Both are fantastic, battle tested options that are great to work with.
+As workload size increases, the price differential between DynamoDB and Cloud Bigtable is likely to narrow. Both are fantastic, battle tested options that greatly the operational burden of running a scalable, reliable and high performance data service.
