@@ -114,7 +114,7 @@ Inspired by DynamoDB global secondary indexes, the solution is to manually _proj
 
 It is up to the write path to ensure incoming comments are written to these rows. The read path will assume they are there and issue queries accordingly.
 
-Bigtable has no atomicity between writes to multiple rows. There is a chance that a comment will fails to appear in all indexes. This could be rectified with a periodic check and repair job.
+Bigtable has no atomicity between writes to multiple rows. There is a chance that a comment will fail to appear in all indexes. This can be rectified with a periodic check and repair job.
 
 ## Queries
 
