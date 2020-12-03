@@ -195,7 +195,7 @@ These tests should be taken with a pinch of salt as they are not realistic. Howe
 
 We have taken a design originally for DynamoDB and applied it Cloud Bigtable. While Cloud Bigtable has fewer features than DynamoDB, its design and raw performance at the lowest level of capacity has allowed us to think differently.
 
-One notable Cloud Bigtable feature is its very simple integration with BigQuery. This provides a way of writing SQL queries against data held in Cloud Bigtable. There are many uses for this including batch aggregations, integrity checking jobs and ad hoc reporting. It would not be an approach you would use to power a production application, but it is a very low code way of performing operations against data held in Cloud Bigtable. DynamoDB supports similar when coupled to an EMR cluster, but this is a truly serverless approach.
+One notable Cloud Bigtable feature is its very simple integration with BigQuery. This provides a way of writing SQL queries against data held in Cloud Bigtable. There are many uses for this including batch aggregations, integrity checking jobs and ad hoc reporting. It would not be an approach you would use as the backend for user-facing endpoints, but it is a very low code way of performing batch operations against data held in Cloud Bigtable. DynamoDB supports similar when coupled to an EMR cluster, but this is a truly serverless approach.
 
 Cloud Bigtable's API is gRPC based. Rows are streamed to the client over HTTP2, instead of being paginated into JSON responses split over many HTTP requests. No measurements were made, but the gRPC API is likely to have less protocol overhead.
 
