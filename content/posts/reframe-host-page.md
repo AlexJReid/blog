@@ -13,7 +13,7 @@ I have been working on a front end using [ClojureScript and re-frame](https://da
 
 I won't repeat the excellent documentation and tutorials that are readily available, but rather how I solved a fairly trivial problem.
 
-Like most client-side single page applications, an HTML host page references the _compiled_ JavaScript. It is often useful for an application to read a configuration object that might be defined on the host page like so:
+A client-rendered single page application is _mounted_ to an element within a host page. It is often useful for an application to read a configuration object defined on the host page like so:
 
 ```html
 <script>
@@ -24,9 +24,9 @@ var APP_CONFIG = {
 </script>
 ```
 
-ClojureScript makes the host JavaScript environment available in the `js/` namespace. Within a re-frame application, state is generally held in a single place known as the `app-db`. This is a structure that event handlers receive and return a **new** version of, causing views to update where necessary. 
+ClojureScript makes the host JavaScript environment available in the `js/` namespace. Within a re-frame application, state is generally held in a single _database_ known as the `app-db`. This is a structure that event handlers receive and return a **new** version of, causing subscribed views to update when necessary.
 
-However, _things_ from the grubby outside world need to find their way into `app-db`. So that my application could access the values defined in the JavaScript object at start up time, I needed a way of copying the values into `app-db`.
+However, values from the grubby outside world need to find their way into `app-db`. So that my application can access the values defined in the JavaScript object, I needed a way of copying the values into `app-db`.
 
 ## Co-effects
 
@@ -64,7 +64,7 @@ As you can see, the configuration from the host page has been added at `:host-pa
 
 ## Wrap up
 
-This approach might be overkill as the values set in the host page are unlikely to change. Co-effects are commonly used to interface with local storage, service calls, getting the current time, and so on.
+This approach might be overkill as the values set in the host page are unlikely to change. Co-effects are commonly used to interface with local storage, service calls, getting the current time, and so on. 
 
 As said previously, re-frame and the entire developer experience when working with ClojureScript is a refreshing change. I've an incredibly low tolerance for slow feedback loops, so seeing changes take effect immediately after saving mad a huge difference. Taking it a step further - connecting emacs to the running application and dispatching events through the REPL.. blew my mind! 
 
