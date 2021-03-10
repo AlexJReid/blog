@@ -60,7 +60,7 @@ As I want to both add the configuration object from the host page to the `app-db
 
 The first argument to the event handler function is `cofx` with some destructuring to pull out `db` and `host-page-config`, the latter being made available through `inject-cofx` before the function. This adds the co-effect we registered in the previous section.
 
-As you can see, the configuration from the host page has been added at `:host-page-config`. It would probably be better practice to be more selective about the permitted keys and maybe also enforce it with a spec.
+As you can see, the configuration from the host page has been added at `:host-page-config`. It would be better practice to be more selective about the permitted keys and maybe also enforce it with a spec.
 
 ## Wrap up
 
