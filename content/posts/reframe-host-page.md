@@ -66,6 +66,6 @@ As you can see, the configuration from the host page has been added at `:host-pa
 
 This approach might be overkill as the values set in the host page are unlikely to change. Co-effects are commonly used to interface with local storage, service calls, getting the current time and so on.
 
-re-frame and the entire developer experience when working with ClojureScript is a refreshing change. I've an incredibly low tolerance for slow feedback loops, so seeing changes take effect immediately after saving made a huge difference. Taking it a step further and connecting `emacs` to the running application and dispatching events through the REPL is an unmatched experience.
+re-frame and the entire developer experience when working with ClojureScript is a refreshing change. I've an incredibly low tolerance for slow feedback loops, so seeing changes take effect immediately after saving made a huge difference. Taking it a step further and connecting `emacs` to the running application and dispatching events through the REPL is an unmatched experience. And I've not even talked about the [10x instrumentation](https://github.com/day8/re-frame-10x).
 
 I know I'm more than a few years late to the party but front end _can_ be fun! I never thought I'd say that.
