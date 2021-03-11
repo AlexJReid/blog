@@ -45,9 +45,9 @@ With the help of `js->clj`, I can retrieve the JavaScript object as a Clojure ma
 
 ## Event handler
 
-This co-effect is only useful when an event is dispatched. To start a re-frame application, an _initial event_ is dispatched. In my application, the initial event is `::initialize-db`. 
+This co-effect is only useful when an event is dispatched. To start a re-frame application, an _initial event_ is dispatched. In my application, this event is `::initialize-db`. 
 
-As I want to both add the configuration object from the host page to the `app-db` **and** dispatch an another event to load some more state from a remote call, I use `reg-event-fx` to register an event handler function. This returns a map of directives - `:db` containing the new `app-db` and `:dispatch` to make a service call.
+As I want to both add the configuration object from the host page to the `app-db` **and** dispatch another event to load some more state from a remote call, I use `reg-event-fx` to register an event handler function. This returns a map of directives - `:db` containing the new `app-db` and `:dispatch` to make a service call.
 
 ```clojure
 (re-frame/reg-event-fx
@@ -58,7 +58,7 @@ As I want to both add the configuration object from the host page to the `app-db
     :dispatch [:load-initial-state]}))
 ```
 
-The first argument to the event handler function is `cofx` with some destructuring to pull out `db` and `host-page-config`, the latter being made available through `inject-cofx` before the function. This adds the co-effect we registered in the previous section.
+The first argument to the event handler function is the co-effects context, so with some destructuring I can pull out `db` and `host-page-config`, the latter being made available through `inject-cofx` before the function. This adds the co-effect we registered in the previous section.
 
 As you can see, the configuration from the host page has been added at `:host-page-config`. It would be better practice to be more selective about the permitted keys and maybe also enforce it with a spec.
 
