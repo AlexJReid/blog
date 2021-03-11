@@ -1,7 +1,7 @@
 {{ $related := (where site.RegularPages "Type" "in" site.Params.mainSections).Related . | first 3 }}
 {{ with $related }}
 <div class="releated-content markdown-body">
-  <h3>Related Posts</h3>
+  <h3>Other posts</h3>
   <ul>
     {{ range . }}
     <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
