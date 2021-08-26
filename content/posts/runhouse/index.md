@@ -138,7 +138,7 @@ And...
 - ClickHouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
 - sqlite may be a substitute if you like this odd idea... maybe after a trivial HTTP API, similar to ClickHouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse` (although the `.sqlite3` file I tried was over 200MB - close to the source `.csv` vs 58MB for Clickhouse's data directory.)
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start.)
-- Data volume/image size might make the service take a long time to start on demand due to image size.
+- Data volume/image size might make the service take a long time to start on demand.
 - ClickHouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about ClickHouse's internals to comment on whether that'll break things.)
 - The API exposed over HTTP speaks SQL, some people get offended by that.
 - Probably a niche use case which could be better met in a more conventional way?
