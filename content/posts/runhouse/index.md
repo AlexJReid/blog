@@ -14,16 +14,16 @@ So here's the first in the series of my bad ideas that are nevertheless fun to t
 
 ## The idea
 
-I really like [ClickHouse](https://clickhouse.yandex). Compared with the expanse of complex software in the data space, it's refreshing to run a single process which just works. It's very fast and versatile.
+I really like [ClickHouse](https://clickhouse.yandex). Compared with the expanse of complex software in the big data space, it's refreshing to run a single process. It's very fast and versatile.
 
-Running it on [Cloud Run](https://cloud.google.com/run/) is (probably) a bad idea. Cloud Run is for stateless things like APIs and tasks that pull in data from elsewhere. 
+Running it on [Cloud Run](https://cloud.google.com/run/) is a bad idea. Cloud Run is for stateless things like APIs and tasks that pull in data from elsewhere. 
 
-But... well... what if the data being stored/queried is immutable, so arguably the state is fixed?
+But... well... _what if_ the data being stored/queried is immutable? Then, arguably the state is fixed.
 
 ## How could that possibly be useful?
-- Maybe you have a comparatively small dataset (or your data has natural partitions of reasonable size, such as multi-tenant SaaS) that don't need to update frequently. For instance, the user is happy to look at yesterday's usage, or it is some historical dataset about oil production in 1983. These could be extracted to a snapshot.
-- You want to allow arbitrary queries on that snapshot (most likely slice and dice aggregations with small result sets)
-- Perhaps that small dataset is read heavy and might need to scale up, Cloud Run will in theory handle this by spinng up more _replica_ containers, each _containing_ of the same fixed dataset
+- Maybe you have a comparatively small dataset (or your data has natural partitions of reasonable size, such as multi-tenant SaaS) that doesn't need to be updated frequently. For instance, the user might be happy to look at usage metrics for year, up to yesterday. Maybe the data is something historical such as oil production figures from 1983. These could be extracted to a snapshot by some other process.
+- You want to allow arbitrary queries on that snapshot: most likely slice and dice aggregations with small result sets.
+- Perhaps that small dataset is read heavy and might need to scale up and handle a lot of slice and dice queries. Cloud Run will in theory handle this by spinng up more _replica_ containers, each _containing_ the same fixed dataset.
 
 ## How I think it could work
 - Extend the `yandex/clickhouse` image with some ready-to-roll data (I used the ontime dataset) or consider adding a startup script that will pull the data in from some storage service
@@ -99,12 +99,12 @@ A `SELECT COUNT()` also worked. However when attempting to run a query with `GRO
 Code: 460, e.displayText() = DB: :ErrnoException: Failed to create thread timer, errno: 0, strerror: Success (version 20.1.2.4 (official build))
 ```
 
-Looking at the [ClickHouse code](https://github.com/ClickHouse/ClickHouse/search?q=Failed+to+create+thread+timer&unscoped_q=Failed+to+create+thread+timer), it appears this relates to a `timer_create` syscall in the query profiler, which can't be disabled. The excellent [Cloud Run FAQ](https://github.com/ahmetb/cloud-run-faq#which-system-calls-are-supported) has a list of supported gVisor supported syscalls and `timer_create` appears to be among them. Unfortunately the ClickHouse code doesn't appear to log the actual error from `timer_create`. I didn't have time to spend on compiling ClickHouse to explore further. Boo.
+Looking at the [ClickHouse code](https://github.com/ClickHouse/ClickHouse/search?q=Failed+to+create+thread+timer&unscoped_q=Failed+to+create+thread+timer), it appears this relates to a `timer_create` syscall in the query profiler, which can't be disabled. The excellent [Cloud Run FAQ](https://github.com/ahmetb/cloud-run-faq#which-system-calls-are-supported) has a list of supported gVisor supported syscalls and `timer_create` appears to be among them. Unfortunately the ClickHouse code doesn't appear to log the actual error from `timer_create`. I didn't have time to spend on compiling ClickHouse to explore further, but it looked as if `timer_create` within `gVisor` was not working as ClickHouse expected. Boo.
 
 > Some system calls and arguments are not currently supported, as are some parts of the /proc and /sys filesystems. As a result, not all applications will run inside gVisor, but many will run just fine ...
 -- https://cloud.google.com/blog/products/gcp/open-sourcing-gvisor-a-sandboxed-container-runtime
 
-I figured it _might_ have been memory related, but even with a 2GB memory allocation, the error remained. The next port of call would have been to try running ClickHouse in a gVisor environment outside of Cloud Run. I pulled the image into my [Cloud Shell](https://cloud.google.com/shell/) and it worked as expected, but this is a small VM so no gVisor? For now, game over.
+The next port of call would have been to try running ClickHouse in a gVisor environment outside of Cloud Run. I pulled the image into my [Cloud Shell](https://cloud.google.com/shell/) and it worked as expected, but this is a small VM so no gVisor? For now, game over.
 
 ## Update
 A few days after publishing this post, I noticed [PR#8837](https://github.com/ClickHouse/ClickHouse/pull/8837) on ClickHouse's Github that provides a workaround. That's amazing! Thanks, contributors.
@@ -127,19 +127,20 @@ And...
 **It works.** It's a very small dataset, but yes - ClickHouse works on Cloud Run, for what it is worth. :) Available storage on Cloud Run is probably the limiting factor right now. This is understandable, of course.
 
 ## Why I thought the idea was interesting
-- ClickHouse speaks HTTP anyway so will just work on Cloud Run
-- It's very fast even with modest hardware and isn't a big install, it's a single binary. There's a ready made Docker image
-- Given some tuning of the default configuration (especially around memory usage, caching and logging) it might work acceptably
-- Dataset is immutable so no background processes (merging of data) to worry about
+- ClickHouse speaks HTTP so will just work on Cloud Run.
+- It's very fast even with modest hardware and isn't a big install, it's a single binary. There's a ready made Docker image.
+- Given some tuning of the default configuration (especially around memory usage, caching and logging) it might work acceptably.
+- Dataset is immutable so no background processes (merging of data) to worry about.
+- UPDATE: It turns out this pattern has a name: [baked data](https://simonwillison.net/2020/Dec/13/datasette-io/). Nice!
 
 ## Why Not
-- ~~Well, it doesn't work... right now~~
+- ~~Well, it doesn't work... right now.~~
 - ClickHouse is meant for far, far larger amounts of data than what can fit into a Cloud Run RAM disk (2GB on the most expensive type, after any overheads so more like 1.5GB?)
-- sqlite may be a substitute if you like this odd idea... maybe after a trivial HTTP API, similar to ClickHouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse` (although the `.sqlite3` file I tried was over 200MB - close to the source `.csv` vs 58MB for Clickhouse's data directory)
-- You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start)
-- Data volume/image size might make the service take a long time to start on demand
+- sqlite may be a substitute if you like this odd idea... maybe after a trivial HTTP API, similar to ClickHouse's is implemented. This is all about tiny datasets anyway. A `.sqlite3` file would be mastered and added to the image instead of `/var/lib/clickhouse` (although the `.sqlite3` file I tried was over 200MB - close to the source `.csv` vs 58MB for Clickhouse's data directory.)
+- You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start.)
+- Data volume/image size might make the service take a long time to start on demand.
 - ClickHouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about ClickHouse's internals to comment on whether that'll break things.)
-- The API exposed over HTTP speaks SQL, some people get offended by that
+- The API exposed over HTTP speaks SQL, some people get offended by that.
 - Probably a niche use case which could be better met in a more conventional way?
 - Serverless data tech already exists! (Athena, Aurora Serverless, BigQuery....)
 

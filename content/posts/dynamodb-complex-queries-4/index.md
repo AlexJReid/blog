@@ -4,7 +4,7 @@ date = 2020-11-25T13:00:00Z
 title = "Storage and retrieval of statistics in DynamoDB"
 description = "In this post we will explore how to store statistics within our data model, with index overloading and sparse indexes."
 slug = "dynamodb-efficient-filtering-4"
-tags = ['nosql-series','dynamodb','aws','go']
+tags = ['nosql-series','dynamodb','aws','go','single-table-design']
 categories = []
 externalLink = ""
 series = []
@@ -76,7 +76,7 @@ See `AP7`, read attribute `count_total`.
 
 See `AP8`, read attribute `count_total`.
 
-### AP8: a leaderboard of the top N products that have the most 5-rated comments
+### AP11: a leaderboard of the top N products that have the most 5-rated comments
 
 - Query on `gsi`
   - PK = `LEADERS`

@@ -4,7 +4,7 @@ date = 2020-11-09T17:54:11Z
 title = "Filtering without using filters in DynamoDB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."
 slug = "dynamodb-efficient-filtering"
-tags = ['nosql-series','dynamodb','aws']
+tags = ['nosql-series','dynamodb','aws','go','single-table-design']
 categories = []
 externalLink = ""
 series = []
@@ -18,7 +18,7 @@ This can get us a long way. However, it is common to delegate more complex queri
 
 In many cases, a hybrid solution is the right approach, particularly when the model is complex and too challenging to fit into DynamoDB. Perhaps the scale DynamoDB provides simply isn't needed for every single access pattern. 
 
-However, running two stores and replicating one into the other is definitely added complexity. Elasticsearch, even when used as a managed service, can be a complex and expensive beast. What if it wasn't needed? I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
+However, running two stores and replicating one into the other is definitely added complexity. Elasticsearch, even when used as a managed service, can still be a complex and expensive beast. What if it wasn't needed? I believe it is desirable to keep things as lean as possible and only follow that path if it is necessary.
 
 This series of posts explores what is possible with DynamoDB alone, starting naively, demonstrating problems and pitfalls along the way.
 
