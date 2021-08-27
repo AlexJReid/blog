@@ -130,11 +130,11 @@ If a new record flows onto the next page (i.e. is record 20), a page marker attr
 
 To paginate in reverse sort order (for instance, latest items first), get the `PK: STATS, SK: DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and page 3 is requested: `(10+1)-3 = 8`, leading us to key `PK2: DAFT_PUNK_TSHIRT, page: 8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
 
-Handling changes other than appends economically is the challenge here. If an item needs to be removed in the middle of the results, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
+Handling changes other than appends economically is the challenge here. If an item needs to be removed, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
 
-You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, changes are more likely in newer items.
+You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, we are optimising for changes being more likely in newer items.
 
-This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, or when the table is materialized from scratch from another source.
+This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, or when the table is materialised from scratch from another source.
 
 # Conclusion
 When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
