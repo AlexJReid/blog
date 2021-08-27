@@ -109,7 +109,7 @@ Instead of adding another data store it is possible to stamp a _page marker_ num
 
 A sparsely populated GSI would use this attribute as its sort key (plus other keys) so that only page _start_ items are included. 
 
-** Page marker index**
+**Page marker index**
 
 | PK     | SK               | PK2 (GSI PK)     | page (GSI SK)    |
 |--------|------------------|------------------| ---------------- |
@@ -120,6 +120,7 @@ A sparsely populated GSI would use this attribute as its sort key (plus other ke
 The partition header item contains the current page number (ascending) and running count of items remaining for the current page. 
 
 **Table**
+
 | PK     | SK               | current_page     | remaining        | card |
 |--------|------------------|------------------| ---------------- | ---- |
 | STATS  | DAFT_PUNK_TSHIRT | 3                | 2                | 7    |
