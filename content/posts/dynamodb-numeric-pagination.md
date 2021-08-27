@@ -102,7 +102,7 @@ If a degree of latency is acceptable, this is not a bad trade off. A complimenta
 
 There will probably be other edge cases. It's important not to try and write your own database but you probably would not want consumers to interact directly with files. As this is the lowest level approach, some abstraction would be a good idea. An API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands should be considered.
 
-Despite the odd looks you may get for suggesting this approach, I quite this it for its low cost, portability and (probably) high performance - if your workload can withstand the drawbacks.
+Despite the odd looks you may get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
 ### DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number.
