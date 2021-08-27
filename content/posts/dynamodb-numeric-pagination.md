@@ -71,12 +71,12 @@ Assuming a 24-character value for `PK`, and `SK` converted to an integer unix ti
 
 ```python
 STRUCT_DEF = "24s i"
-SIZE = struct.calcsize(STRUCT_DEF)
+SIZE = struct.calcsize(STRUCT_DEF) # 28 bytes (24+4)
 
 PK2 = "DAFT_PUNK_TSHIRT"
 
 with open(f"{PK2}.pag", "rb") as file:
-    file.seek(SIZE * index)
+    file.seek(SIZE * index) # zero indexed
     values = struct.unpack(STRUCT_DEF, input.read(SIZE))
     print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 ```
