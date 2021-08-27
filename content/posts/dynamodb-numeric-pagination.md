@@ -120,7 +120,7 @@ A sparsely populated GSI would use this attribute as its sort key (plus other ke
 |--------|------------------|------------------| ---------------- | ---- |
 | STATS  | DAFT_PUNK_TSHIRT | 3                | 2                | 7    |
 
-To paginate in reverse sort order (for instance, latest items first), get the `STATS/DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 5 pages and 2 is requested: `5 pages+1 = (6 pages - requested page 2) = 6-2 = 4`, leading us to sort key `4` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
+To paginate in reverse sort order (for instance, latest items first), get the `STATS/DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and 3 is requested: `(10+1)-3 = 8`, leading us to sort key `8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
 
 Maintenance is the challenge here. If an item needs to be removed in the middle of the results, this requires subsequent the page markers to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
 
