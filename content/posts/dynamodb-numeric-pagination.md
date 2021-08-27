@@ -94,7 +94,9 @@ print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 
 So the read path is incredibly simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. 
 
-A simple remedy is to direct the add/remove/change _commands_ to individual files, a sort of write-ahead log. At a timed interval, a single _commit_ process could run and merge these changes into the ordered index file - discarding the temporary files. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. It does mean that changes won't immediately appear.
+A simple remedy is to direct the add/remove/change _commands_ to individual files, a sort of write-ahead log. At a timed interval, a single _commit_ process could run and merge these changes into the ordered index file - discarding the temporary files. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. Deletions are fast in Redis as the member value is also indexed, which adds to the (RAM) storage footprint of a sorted set. This file based approach does not bother to do that, members marked for deletion are simply skipped when the file is rewritten. This makes the files smaller to transmit and rewrite.
+
+The clear cost to this approach is that changes won't immediately appear.
 
 If a degree of latency is acceptable, this is not a bad trade off. A complimentary hack would be to not consult the pagination index at all when querying the first n pages, and simply limit in your client. For example, instead of setting the DynamoDB query to `20`, set it to `200` and take a slice of the returned items to deliver up to page 10. This will increase read costs but caters for newest always being visible.
 
