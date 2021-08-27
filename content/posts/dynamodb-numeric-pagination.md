@@ -129,6 +129,6 @@ You may wonder why the oldest comments live on page 1 and the newest live on the
 This approach may only be appropriate for slow moving data, or when the table is materialised from scratch from some other source.
 
 # Conclusion
-When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment to make it work. The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
+When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
 
 However, we don't live in a one-size-fits all world and sometimes creative solutions are needed. Different use cases have different constraints and levels of tolerance to eventual consistency and _correctness_. I'd be interested to hear thoughts on these untested approaches and if you've solved this problem in similar or entirely different way.
