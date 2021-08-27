@@ -124,7 +124,7 @@ To paginate in reverse sort order (for instance, latest items first), get the `S
 
 Maintenance is the challenge here. If an item needs to be removed in the middle of the results, this requires subsequent the page markers to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
 
-You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1.
+You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1.
 
 This approach may only be appropriate for slow moving data, or when the table is materialised from scratch from some other source.
 
