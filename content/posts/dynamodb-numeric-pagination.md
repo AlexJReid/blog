@@ -29,7 +29,7 @@ The drawback of this approach is the added complexity around building, maintaini
 The next section details some theoretical (read: half-baked and unproven) approaches. Note that there may be WTFs, misunderstandings or things I have not considered, consider them to be ideas!
 
 # Approaches
-Our example scenario is an e-commerce site that has product pages where users can comment. Our application is the comments section. 
+Our example scenario is an e-commerce site that has product pages where users can comment on a product.
 
 The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is the entity ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key. 
 
