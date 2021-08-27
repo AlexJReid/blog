@@ -19,7 +19,7 @@ As the `ExclusiveStartKey` is embedded into a URL, this means that this _next li
 
 Some may also say that `?page=2` looks nicer than an encoded exclusive start key (which itself may consist of several key-value pairs, possibly as a base64-encoded structure), but this might just be vanity.
 
-What if, for whatever reason, we wanted to bring back page numbers?
+What if, for whatever reason, we wanted to bring back those old-school, things-were-better-back-in-the-old-days page numbers?
 
 # Pattern: map exclusive start keys to a numeric index
 An exclusive start key is just a map containing the keys needed to _resume_ the query and grab the next n items. Rather than conveying it as part of the URL, instead store the components needed to generate an exclusive start key from a numeric index. A `page` or `skip` query parameter would be included in the URL. A look up for _item 20_ will yield the keys needed to construct an exclusive start key to _skip_ results by arbitrary intervals.
