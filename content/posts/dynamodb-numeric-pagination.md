@@ -134,7 +134,7 @@ Handling changes other than appends economically is the challenge here. If an it
 
 You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, changes are more likely in newer items.
 
-This approach may only be appropriate for slow moving data, deletions are very rare or cannot happen, or when the table is materialized from scratch from another source.
+This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, or when the table is materialized from scratch from another source.
 
 # Conclusion
 When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
