@@ -81,7 +81,7 @@ with open(f"{PK2}.pag", "rb") as file:
     print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 ```
 
-This is likely to perform with low latency on EC2 with instance storage or EBS. Non-scientific tests showed it worked better than expected on an EFS mount. If additional latency can be tolerated, the _bargain basement_ solution is to read the **individual record** from S3.
+This is likely to perform well with low latency on EC2 with instance storage or EBS. Non-scientific tests showed it worked far better than expected on an EFS mount in a Lambda function. If some additional latency can be tolerated, the _bargain basement_ solution is to read the **individual record** from S3.
 
 ```python
 page_index = boto3.resource('s3').Object('pagination-indexes', f"{PK2}.pag")
