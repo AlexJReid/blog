@@ -100,7 +100,7 @@ The clear cost to this approach is that changes won't immediately appear.
 
 If a degree of latency is acceptable, this is not a bad trade off. A complimentary hack would be to not consult the pagination index at all when querying the first n pages, and simply limit in your client. For example, instead of setting the DynamoDB query to `20`, set it to `200` and take a slice of the returned items to deliver up to page 10. This will increase read costs but caters for newest always being visible.
 
-There will probably be other edge cases. It's important not to try and write your own database but you probably would not want consumers to interact directly with files. As this is the lowest level approach, some abstraction would be a good idea. An API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands should be considered.
+There will probably be other edge cases. It's important not to try and write your own database but you probably would not want consumers to interact directly with files. As this is the lowest level approach, some abstraction would be a good idea. An API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
 
 Despite the odd looks you may get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
