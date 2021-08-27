@@ -109,6 +109,7 @@ Instead of adding another data store it is possible to stamp a _page marker_ num
 
 A sparsely populated GSI would use this attribute as its sort key (plus other keys) so that only page _start_ items are included. 
 
+** Page marker index**
 
 | PK     | SK               | PK2 (GSI PK)     | page (GSI SK)    |
 |--------|------------------|------------------| ---------------- |
@@ -118,19 +119,19 @@ A sparsely populated GSI would use this attribute as its sort key (plus other ke
 
 The partition header item contains the current page number (ascending) and running count of items remaining for the current page. 
 
-
+**Table**
 | PK     | SK               | current_page     | remaining        | card |
 |--------|------------------|------------------| ---------------- | ---- |
 | STATS  | DAFT_PUNK_TSHIRT | 3                | 2                | 7    |
 
 
-If a new record flows onto the next page (i.e. is record 20), a page marker attribute is added to it and values within the `STATS/<SK>` item are incremented/reset within a transaction. 
+If a new record flows onto the next page (i.e. is record 20), a page marker attribute is added to it and values within the `STATS` item for that product are incremented/reset within a transaction. 
 
-To paginate in reverse sort order (for instance, latest items first), get the `STATS/DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and 3 is requested: `(10+1)-3 = 8`, leading us to sort key `8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
+To paginate in reverse sort order (for instance, latest items first), get the `PK: STATS, SK: DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and page 3 is requested: `(10+1)-3 = 8`, leading us to key `PK2: DAFT_PUNK_TSHIRT, page: 8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
 
-Maintenance is the challenge here. If an item needs to be removed in the middle of the results, this requires subsequent the page markers to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
+Handling changes other than appends economically is the challenge here. If an item needs to be removed in the middle of the results, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
 
-You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1.
+You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, changes are more likely in newer items.
 
 This approach may only be appropriate for slow moving data, deletions are very rare or cannot happen, or when the table is materialized from scratch from another source.
 
