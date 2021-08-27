@@ -20,6 +20,8 @@ Part 3: **How to make pagination work when the output of multiple queries have b
 
 Part 4: [Storage and retrieval of comment statistics using index overloading and sparse indexes](/posts/dynamodb-efficient-filtering-4/)
 
+Related: [Numeric pagination with DynamoDB](/posts/dynamodb-numeric-pagination/)
+
 -----
 
 In this post we will explore how to implement pagination when the output of multiple queries have been combined to build a page of results.
@@ -28,7 +30,7 @@ In this post we will explore how to implement pagination when the output of mult
 
 We require a user to be able to paginate through comments that have been written for a product. If a popular product has received thousands of comments, they are only likely to want to read a few at a time.
 
-DynamoDB supports pagination by giving us a reference point in a query response to use for the next set of results, if there are any. This is called `LastEvaluatedKey`.
+DynamoDB supports pagination by giving us a reference point in a query response to use for the next set of results, if there are any. This is called the `LastEvaluatedKey`.
 
 When querying a GSI, as we are, this takes the form of key value map, containing: 
 - GSI partition key
