@@ -58,7 +58,7 @@ Storing a large number of keys in a Redis sorted set could get expensive due to 
 ## Relational
 The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS.
 
-The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, even though an index will be consulted here as well.
+The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
 
 A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
@@ -108,7 +108,7 @@ There will probably be other edge cases. It's important not to try and write you
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
-An interesting hybrid of this and the relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html), perhaps coupled with EFS.
+_An interesting hybrid of this and the previously discussed relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html)._
 
 ### DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
