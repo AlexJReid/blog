@@ -47,11 +47,11 @@ The first (and possibly simplest) approach is to load the partition and sort key
 
 A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member), which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering (by score, aka creation date) on our behalf.
 
-Assuming the table outlined above, we use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to unix time) as the score. 
+Assuming the table outlined above, we use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to UNIX time) as the score. 
 
 For example `ZADD <PK2> to_unixtime(<SK>) <PK>`, would be sent to Redis through a Lambda function connected to a DynamoDB Stream off the table (it'd also need to send `ZREM/ZADD` to handle any deletions and changes.)
 
-To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the item to start from, is sent to Redis. This will yield a list response Redis where `0` is `<PK>` and `1` is `<SK>`. This is all that is needed to construct an `ExclusiveStartKey`.
+To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the item to retrieve the keys of, is sent to Redis. This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should be converted back to a date time string from UNIX time. This is all that is needed to construct an `ExclusiveStartKey`.
 
 It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
 
