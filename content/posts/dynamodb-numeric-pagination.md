@@ -110,7 +110,7 @@ The index files can be generated in any language. In Python, the `struct` module
 
 This portability provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with Apache Spark or Apache Beam. Data from an operational store or data warehouse could be used to cheaply generate the index files in parallel. Changes that are happening beyond what is stored within the batch source would fill the write-ahead logs. Once the batch operation is complete, the discussed _commit_ process can be enabled to _catch up_ the indexes.
 
-There will probably be other edge cases and discussions to be had around locking. It's important not to try and write your own database, but it would be a bad idea to allow consumers even read-only access to the files. As this is a fairly low level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
+There will probably be other edge cases and discussions to be had around locking. It's important not to try and write your own database, but it would be a bad idea to allow consumers even read-only access to the files. As this is a fairly low level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS volume or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
