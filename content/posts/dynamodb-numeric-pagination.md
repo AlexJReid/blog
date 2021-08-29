@@ -13,7 +13,7 @@ Back when we all used SQL databases, it was common to paginate through large res
 
 Databases like DynamoDB prevent this inefficiency by handling pagination differently. You can page through a pre-sorted table by selecting a partition and optionally a range within the sort key. After DynamoDB has returned a page of results and there are more to follow, it provides you with `LastEvaluatedKey` which you can pass to the next iteration of the query as `ExclusiveStartKey` in order to get the next page.
 
-Random access to page n is not possible unless you know the keys that coincide with a page break. You've got to fetch the pages in order. Users cannot jump to page 292 or only show the last page. This is entirely acceptable in many cases as modern user interfaces often provide _infinite scrolling_ or _show next 20_. 
+Random access to page n is not possible unless you know the keys that coincide with a page break. You've got to fetch the pages in order. Users cannot jump to page 292 or only show the last page. This is entirely acceptable in many cases as modern user interfaces often provide _infinite scrolling_ or a _show next 20_ link. 
 
 As the `ExclusiveStartKey` is embedded into a URL, this means that this _next link_ is not stable. If the table changes, the link to retrieve page `2` changes. If the results are scanned in reverse (for instance, most recent first) the next link will change every time a new record is added. This generates a lot of URLs, which, although I am not an expert, can [hinder SEO efforts](https://www.portent.com/blog/seo/pagination-tunnels-experiment-click-depth.htm) on public sites where effective indexing is important.
 
