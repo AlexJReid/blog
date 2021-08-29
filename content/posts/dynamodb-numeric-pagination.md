@@ -114,7 +114,7 @@ There will probably be other edge cases and discussions to be had around locking
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
-_An interesting hybrid of this and the previously discussed relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of dropping structs into a file, a sqlite database file would be used, providing a stable file format and the beautiful, highly performant sqlite engine for ordering. The storage footprint, due to the covering index, is likely to be much larger._
+_An interesting hybrid of this and the previously discussed relational approach would be to use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of dropping structs into a file, a sqlite database file would be used, providing a stable file format and the beautiful, highly performant sqlite engine for ordering. The storage footprint, due to the covering index, is likely to be much larger._
 
 ### DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
