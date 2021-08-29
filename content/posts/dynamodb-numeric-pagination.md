@@ -108,7 +108,7 @@ There will probably be other edge cases. It's important not to try and write you
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
-_An interesting hybrid of this and the previously discussed relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html)._
+_An interesting hybrid of this and the previously discussed relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of a custom file, a sqlite database file would be used, providing a stable file format and the beautiful, stable sqlite engine for ordering._
 
 ### DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
