@@ -43,7 +43,9 @@ The following approaches assume `comments` DynamoDB table has the string keys `P
 | ccc232 | 2021-08-25 13:55 | DAFT_PUNK_TSHIRT | ...              |
 
 ## Redis sorted sets
-The first (and possibly simplest) approach is to load the partition and sort keys into Redis sorted sets. A sorted set provides numeric index-based access to the keys, which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering (by score, aka creation date) on our behalf.
+The first (and possibly simplest) approach is to load the partition and sort keys into Redis sorted sets. This could use a managed service like AWS Elasticache for Redis.
+
+A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member), which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering (by score, aka creation date) on our behalf.
 
 Assuming the table outlined above, we use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to unix time) as the score. 
 
@@ -56,14 +58,16 @@ It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` 
 Storing a large number of keys in a Redis sorted set could get expensive due to how a sorted set is implemented internally (a map and a skip list.) It is also quite annoying to have to pay for RAM for items that won't be frequently accessed. However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
 ## Relational
-The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS.
+The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS in its various flavours.
 
 The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
 
 A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
 ## Files on disk, EBS, EFS or even S3
-The bang for buck option is good ol' files. If you don't want to run Redis or a relational database, you could define a fixed size C-style structure and append the bytes to a file, calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant record and read that number of bytes, or read the most recent by seeking to the end and reading backwards with a negative size.
+If you don't want to run Redis or a relational database, the bang for buck option is good ol' files. There are several options here ranging from very fast instance-connected SSDs to EBS, EFS and object store services like S3.
+
+This approach works by defining a fixed size C-style structure and writing the corresponding bytes to a file. Random access is made possible by calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant offset (calculated from the `index * SIZE`) and `read` that number of bytes. Alternatively you can read the most recent by seeking to the end and reading backwards with a negative offset.
 
 With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a Lambda function that consumes a DynamoDB (or Kinesis) stream would write to these files.
 
@@ -104,7 +108,7 @@ If a degree of latency is acceptable, this is not a bad trade off. A complimenta
 
 The index files can be generated in any language. In Python, the `struct` module is one way to achieve this - likewise in go, the `binary` module and ordinary go structs work as you would expect. This portability provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with Apache Spark or Apache Beam. Data from an operational store or data warehouse could be used to cheaply generate the index files in parallel. Changes that are happening beyond what is stored within the batch source would fill the write-ahead logs. Once the batch operation is complete, the discussed _commit_ process can be enabled to _catch up_ the indexes.
 
-There will probably be other edge cases. It's important not to try and write your own database, but it would be a worse idea to allow consumers even read-only access to the files. As this is the lowest level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
+There will probably be other edge cases and discussions to be had around locking. It's important not to try and write your own database, but it would be a bad idea to allow consumers even read-only access to the files. As this is a fairly low level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
