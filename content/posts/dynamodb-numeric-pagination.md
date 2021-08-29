@@ -22,20 +22,20 @@ Some may also say that `?page=2` looks nicer than an encoded exclusive start key
 What if, for whatever reason, we wanted to bring back those old-school, things-were-better-back-in-the-old-days page numbers?
 
 # Pattern: map exclusive start keys to a numeric index
-An exclusive start key is just a map containing the keys needed to _resume_ the query and grab the next n items. Rather than conveying it as part of the URL, instead store the components needed to generate an exclusive start key from a numeric index. A `page` or `skip` query parameter would be included in the URL. A look up for _item 20_ will yield the keys needed to construct an exclusive start key to _skip_ results by arbitrary intervals.
+An exclusive start key is just a map containing the keys needed to _resume_ the query and grab the next n items. It's a reference point. 
 
-The drawback of this approach is the added complexity around building, maintaining, storing and serving this numeric index of rows. To avoid a confusing user experience, it is vital that the DynamoDB table and numeric index are consistent.
+Rather than conveying it as part of the URL, we could instead store the key components needed to generate an exclusive start key from a numeric index. A `page` or `skip` query parameter would be included in the URL. A look up for _item 20_ will yield the keys needed to construct an exclusive start key to _skip_ results by arbitrary intervals.
 
-The next section details some theoretical (read: half-baked and unproven) approaches. Note that there may be WTFs, misunderstandings or things I have not considered, consider them to be ideas!
+The drawback of this approach is the added complexity around building, maintaining, storing and serving this numeric index of rows. To avoid a confusing user experience, it is vital that the system of record and numeric index are kept consistent.
+
+The next section details some theoretical (read: half-baked and unproven) approaches. Note that there may be WTFs, misunderstandings or things I have not considered. **Consider them to be non-production ready ideas.**
 
 # Approaches
 Our example scenario is an e-commerce site that has product pages where users can comment on a product.
 
-The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is the entity ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key. 
+The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is a randomly generated comment ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key, the SKU of a product the comment relates to. A global secondary index on `PK2, SK` is used by the application to show sets of comments, in reverse order.
 
-The application shows comments for a product in reverse order of creation. `PK2` holds the SKU for the referenced product. A global secondary index on `PK2, SK` is used by the application to show comments in this way.
-
-| PK     | SK               | PK2              | other attributes |
+| PK     | SK               | PK2 (GSI PK)     | other attributes |
 |--------|------------------|------------------| ---------------- |
 | abc281 | 2021-08-25 13:00 | DAFT_PUNK_TSHIRT | ...              |
 | abd212 | 2021-08-25 13:30 | DAFT_PUNK_TSHIRT | ...              |
@@ -43,7 +43,7 @@ The application shows comments for a product in reverse order of creation. `PK2`
 | ccc232 | 2021-08-25 13:55 | DAFT_PUNK_TSHIRT | ...              |
 
 ## Redis sorted sets
-At the cost of an additional moving part, load the partition and sort keys into Redis sorted sets. A sorted set provides numeric index-based access to the keys, which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering (by score, aka creation date) on our behalf.
+The first (and possibly simplest) approach is to load the partition and sort keys into Redis sorted sets. A sorted set provides numeric index-based access to the keys, which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering (by score, aka creation date) on our behalf.
 
 Assuming the table outlined above, we use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to unix time) as the score. 
 
@@ -56,7 +56,7 @@ It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` 
 Storing a large number of keys in a Redis sorted set could get expensive due to how a sorted set is implemented internally (a map and a skip list.) It is also slightly annoying to have to pay for RAM for items that won't be frequently accessed. This is a reasonable trade off as it is a very simple solution that is likely to have consistently high performance.
 
 ## Relational
-The above pattern could also be achieved with a relational database. This could be a managed service like AWS RDS.
+The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS.
 
 The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
@@ -104,6 +104,8 @@ There will probably be other edge cases. It's important not to try and write you
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
+An interesting hybrid of this and the relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html), perhaps coupled with EFS.
+
 ### DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on what the table considers to be page `1` and so on.
 
@@ -137,8 +139,10 @@ You may wonder why the oldest comments live on page 1 and the newest live on the
 This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, append only data, or when the table is materialised from scratch from another source.
 
 # Conclusion
-When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. Perhaps this is a solved problem in some database you don't use and the data could just be stored there. In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
+When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. **Perhaps this is a solved problem in some database you don't use but should do.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
-The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
+Before making the leap, the approaches discussed in the post may well be a case of YAGNI. Is it really the best user experience to present users with _page 1 of 392716_? Could your user interface slim down the results more intuitively so using your application is less _database-y_? For example infinite scrolling (think Twitter) is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
 
-When measuring tradeoffs, sometimes creative solutions are needed. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
+We don't live in a one-size-fits-all world and sometimes creative solutions are needed. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
+
+[Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fdynamodb-numeric-pagination%2F)
