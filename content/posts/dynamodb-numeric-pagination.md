@@ -58,7 +58,7 @@ It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` 
 Storing a large number of keys in a Redis sorted set could get expensive due to how a sorted set is implemented internally (a map and a skip list.) It is also quite annoying to have to pay for RAM for items that won't be frequently accessed. However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
 ## Relational
-The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS in its various flavours.
+The sorted sets approach could also be achieved with a relational database. This could use a managed service like AWS RDS in its various flavours.
 
 The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
 
