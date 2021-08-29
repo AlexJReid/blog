@@ -63,8 +63,6 @@ The sorted sets would live in a single table with a convering index on `PK2 ASC,
 ## Files on disk, EFS or even S3
 The bang for buck option is good ol' files. If you don't want to run Redis or a relational database, you could define a fixed size C-style structure and append the bytes to a file, calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant record and read that number of bytes, or seek to the end and read backwards with a negative size.
 
-In Python, the `struct` module is one way to achieve this - likewise in go, the `binary` module and ordinary go structs work as you would expect. The generated files are of course language agnostic. This provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with EMR or Apache Beam.
-
 With this pattern, the grouping key `PK2` is used to name the file. As with the prior approaches, a Lambda function that consumes a DynamoDB (or Kinesis) stream would write to these files.
 
 Assuming a 24-character value for `PK`, and `SK` converted to an integer unix time, the code to read `index` would be something along these lines.
@@ -92,20 +90,22 @@ values = struct.unpack(STRUCT_DEF, res["Body"].read())
 print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 ```
 
-So the read path is incredibly simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. 
+So the read path is incredibly simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. Additionally, as the index increases in size, it will need to be rewritten in sorted order. If S3 is being used as a storage backend, this would mean a reupload of several megabytes to add a single entry. The shape of your workload will dictate whether or not this is reasonable.
 
-A simple remedy is to direct the add/remove/change _commands_ to individual files, a sort of write-ahead log. At a timed interval, a single _commit_ process could run and merge these changes into the ordered index file - discarding the temporary files. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. Deletions are fast in Redis as the member value is also indexed, which adds to the (RAM) storage footprint of a sorted set. This file based approach does not bother to do that, members marked for deletion are simply skipped when the file is rewritten. This makes the files smaller to transmit and rewrite.
+A simple remedy is to direct the add/remove/change _commands_ to an append-only write ahead log. At a timed interval, a _commit_ process could run and apply these changes into the ordered index file - discarding the WAL. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. Deletions are fast in Redis as the member value is also indexed, which adds to the in-memory storage footprint of a sorted set. This file based approach does not bother to do that, members marked for deletion are simply skipped when the file is rewritten. This makes the files smaller to transmit and rewrite.
 
 The clear cost to this approach is that changes won't immediately appear.
 
 If a degree of latency is acceptable, this is not a bad trade off. A complimentary hack would be to not consult the pagination index at all when querying the first n pages, and simply limit in your client. For example, instead of setting the DynamoDB query to `20`, set it to `200` and take a slice of the returned items to deliver up to page 10. This will increase read costs but caters for newest always being visible.
 
-There will probably be other edge cases. It's important not to try and write your own database but you probably would not want consumers to interact directly with files. As this is the lowest level approach, some abstraction would be a good idea. An API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
+The index files can be written in any language. In Python, the `struct` module is one way to achieve this - likewise in go, the `binary` module and ordinary go structs work as you would expect. This portability provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with EMR or Apache Beam. Data from an operational store or data warehouse could be used to rapidly and cheaply generate the index files in parallel. Changes that are happening beyond what is stored within the batch source would fill the write-ahead logs. Once the batch operation is complete, the discussed _commit_ process can be enabled to _catch up_ the indexes.
 
-Despite the odd looks you may get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
+There will probably be other edge cases. It's important not to try and write your own database, but it would be a worse idea to allow consumers even read-only access to the files. As this is the lowest level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
+
+Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
 ### DynamoDB
-Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number.
+Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on what the table considers to be page `1` and so on.
 
 A sparsely populated GSI would use this attribute as its sort key (plus other keys) so that only page _start_ items are included. 
 
@@ -117,7 +117,7 @@ A sparsely populated GSI would use this attribute as its sort key (plus other ke
 | ccc232 | 2021-08-25 14:55 | DAFT_PUNK_TSHIRT | 3                |
 
 
-The partition header item contains the current page number (ascending) and running count of items remaining for the current page. 
+A partition header item contains the current page number (ascending) and running count of items remaining for the current page. 
 
 **Table**
 
@@ -126,17 +126,19 @@ The partition header item contains the current page number (ascending) and runni
 | STATS  | DAFT_PUNK_TSHIRT | 3                | 2                | 7    |
 
 
-If a new record flows onto the next page (i.e. is record 20), a page marker attribute is added to it and values within the `STATS` item for that product are incremented/reset within a transaction. 
+When an item is added, the above `STATS` item is consulted. If it flows onto the next page, a page marker attribute is added to it and values within the `STATS` item for that product are incremented/reset within a transaction. 
 
 To paginate in reverse sort order (for instance, latest items first), get the `PK: STATS, SK: DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and page 3 is requested: `(10+1)-3 = 8`, leading us to key `PK2: DAFT_PUNK_TSHIRT, page: 8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
 
-Handling changes other than appends economically is the challenge here. If an item needs to be removed, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
+Handling changes other than serial appends economically is the challenge here. If an item needs to be removed, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
 
 You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, we are optimising for changes being more likely in newer items.
 
-This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, or when the table is materialised from scratch from another source.
+This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, append only data, or when the table is materialised from scratch from another source.
 
 # Conclusion
-When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
+When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. Perhaps this is a solved problem in some database you don't use and the data could just be stored there. In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
-However, we don't live in a one-size-fits all world and sometimes creative solutions are needed. Different use cases have different constraints and levels of tolerance to eventual consistency and _correctness_. I'd be interested to hear thoughts on these untested approaches and if you've solved this problem in similar or entirely different way.
+The approaches discussed in the post may be a case of YAGNI. Infinite scrolling is simpler for the user and appears more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
+
+When measuring tradeoffs, sometimes creative solutions are needed. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
