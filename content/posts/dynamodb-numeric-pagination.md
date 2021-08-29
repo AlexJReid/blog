@@ -107,7 +107,7 @@ Despite the odd looks you will probably get for suggesting this approach, I quit
 An interesting hybrid of this and the relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html), perhaps coupled with EFS.
 
 ### DynamoDB
-Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on what the table considers to be page `1` and so on.
+Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
 
 A sparsely populated GSI would use this attribute as its sort key (plus other keys) so that only page _start_ items are included. 
 
@@ -132,16 +132,16 @@ When an item is added, the above `STATS` item is consulted. If it flows onto the
 
 To paginate in reverse sort order (for instance, latest items first), get the `PK: STATS, SK: DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and page 3 is requested: `(10+1)-3 = 8`, leading us to key `PK2: DAFT_PUNK_TSHIRT, page: 8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
 
-Handling changes other than serial appends economically is the challenge here. If an item needs to be removed, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
+Handling changes other than serial appends **economically** is the big challenge here. If an item needs to be removed, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
 
 You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, we are optimising for changes being more likely in newer items.
 
-This approach may only be appropriate for slow moving data, when deletions are very rare or cannot happen, append only data, or when the table is materialised from scratch from another source.
+This approach may only be appropriate for slow moving data, when changes are very rare or cannot happen, append only data, or when the table is materialised from scratch from another source.
 
 # Conclusion
 When something seemingly simple appears convoluted with your current technology stack, you've got to consider whether it is a good return on investment and wise to even try to make it work. **Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
-Before making the leap, consider whether the approaches discussed in the post are a case of YAGNI. In your context, is it really the best user experience to present users with _page 1 of 392716_? Could your user interface slim down the result set more intuitively, so that using your application is less _database-y_? For example, infinite scrolling (think Twitter) is simpler for the user and seems more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
+But before making the leap, consider whether the approaches discussed in the post are a case of YAGNI. In your context, is it really the best user experience to present users with _page 1 of 392716_? Could your user interface slim down the result set more intuitively, so that using your application is less _database-y_? For example, infinite scrolling (think Twitter) is simpler for the user and seems more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
 
 We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
 
