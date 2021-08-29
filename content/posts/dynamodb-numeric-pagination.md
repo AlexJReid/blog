@@ -28,7 +28,7 @@ Rather than conveying it as part of the URL, we could instead store the key comp
 
 The drawback of this approach is the added complexity around building, maintaining, storing and serving this numeric index of rows. To avoid a confusing user experience, it is vital that the system of record and numeric index are kept consistent. Allowing users to filter the results will invalidate any pre-calculated page numbers, so additional indexes will need to be maintained. Only low cardinality, coarse filters are likely to be feasible in order to minimize the number of page indexes that need to be built.
 
-The next section details some theoretical (read: half-baked and unproven) approaches. Note that there may be WTFs, misunderstandings or things I have not considered. **Consider them to be non-production ready ideas.**
+The next section details some theoretical (read: half-baked and unproven) approaches. Note that there may be WTFs, misunderstandings or things I have not considered. **Consider them to be non-production ready musings.**
 
 # Approaches
 Our example scenario is an e-commerce site that has product pages where users can comment on a product.
