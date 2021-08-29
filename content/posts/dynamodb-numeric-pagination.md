@@ -96,7 +96,7 @@ values = struct.unpack(STRUCT_DEF, res["Body"].read())
 print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 ```
 
-A crude way of the number of entries is a case of dividing the file size by the struct size. This is an inexpensive operation (with some pitfalls that are beyond the scope of this write-up).
+A crude way to find the number of entries to divide the file size by the struct size. This is an inexpensive operation with some pitfalls that are beyond the scope of this write-up. An alternate approach would be to maintain a header struct, again of fixed size, at the top of the head of the index file.
 
 So, we've established that read path is simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. Additionally, as the index increases in size, it will need to be rewritten in sorted order. If S3 is being used as a storage backend, this would mean a `PutObject` of several megabytes to add a single entry. The shape of your workload will dictate whether or not this is reasonable.
 
