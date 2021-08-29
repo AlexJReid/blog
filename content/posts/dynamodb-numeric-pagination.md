@@ -49,11 +49,11 @@ Assuming the table outlined above, we use `PK2` as the Redis key for a sorted se
 
 For example `ZADD <PK2> to_unixtime(<SK>) <PK>`, would be sent to Redis through a Lambda function connected to a DynamoDB Stream off the table (it'd also need to send `ZREM/ZADD` to handle any deletions and changes.)
 
-To get the exclusive start key for page 2, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where _start_ and _end_ is the index of the item to start from is sent. This will yield a list response of one item from Redis where `0` is `<PK>` and `1` is `<SK>`. This is all that is needed to construct an `ExclusiveStartKey`.
+To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the item to start from, is sent to Redis. This will yield a list response Redis where `0` is `<PK>` and `1` is `<SK>`. This is all that is needed to construct an `ExclusiveStartKey`.
 
-It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is useful for getting the total number of pages.
+It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
 
-Storing a large number of keys in a Redis sorted set could get expensive due to how a sorted set is implemented internally (a map and a skip list.) It is also slightly annoying to have to pay for RAM for items that won't be frequently accessed. This may be a reasonable trade off as it is a very simple solution that is likely to have consistently high performance.
+Storing a large number of keys in a Redis sorted set could get expensive due to how a sorted set is implemented internally (a map and a skip list.) It is also quite annoying to have to pay for RAM for items that won't be frequently accessed. However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
 ## Relational
 The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS.
