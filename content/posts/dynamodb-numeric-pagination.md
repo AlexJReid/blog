@@ -58,7 +58,9 @@ Storing a large number of keys in a Redis sorted set could get expensive due to 
 ## Relational
 The sorted sets approach could also be achieved with a relational database. This could be a managed service like AWS RDS.
 
-The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. A similar Lambda function would keep this table in-sync with the DynamoDB table.
+The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, even though an index will be consulted here as well.
+
+A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
 ## Files on disk, EFS or even S3
 The bang for buck option is good ol' files. If you don't want to run Redis or a relational database, you could define a fixed size C-style structure and append the bytes to a file, calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant record and read that number of bytes, or seek to the end and read backwards with a negative size.
@@ -90,7 +92,9 @@ values = struct.unpack(STRUCT_DEF, res["Body"].read())
 print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 ```
 
-So the read path is incredibly simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. Additionally, as the index increases in size, it will need to be rewritten in sorted order. If S3 is being used as a storage backend, this would mean a reupload of several megabytes to add a single entry. The shape of your workload will dictate whether or not this is reasonable.
+A crude way of the number of entries is a case of dividing the file size by the struct size. This is an inexpensive operation (with some pitfalls that are beyond the scope of this write-up).
+
+So, we've established that read path is simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. Additionally, as the index increases in size, it will need to be rewritten in sorted order. If S3 is being used as a storage backend, this would mean a reupload of several megabytes to add a single entry. The shape of your workload will dictate whether or not this is reasonable.
 
 A simple remedy is to direct the add/remove/change _commands_ to an append-only write ahead log. At a timed interval, a _commit_ process could run and apply these changes into the ordered index file - discarding the WAL. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. Deletions are fast in Redis as the member value is also indexed, which adds to the in-memory storage footprint of a sorted set. This file based approach does not bother to do that, members marked for deletion are simply skipped when the file is rewritten. This makes the files smaller to transmit and rewrite.
 
