@@ -55,7 +55,9 @@ To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> 
 
 It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
 
-Storing a large number of keys in a Redis sorted set could get expensive due to how a sorted set is implemented internally (a map and a skip list.) It is also quite annoying to have to pay for RAM for items that won't be frequently accessed. However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
+Storing a large number of sorted sets with millions of members could get expensive due to how a sorted set is implemented by Redis: a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed.
+
+However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
 ## Relational
 The sorted sets approach could also be achieved with a relational database. This could use a managed service like AWS RDS in its various flavours.
