@@ -143,7 +143,9 @@ You may wonder why the oldest comments live on page 1 and the newest live on the
 This approach may only be appropriate for slow moving data, when changes are very rare or cannot happen, append only data, or when the table is materialised from scratch from another source.
 
 # Conclusion
-When something seemingly simple appears convoluted to achieve with your current technology choices, you've got to consider whether it is a good return on investment and wise to even try to make it work. **Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
+When something seemingly simple appears convoluted to achieve with your current technology choices, you've got to consider whether it is a good return on investment and wise to even try to make it work. 
+
+**Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
 Before making the leap, consider whether the approaches discussed in the post are a case of YAGNI. In your context, is it really the best user experience to present users with _page 1 of 392716_? Must they be able to randomly jump to page 392701? Could your user interface slim down the result set more intuitively, so that using your application is less _database-y_? For example, infinite scrolling (think Twitter) is simpler for the user and seems more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
 
