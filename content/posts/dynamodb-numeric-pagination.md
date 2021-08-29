@@ -63,9 +63,9 @@ The sorted sets would live in a single table with a convering index on `PK2 ASC,
 A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
 ## Files on disk, EFS or even S3
-The bang for buck option is good ol' files. If you don't want to run Redis or a relational database, you could define a fixed size C-style structure and append the bytes to a file, calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant record and read that number of bytes, or seek to the end and read backwards with a negative size.
+The bang for buck option is good ol' files. If you don't want to run Redis or a relational database, you could define a fixed size C-style structure and append the bytes to a file, calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant record and read that number of bytes, or read the most recent by seeking to the end and reading backwards with a negative size.
 
-With this pattern, the grouping key `PK2` is used to name the file. As with the prior approaches, a Lambda function that consumes a DynamoDB (or Kinesis) stream would write to these files.
+With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a Lambda function that consumes a DynamoDB (or Kinesis) stream would write to these files.
 
 Assuming a 24-character value for `PK`, and `SK` converted to an integer unix time, the code to read `index` would be something along these lines.
 
