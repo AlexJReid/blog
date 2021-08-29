@@ -143,6 +143,6 @@ When something seemingly simple appears convoluted with your current technology 
 
 Before making the leap, consider whether the approaches discussed in the post are a case of YAGNI. In your context, is it really the best user experience to present users with _page 1 of 392716_? Could your user interface slim down the result set more intuitively, so that using your application is less _database-y_? For example, infinite scrolling (think Twitter) is simpler for the user and seems more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
 
-We don't live in a one-size-fits-all world and sometimes creative solutions are needed. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
+We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
 
 [Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fdynamodb-numeric-pagination%2F)
