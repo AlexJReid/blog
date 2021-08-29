@@ -62,7 +62,7 @@ The sorted sets would live in a single table with a convering index on `PK2 ASC,
 
 A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
-## Files on disk, EFS or even S3
+## Files on disk, EBS, EFS or even S3
 The bang for buck option is good ol' files. If you don't want to run Redis or a relational database, you could define a fixed size C-style structure and append the bytes to a file, calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant record and read that number of bytes, or read the most recent by seeking to the end and reading backwards with a negative size.
 
 With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a Lambda function that consumes a DynamoDB (or Kinesis) stream would write to these files.
@@ -102,13 +102,13 @@ The clear cost to this approach is that changes won't immediately appear.
 
 If a degree of latency is acceptable, this is not a bad trade off. A complimentary hack would be to not consult the pagination index at all when querying the first n pages, and simply limit in your client. For example, instead of setting the DynamoDB query `Limit` to `20`, set it to `200` and take a slice of the returned items to deliver up to page 10. This will increase read costs but caters for newest always being visible, with the potentially acceptable risk of some comments being shown again on page 11.
 
-The index files can be generated in any language. In Python, the `struct` module is one way to achieve this - likewise in go, the `binary` module and ordinary go structs work as you would expect. This portability provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with Apache Spark or Apache Beam. Data from an operational store or data warehouse could be used to rapidly and cheaply generate the index files in parallel. Changes that are happening beyond what is stored within the batch source would fill the write-ahead logs. Once the batch operation is complete, the discussed _commit_ process can be enabled to _catch up_ the indexes.
+The index files can be generated in any language. In Python, the `struct` module is one way to achieve this - likewise in go, the `binary` module and ordinary go structs work as you would expect. This portability provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with Apache Spark or Apache Beam. Data from an operational store or data warehouse could be used to cheaply generate the index files in parallel. Changes that are happening beyond what is stored within the batch source would fill the write-ahead logs. Once the batch operation is complete, the discussed _commit_ process can be enabled to _catch up_ the indexes.
 
 There will probably be other edge cases. It's important not to try and write your own database, but it would be a worse idea to allow consumers even read-only access to the files. As this is the lowest level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
 
 Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
 
-_An interesting hybrid of this and the previously discussed relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of a custom file, a sqlite database file would be used, providing a stable file format and the beautiful, highly performant sqlite engine for ordering._
+_An interesting hybrid of this and the previously discussed relational approach would be use use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of dropping structs into a file, a sqlite database file would be used, providing a stable file format and the beautiful, highly performant sqlite engine for ordering. The storage footprint, due to the covering index, is likely to be much larger._
 
 ### DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
