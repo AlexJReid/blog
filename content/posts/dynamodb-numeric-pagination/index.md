@@ -125,7 +125,7 @@ The `redis-benchmark` tool showed about **60000 rps** for the commands besides `
 
 ![RESP service implementation alongside the standard Redis client](demo-ec2.png)
 
-If you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. **This will cost far, far less than keeping them all in RAM.** As ever though, it depends on whether your workload can tolerate this. I think it's an interesting pattern.
+If you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. The set with 2.3m members occupied less than **65MB** of disk space. **This will cost far, far less than keeping them all in RAM.** As ever though, it depends on whether your workload can tolerate this. I think it's an interesting pattern.
 
 ## DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
