@@ -112,13 +112,18 @@ The index files can be generated in any language. In Python, the `struct` module
 
 This portability provides interesting options for a _backfill_ of indexes as an indepedent batch process, for instance with Apache Spark or Apache Beam. Data from an operational store or data warehouse could be used to cheaply generate the index files in parallel. Changes that are happening beyond what is stored within the batch source would fill the write-ahead logs. Once the batch operation is complete, the discussed _commit_ process can be enabled to _catch up_ the indexes.
 
-There will probably be other edge cases and discussions to be had around locking. It's important not to try and write your own database, but it would be a bad idea to allow consumers even read-only access to the files. As this is a fairly low level approach, some abstraction would be a good idea. A REST or gRPC API, Lambda function that mounts an EFS volume or even a service that speaks [RESP](https://redis.io/topics/protocol) and apes the `Z*` commands might be worthy of consideration.
-
-Despite the odd looks you will probably get for suggesting this approach, I quite like it for its simplicity, low cost, portability and high performance.
+There will probably be other edge cases and discussions to be had around locking. It's important not to try and write your own database, but it would be a bad idea to allow consumers even read-only access to the files. As this is a fairly low level approach, an API or Lambda function should be considered as the interface to the files.
 
 _An interesting hybrid of this and the previously discussed relational approach would be to use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of dropping structs into a file, a sqlite database file would be used, providing a stable file format and the beautiful, highly performant sqlite engine for ordering. The storage footprint, due to the covering index, is likely to be much larger._
 
-### DynamoDB
+## Custom RESP service on top of the file system
+I took the file system appproach a bit further and built a [RESP](https://redis.io/topics/protocol) service that implemented a few commands including `ZCARD, ZRANGE, ZADD and ZREM`. This worked pretty well on a `t4g.micro` EC2 instance. The `ZADD` and `ZREM` commands stage the changes to a separate file, as discussed above. A custom command, `ZCOMMIT` can be issued for a sorted set key. This will apply any pending changes to the index. When committing a few changes to an index file containing **2.3m** items, the rewrite took about **1.3** seconds. Slow, but if rewrites are only done occasionally, this could be acceptable in some scenarios. The `redis-benchmark` tool showed was about **60000 rps** for all commands besides `ZCOMMIT`. This is obviously way slower than proper Redis, but acceptable. 
+
+![RESP service implementation alongside the standard Redis client](demo-ec2.png)
+
+Despite the odd looks you will probably get for suggesting this as a general approach, I quite like it for its simplicity, low cost, portability and high performance. The Redis interface to the files is also interesting as if you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. **This will cost far, far less than keeping them all in RAM.** As ever though, it depends on whether your workload can tolerate this.
+
+## DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
 
 A sparsely populated GSI would use this attribute as its sort key (plus other keys) so that only page _start_ items are included. 
