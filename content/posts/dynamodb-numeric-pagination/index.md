@@ -125,6 +125,8 @@ The `redis-benchmark` tool showed about **60000 rps** (without pipelining) for t
 
 ![RESP service implementation alongside the standard Redis client](demo-ec2.png)
 
+There is nothing clever going on here. No log-structured merge trees or efficient sorting algorithms, just a frankenstein of the standard go library with some RESP help from the excellent [tidwall/redcon](https://github.com/tidwall/redcon).
+
 If you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. The set with 2.3m members occupied less than **65MB** of disk space. **This will cost far, far less than keeping them all in RAM.** 
 
 As ever, it depends on whether your workload can tolerate these delayed commits and what the risk profile is with regard to potential data loss. There are other downsides - you will need to pick a file system that can efficiently store several small files. Use of a sqlite container file (or small number of them, representing a shard) may actually work out better. Perhaps something like RocksDB could be used to store the structs. Then there are considerations about how to run multiple replicas which strays into the _writing a sketchy database of our own_ territory. Nevertheless, I think it's a very interesting area to continue some research in.
