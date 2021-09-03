@@ -121,11 +121,13 @@ _An interesting hybrid of this and the previously discussed relational approach 
 ### Sorted sets on disk with a Redis interface
 I took the file system appproach a bit further and built a [RESP](https://redis.io/topics/protocol) service that implemented a few commands including `ZCARD, ZRANGE, ZADD and ZREM`. This worked pretty well on a `t4g.micro` EC2 instance. The `ZADD` and `ZREM` commands stage the changes to a separate file, as discussed above. A custom command, `ZCOMMIT` can be issued for a sorted set key. This will apply any pending changes to the index. When committing a few changes to an index file containing **2.3m** items, the rewrite took about **1.3** seconds. Too expensive to run on every change, but if rewrites are only done occasionally, this could be acceptable in some scenarios. Each sorted set has its own index file, so a large number of indexes could be rebuilt in parallel with no other state or coordination required.
 
-The `redis-benchmark` tool showed about **60000 rps** for the commands besides `ZCOMMIT`. This is obviously way slower than proper Redis, but acceptable. 
+The `redis-benchmark` tool showed about **60000 rps** (without pipelining) for the commands besides `ZCOMMIT`. This is obviously much slower than proper Redis, but acceptable. 
 
 ![RESP service implementation alongside the standard Redis client](demo-ec2.png)
 
-If you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. The set with 2.3m members occupied less than **65MB** of disk space. **This will cost far, far less than keeping them all in RAM.** As ever though, it depends on whether your workload can tolerate this. I think it's an interesting pattern.
+If you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. The set with 2.3m members occupied less than **65MB** of disk space. **This will cost far, far less than keeping them all in RAM.** 
+
+As ever, it depends on whether your workload can tolerate these delayed commits and what the risk profile is with regard to potential data loss. There are other downsides - you will need to pick a file system that can efficiently store several small files. Use of a sqlite container file (or small number of them, representing a shard) may actually work out better. Perhaps something like RocksDB could be used to store the structs. Then there are considerations about how to run multiple replicas which strays into the _writing a sketchy database of our own_ territory. Nevertheless, I think it's a very interesting area to continue some research in.
 
 ## DynamoDB
 Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
