@@ -4,8 +4,9 @@ date = 2021-08-27T10:03:12Z
 title = "Numeric pagination with DynamoDB"
 description = "Implementing URLs with numbered pages in DynamoDB with a secondary store."
 slug = "dynamodb-numeric-pagination" 
-tags = ['dynamodb', 'pagination', 'numbered-pagination', 'seo', 'redis', 'sorted-sets', 'sqlite']
+tags = ['dynamodb', 'pagination', 'seo', 'redis', 'sorted sets', 'sqlite', 'aws']
 categories = []
+author = "Alex Reid"
 externalLink = ""
 series = []
 +++
