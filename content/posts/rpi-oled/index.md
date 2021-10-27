@@ -147,7 +147,7 @@ A separate producer process would be responsible for transforming a stream of ex
 
 ### Available stages
 
-See [example display events](example-display-events) to try each of the available stages out.
+See [example display events](https://github.com/AlexJReid/joedisplay/tree/master/example-display-events) to try each of the available stages out.
 
 - `text`
 - `scroll`
@@ -164,7 +164,7 @@ $ export TRANSPORTAPI_APP_KEY=<your app key>
 $ DEPARTURE_STATION=NCL python transport_standalone.py
 ```
 
-Code: [transport_standalone.py](transport_standalone.py)
+Code: [transport_standalone.py](https://github.com/AlexJReid/joedisplay/blob/master/transport_standalone.py)
 
 ### Display driver exposes HTTP
 
@@ -189,7 +189,7 @@ curl -X POST \
 ```
 ![API Displayed](doc/displayed.jpg)
 
-Code: [api_display.py](api_display.py)
+Code: [api_display.py](https://github.com/AlexJReid/joedisplay/blob/master/api_display.py)
 
 ### Display driver subscribes to a Redis channel
 
@@ -206,7 +206,7 @@ Will subscribe to `DISPLAY_CHANNEL`. The message data should contain a display e
 (integer) 1
 ```
 
-Code: [redis_display.py](redis_display.py). Requires Redis to be running somewhere you can access.
+Code: [redis_display.py](https://github.com/AlexJReid/joedisplay/blob/master/redis_display.py). Requires Redis to be running somewhere you can access.
 
 ### Display driver with AWS IoT (MQTT)
 
@@ -232,7 +232,7 @@ You can also write to this topic over HTTPS with an AWSV4 signed request:
 
 As shown, AWS IoT exposes an endpoint to allow _things_ to be interacted with by other authorized components, anywhere in the world. This is exciting as allows us to build web interfaces and mobile apps to control the panel, which is one of the goals we set out to achieve. 
 
-The full design of the train departure board project, using AWS IoT is [discussed here](AWSIOT.md).
+The full design of the train departure board project, using AWS IoT is [discussed here](https://github.com/AlexJReid/joedisplay/blob/master/AWSIOT.md).
 
 ## Conclusion
 

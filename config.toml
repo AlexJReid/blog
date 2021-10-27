@@ -20,9 +20,9 @@ googleAnalytics = "UA-156939108-1"
     headTitle = "Alex Reid"
     author = "Alex Reid"
     title = "Alex Reid"
-    info = "Thoughts on software engineering, clouds and data."
-    description = "Alex Reid - thoughts on software engineering, clouds and data."
-    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb,java,go,python,dynamodb,bigtable"
+    info = "Thoughts on software engineering, the cloud and data."
+    description = "Alex Reid - thoughts on software engineering, the cloud and data."
+    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb,java,go,python,dynamodb,bigtable,reid,Alex Reid,alexjreid"
     mainSections = ["posts"]
 
 [[params.socials]]

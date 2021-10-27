@@ -20,7 +20,7 @@ Part 3: **How to make pagination work when the output of multiple queries have b
 
 Part 4: [Storage and retrieval of comment statistics using index overloading and sparse indexes](/posts/dynamodb-efficient-filtering-4/)
 
-Related: [Numeric pagination with DynamoDB](/posts/dynamodb-numeric-pagination/)
+Related: [DynamoDB pagination with page numbers in URLs](/posts/dynamodb-page-numbers/)
 
 -----
 

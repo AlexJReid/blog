@@ -1,15 +1,17 @@
 +++ 
 draft = false
-date = 2021-08-27T10:03:12Z
-title = "Numeric pagination with DynamoDB"
-description = "Implementing URLs with numbered pages in DynamoDB with a secondary store."
-slug = "dynamodb-numeric-pagination" 
-tags = ['dynamodb', 'pagination', 'seo', 'redis', 'sorted sets', 'sqlite', 'aws']
+date = 2021-10-27T10:03:12Z
+title = "DynamoDB pagination with page numbers in URLs"
+description = "For SEO reasons, we might want to use page numbers in URLs. This post discusses how this is possible with DynamoDB and a secondary store."
+slug = "dynamodb-page-numbers" 
+tags = ['dynamodb', 'pagination', 'redis', 'zset', 'sqlite', 'aws']
 categories = []
 author = "Alex Reid"
 externalLink = ""
 series = []
 +++
+
+>For SEO reasons, we might want to use page numbers in URLs. This post discusses how this is possible with DynamoDB and a secondary store.
 
 Back when we all used SQL databases, it was common to paginate through large result sets by appending `LIMIT offset, rows per page` to a `SELECT` query. Depending on the schema, data volume and database engine, this was [inefficient to varying degrees](https://tusharsharma.dev/posts/api-pagination-the-right-way). On smaller result sets and with the right indexes, it was... posssibly OK.
 
