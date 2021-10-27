@@ -14,6 +14,10 @@ http {
     listen $PORT;
     server_name alexjreid.dev;
     root /app/site;
+    
+    location /posts/dynamodb-numeric-pagination/ {
+      return 301 https://alexjreid.dev/posts/dynamodb-page-numbers/;
+    }
 
     location / {
       try_files $uri $uri.html $uri/ =404;
