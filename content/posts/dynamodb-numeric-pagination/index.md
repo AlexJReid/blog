@@ -65,10 +65,10 @@ Storing a large number of sorted sets with millions of members could get expensi
 
 However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
-## Relational
-The sorted sets approach could also be achieved with a relational database. This could use a managed service like AWS RDS in its various flavours.
+## Relational sorted sets
+Sorted sets can be implemented in a relational database such as MySQL. This could use a managed service like AWS RDS in its various flavours. This approach also performed very well with sqlite.
 
-The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. 
+The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, a query like `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` is used. 
 
 Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
 
@@ -77,14 +77,14 @@ A similar Lambda function would keep this table in-sync with the DynamoDB table.
 ## Files on disk, EBS, EFS or even S3
 If you don't want to run Redis or a relational database, the bang for buck option is the file system. There are several options here ranging from very fast instance-connected SSDs to EBS, EFS and object store services like S3.
 
-This approach works by defining a fixed size C-style structure and writing the corresponding bytes to a file. Random access is made possible by calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant offset (calculated from the `index * SIZE`) and `read` that number of bytes. Alternatively you can read the most recent by seeking to the end and reading backwards with a negative offset.
+This approach works by defining a fixed size C-style structure and writing the corresponding bytes to a file. Random access is made possible by calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant offset (calculated from the `index * SIZE`) and `read` that number of bytes.
 
-With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a Lambda function that consumes a DynamoDB stream would create these files.
+With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a function that consumes a DynamoDB stream be responsible for writing to these files.
 
 Assuming a 24-character value for `PK`, and `SK` converted to an integer unix time, the code to read `index` would be something along these lines.
 
 ```python
-STRUCT_DEF = "24s i"
+STRUCT_DEF = "24s i" # create a struct of char[24], int
 SIZE = struct.calcsize(STRUCT_DEF) # 28 bytes (24+4)
 
 PK2 = "DAFT_PUNK_TSHIRT"
@@ -95,7 +95,7 @@ with open(f"{PK2}.pag", "rb") as file:
     print(f"PK: {values[0]}, SK: {values[1]}, PK2: {PK2}")
 ```
 
-This is likely to perform well with low latency on EC2 with instance storage or EBS. Non-scientific tests showed it worked far better than expected on an EFS mount in a Lambda function. If some additional latency can be tolerated, the _bargain basement_ solution is to read **just the individual record** out of the much larger index object stored on S3. This is achieved by passing a range header, similar to the file offset above.
+This is likely to perform well on EC2 with instance storage or EBS. Non-scientific tests showed it worked far better than expected with an EFS mounted in a Lambda function. If some additional latency can be tolerated, the real _bargain basement_ solution is to selectively read **just the individual record** out of the much larger index object stored on S3. This is achieved by passing an HTTP range header, similar to the file offset above.
 
 ```python
 page_index = boto3.resource('s3').Object('pagination-indexes', f"{PK2}.pag")
@@ -110,11 +110,9 @@ A crude way to find the number of entries to divide the file size by the struct 
 
 So, we've established that read path is simple and fast. The write path is more complex. The model of appending bytes to a file does not work if we want to maintain order and cannot say with 100% certainty that records won't appear out of order. Perhaps strict ordering is not necessary, but it would be confusing to have a comment from 2018 appearing alongside one from 2021. Additionally, as the index increases in size, it will need to be rewritten in sorted order. If S3 is being used as a storage backend, this would mean a `PutObject` of several megabytes to add a single entry. The shape of your workload will dictate whether or not this is reasonable.
 
-A simple remedy is to not directly write to the index file at all, instead sending the change _commands_ to an append-only write ahead log. At a timed interval (or when the WAL reaches a certain size), a _commit_ process could run and apply these changes into the ordered index file, discarding the WAL. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. Deletions are fast in Redis as the member value is also indexed, which adds to the in-memory storage footprint of a sorted set. This file based approach does not bother to do that, members marked for deletion are simply skipped when the file is rewritten. This makes the files smaller to transmit and rewrite.
+A simple remedy is to not directly write to the index file at all, instead sending the change _commands_ to an append-only write ahead log. At a timed interval (or when the WAL reaches a certain size), a _commit_ process could run and apply these changes into the ordered index file, discarding the WAL. This reduces the amount of work needed to perform a sort and rewrite on the entire index, particularly if networked storage or S3 is where the indexes are stored. Deletions are fast in Redis as the member value is also indexed, which adds to the in-memory storage footprint of a sorted set. This file based approach does not bother to do that, members marked for deletion are simply skipped when the file is rewritten.
 
-The clear cost to this approach is that changes won't immediately appear.
-
-If a degree of latency is acceptable, this is not a bad trade off. A complimentary hack would be to not consult the pagination index at all when querying the first n pages, and simply limit in your client. For example, instead of setting the DynamoDB query `Limit` to `20`, set it to `200` and take a slice of the returned items to deliver up to page 10. This will increase read costs but caters for newest always being visible, with the potentially acceptable risk of some comments being shown again on page 11.
+The clear cost to this approach is that changes won't immediately appear. If a degree of latency is acceptable, this is not a bad trade off. A complimentary hack would be to not consult the pagination index at all when querying the first n pages, and simply limit in your client. For example, instead of setting the DynamoDB query `Limit` to `20`, set it to `200` and take a slice of the returned items to deliver up to page 10. This will increase read costs but caters for newest always being visible, with the potentially acceptable risk of some comments being shown again on page 11.
 
 The index files can be generated in any language. In Python, the `struct` module is one way to achieve this - likewise in go, the `binary` module and ordinary go structs work as you would expect (although check how much reflection is being used to _decode_ the structs: avoiding this can make a staggering difference to performance.) 
 
@@ -126,7 +124,7 @@ Despite the odd looks you will probably get for suggesting this as a general app
 
 _An interesting hybrid of this and the previously discussed relational approach would be to use sqlite as [an alternative to fopen](https://www.sqlite.org/whentouse.html). Instead of dropping structs into a file, a sqlite database file would be used, providing a stable file format and the beautiful, highly performant sqlite engine for ordering. The storage footprint, due to the covering index, is likely to be much larger._
 
-### Sorted sets on disk with a Redis interface
+### Redis-compatible interface to files
 I took the file system appproach a bit further and built a [RESP](https://redis.io/topics/protocol) service that implemented a few commands including `ZCARD, ZRANGE, ZADD and ZREM`. This worked pretty well on a `t4g.micro` EC2 instance. The `ZADD` and `ZREM` commands stage the changes to a separate file, as discussed above. A custom command, `ZCOMMIT` can be issued for a sorted set key. This will apply any pending changes to the index. When committing a few changes to an index file containing **2.3m** items, the rewrite took about **1.3** seconds. Too expensive to run on every change, but if rewrites are only done occasionally, this could be acceptable in some scenarios. Each sorted set has its own index file, so a large number of indexes could be rebuilt in parallel with no other state or coordination required.
 
 The `redis-benchmark` tool showed about **60000 rps** (without pipelining) for the commands besides `ZCOMMIT`. This is obviously much slower than proper Redis, but acceptable. 
@@ -139,10 +137,9 @@ If you don't mind your sorted sets being occasionally out of date, you can host 
 
 As ever, it depends on whether your workload can tolerate these delayed commits and what the risk profile is with regard to potential data loss. There are other downsides - you will need to pick a file system that can efficiently store several small files. Use of a sqlite container file (or small number of them, representing a shard) may actually work out better. Perhaps something like RocksDB could be used to store the structs. 
 
-Then there are considerations about how to run multiple replicas which strays into the _writing a sketchy database of our own_ territory. If you have the budget, sticking with Redis is most likely the sane option.
-
 # Conclusion
-When something seemingly simple appears convoluted to achieve with your current technology choices, you've got to consider whether it is a good return on investment and wise to even try to make it work. 
+
+**tl;dr: use Redis.** While the file-based approaches are economical, we stray into dangerous territory of _writing a sketchy database of our own_. In most cases this would be penny wise but pound foolish. If you have the budget, applying the sorted sets pattern with a managed Redis instance or cluster is most likely the sane option.
 
 **Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
