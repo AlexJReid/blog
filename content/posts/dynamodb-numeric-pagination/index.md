@@ -4,14 +4,14 @@ date = 2021-10-27T10:03:12Z
 title = "DynamoDB pagination with page numbers in URLs"
 description = "For SEO reasons, we might want to use page numbers in URLs. This post discusses how this is possible with DynamoDB and a secondary store."
 slug = "dynamodb-page-numbers" 
-tags = ['dynamodb', 'pagination', 'redis', 'zset', 'sqlite', 'aws']
+tags = ['dynamodb', 'pagination', 'redis', 'zset', 'sqlite', 'aws', 'paging']
 categories = []
 author = "Alex Reid"
 externalLink = ""
 series = []
 +++
 
->For SEO reasons, we might want to use page numbers in URLs. This post discusses how this is possible with DynamoDB and a secondary store.
+>For SEO reasons, we might want to use page numbers in URLs when displaying large collections. This post discusses how this is made possible by combining DynamoDB with secondary store.
 
 Back when we all used SQL databases, it was common to paginate through large result sets by appending `LIMIT offset, rows per page` to a `SELECT` query. Depending on the schema, data volume and database engine, this was [inefficient to varying degrees](https://tusharsharma.dev/posts/api-pagination-the-right-way). On smaller result sets and with the right indexes, it was... posssibly OK.
 
@@ -25,10 +25,10 @@ Some may also say that `?page=2` looks nicer than an encoded exclusive start key
 
 What if, for whatever reason, we wanted to bring back those old-school, things-were-better-back-in-the-old-days page numbers?
 
-# Pattern: map exclusive start keys to a numeric index
-An exclusive start key is just a map containing the keys needed to _resume_ the query and grab the next n items. It's a reference point. 
+# The pattern: map exclusive start keys to a numeric index
+An exclusive start key is just a structure containing the keys needed to _resume_ the query and grab the next n items. It is nothing more than a reference point. 
 
-Rather than conveying it as part of the URL, we could instead store the key components needed to generate an exclusive start key from a numeric index. A `page` or `skip` query parameter would be included in the URL. A look up for _item 20_ will yield the keys needed to construct an exclusive start key to _skip_ results by arbitrary intervals.
+Rather than conveying it as part of the URL which is ugly and possibly leaks implementation details, we could instead store the key components needed to generate an exclusive start key from a numeric index. A `page` or `skip` query parameter would be included in the URL. A look up for _item 20_ will internally yield the keys needed to construct an exclusive start key to _skip_ results by arbitrary intervals.
 
 The drawback of this approach is the added complexity around building, maintaining, storing and serving this numeric index of rows. To avoid a confusing user experience, it is vital that the system of record and numeric index are kept consistent. Allowing users to filter the results will invalidate any pre-calculated page numbers, so additional indexes will need to be maintained. Only low cardinality, coarse filters are likely to be feasible in order to minimize the number of page indexes that need to be built.
 
@@ -47,15 +47,17 @@ The following approaches assume `comments` DynamoDB table has the string keys `P
 | ccc232 | 2021-08-25 13:55 | DAFT_PUNK_TSHIRT | ...              |
 
 ## Redis sorted sets
-The first (and possibly simplest) approach is to load the partition and sort keys into Redis sorted sets. This could use a managed service like AWS Elasticache for Redis.
+The simplest approach is to bring out everyone's favourite swiss army knife, Redis. The partition and sort keys would be loaded into Redis sorted sets. Redis itself could be run on a managed service like AWS Elasticache.
 
-A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member), which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering (by score, aka creation date) on our behalf.
+A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member), which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering using a _score_ value. We will use a numeric representation of the _creation date_ as the score.
 
-Assuming the table outlined above, we use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to UNIX time) as the score. 
+Assuming the table outlined above, we will use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to UNIX time) as the score. In other words: `ZADD <PK2> to_unixtime(<SK>) <PK>`, would be sent to Redis.
 
-For example `ZADD <PK2> to_unixtime(<SK>) <PK>`, would be sent to Redis through a Lambda function connected to a DynamoDB Stream off the table (it'd also need to send `ZREM/ZADD` to handle any deletions and changes.)
+A Lambda function connected to a DynamoDB Stream off the table could issue these commands so that both stores remain in-sync. It'd also need to send `ZREM/ZADD` to handle any deletions and changes.
 
-To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the item to retrieve the keys of, is sent to Redis. This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should be converted back to a date time string from UNIX time. This is all that is needed to construct an `ExclusiveStartKey`.
+To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the item to retrieve the keys of, would be sent to Redis. 
+
+This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should be converted back to a date time string from UNIX time. This is all that is needed to construct an `ExclusiveStartKey` which can be used in a DynamoDB query.
 
 It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
 
@@ -66,16 +68,18 @@ However this may be a reasonable trade off as it is a very simple solution that 
 ## Relational
 The sorted sets approach could also be achieved with a relational database. This could use a managed service like AWS RDS in its various flavours.
 
-The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
+The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` would be used. 
+
+Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
 
 A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
 ## Files on disk, EBS, EFS or even S3
-If you don't want to run Redis or a relational database, the bang for buck option is good ol' files. There are several options here ranging from very fast instance-connected SSDs to EBS, EFS and object store services like S3.
+If you don't want to run Redis or a relational database, the bang for buck option is the file system. There are several options here ranging from very fast instance-connected SSDs to EBS, EFS and object store services like S3.
 
 This approach works by defining a fixed size C-style structure and writing the corresponding bytes to a file. Random access is made possible by calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant offset (calculated from the `index * SIZE`) and `read` that number of bytes. Alternatively you can read the most recent by seeking to the end and reading backwards with a negative offset.
 
-With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a Lambda function that consumes a DynamoDB (or Kinesis) stream would write to these files.
+With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a Lambda function that consumes a DynamoDB stream would create these files.
 
 Assuming a 24-character value for `PK`, and `SK` converted to an integer unix time, the code to read `index` would be something along these lines.
 
@@ -133,39 +137,9 @@ There is nothing clever going on here. No log-structured merge trees or efficien
 
 If you don't mind your sorted sets being occasionally out of date, you can host a **lot** of keys on disk using a very cheap EC2 instance. The set with 2.3m members occupied less than **65MB** of disk space. **This will cost far, far less than keeping them all in RAM.** 
 
-As ever, it depends on whether your workload can tolerate these delayed commits and what the risk profile is with regard to potential data loss. There are other downsides - you will need to pick a file system that can efficiently store several small files. Use of a sqlite container file (or small number of them, representing a shard) may actually work out better. Perhaps something like RocksDB could be used to store the structs. Then there are considerations about how to run multiple replicas which strays into the _writing a sketchy database of our own_ territory. Nevertheless, I think it's a very interesting area to continue some research in.
+As ever, it depends on whether your workload can tolerate these delayed commits and what the risk profile is with regard to potential data loss. There are other downsides - you will need to pick a file system that can efficiently store several small files. Use of a sqlite container file (or small number of them, representing a shard) may actually work out better. Perhaps something like RocksDB could be used to store the structs. 
 
-## DynamoDB
-Instead of adding another data store it is possible to stamp a _page marker_ numeric attribute onto every nth item in a table with an ascending page number. The oldest record lives on page `1`.
-
-A sparsely populated GSI would use this attribute as its sort key (plus other keys) so that only page _start_ items are included. 
-
-**Page marker index**
-
-| PK     | SK               | PK2 (GSI PK)     | page (GSI SK)    |
-|--------|------------------|------------------| ---------------- |
-| abc912 | 2021-08-25 13:42 | DAFT_PUNK_TSHIRT | 2                |
-| ccc232 | 2021-08-25 14:55 | DAFT_PUNK_TSHIRT | 3                |
-
-
-A partition header item contains the current page number (ascending) and running count of items remaining for the current page. 
-
-**Table**
-
-| PK     | SK               | current_page     | remaining        | card |
-|--------|------------------|------------------| ---------------- | ---- |
-| STATS  | DAFT_PUNK_TSHIRT | 3                | 2                | 7    |
-
-
-When an item is added, the above `STATS` item is consulted. If it flows onto the next page, a page marker attribute is added to it and values within the `STATS` item for that product are incremented/reset within a transaction. 
-
-To paginate in reverse sort order (for instance, latest items first), get the `PK: STATS, SK: DAFT_PUNK_TSHIRT` item to find the current page. Assuming there are 10 pages and page 3 is requested: `(10+1)-3 = 8`, leading us to key `PK2: DAFT_PUNK_TSHIRT, page: 8` on the page marker index. This item is retrieved to form an exclusive start key to be used in a query.
-
-Handling changes other than serial appends **economically** is the big challenge here. If an item needs to be removed, subsequent page markers need to be updated. Depending on table size, this could result in a large number of operations and therefore increase read/write costs.
-
-You may wonder why the oldest comments live on page 1 and the newest live on the highest page number. This is because our access pattern states that we must show the most recent comments on the first page, so would be continually updating page markers if a comment was being added to what the index considers to be page 1. In other words, we are optimising for changes being more likely in newer items.
-
-This approach may only be appropriate for slow moving data, when changes are very rare or cannot happen, append only data, or when the table is materialised from scratch from another source.
+Then there are considerations about how to run multiple replicas which strays into the _writing a sketchy database of our own_ territory. If you have the budget, sticking with Redis is most likely the sane option.
 
 # Conclusion
 When something seemingly simple appears convoluted to achieve with your current technology choices, you've got to consider whether it is a good return on investment and wise to even try to make it work. 
