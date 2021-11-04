@@ -79,7 +79,7 @@ If you don't want to run Redis or a relational database, the bang for buck optio
 
 This approach works by defining a fixed size C-style structure and writing the corresponding bytes to a file. Random access is made possible by calculating the offset within the file based on the consistent size of a structure. You can then `seek` to the relevant offset (calculated from the `index * SIZE`) and `read` that number of bytes.
 
-With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a function that consumes a DynamoDB stream be responsible for writing to these files.
+With this pattern, the grouping key `PK2` is used to name the file. If a lot of keys are expected, a small optimisation would be to shard the keys into a fixed number of subdirectories. As with the prior approaches, a function that consumes a DynamoDB stream would be responsible for writing to these files.
 
 Assuming a 24-character value for `PK`, and `SK` converted to an integer unix time, the code to read `index` would be something along these lines.
 
