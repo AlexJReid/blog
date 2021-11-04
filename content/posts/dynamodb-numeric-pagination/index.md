@@ -150,4 +150,4 @@ Before making the leap, consider whether the approaches discussed in this post a
 
 We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
 
-[Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fdynamodb-numeric-pagination%2F)
+[Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fdynamodb-numeric-pagination%2F&src=typed_query)
