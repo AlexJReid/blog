@@ -43,6 +43,6 @@ http {
   server {
       listen $PORT;
       server_name phiz.net;
-      return 301 https://phiz.net$request_uri;
+      return 301 https://alexjreid.dev$request_uri;
   }
 }
