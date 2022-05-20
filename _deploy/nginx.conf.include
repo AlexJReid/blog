@@ -19,6 +19,8 @@ http {
       return 301 https://alexjreid.dev/posts/dynamodb-page-numbers/;
     }
 
+    error_page 404 /404.html;
+    
     location / {
       try_files $uri $uri.html $uri/ =404;
     }
@@ -28,6 +30,7 @@ http {
     listen $PORT;
     server_name mybranch.dev;
     root /app/site;
+    error_page 404 /404.html;
 
     location / {
       try_files $uri $uri.html $uri/ =404;
