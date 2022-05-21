@@ -2,41 +2,22 @@
 <html lang="{{ .Site.LanguageCode }}" prefix="og: http://ogp.me/ns#">
 {{ partial "head.html" . }}
 
-
 <body>
   <article class="posts">
     <div class="row">
       <div class="col-xs-12">
         {{ partial "header.html" . }}
-        <div id="posts-list">
-          {{ range (where site.RegularPages "Type" "in" site.Params.mainSections).GroupByDate "2006" -}}
-          <section>
-            <h1 class="site-date-catalog">{{ .Key }}</h1>
-            {{ range .Pages }}
-            <div class="row posts-line">
-              <div class="posts-date col-xs-3 col-sm-2">
-                <time datetime="{{ .Date.Format "2006-01-02 15:04:05 MST" }}">{{ .Date.Format "Jan 02"}}</time>
-              </div>
-              <div class="posts-title col-xs-9 col-sm-10">
-                <div class="row">
-                  <div class="col-xs-11 col-sm-10">
-                    <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-                  </div>
-                  <div class="col-xs-1 col-sm-2 posts-categories">
-                    {{ range .Params.categories }}
-                    <div class="posts-category">
-                      <a href="/categories/{{ lower . }}/"><strong>{{ . }}</strong></a>
-                    </div>
-                    {{ end }}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {{ end }}
-          </section>
-          {{ end }}
+        <div class="post-content">
+          <p>I'm a software engineer from North East England. I enjoy constructing simple systems and <a href="/posts">write about it sometimes</a>.</p> 
+          <p>I also post updates about <a href="/car">my 1998 Porsche 911 Carerra 2</a>.</p>
+          <p>If you want to get in touch, email this domain name (minus the <code>.dev</code>) at me.com or via <a
+              href="https://twitter.com/AlexJReid">Twitter</a>.</p>
+          <p>All content here and on linked social media accounts are my personal views and opinions and do not represent those
+            of current or former employers.</p>
+          <p>This site is built with <a href="https://gohugo.io">Hugo</a> in <a href="https://cloud.google.com/build">Google Cloud Build</a> and served by <a
+              href="https://cloud.google.com/run">Google Cloud Run</a>. If you're interested, <a
+              href="/posts/hello/">read more about the setup</a>.</p>
         </div>
-
         {{ partial "footer.html" . }}
       </div>
     </div>

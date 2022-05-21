@@ -1,7 +1,11 @@
 {{ $curLanguageName := .Site.Language.LanguageName }}
 <header>
   <div class="signatures site-title">
-    <a href="{{ .Site.LanguagePrefix }}/">{{ or .Site.Params.headTitle .Site.Author.name }}</a>
+    {{ if .IsHome }}
+    Hello, I'm Alex
+    {{ else }}
+    <a href="../">{{ or .Site.Params.headTitle .Site.Author.name }}: {{ if eq .Section "posts" }}TECH{{else}}CAR{{end}}</a>
+    {{ end }}
   </div>
 </header>
 <div class="row end-xs">

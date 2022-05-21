@@ -1,4 +1,4 @@
-{{ $related := (where site.RegularPages "Type" "in" site.Params.mainSections).Related . | first 5 }}
+{{ $related := (where site.RegularPages "Type" "in" .Section).Related . | first 3 }}
 {{ with $related }}
 <div class="releated-content markdown-body">
   <h3>Other posts</h3>

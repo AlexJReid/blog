@@ -1,7 +1,13 @@
 <div class="site-footer">
-    <div class="site-footer-item">
-      <a href="/about/">About</a>
-    </div>
+  <div class="site-footer-item">
+    <a href="/posts/">Tech</a>
+  </div>
+
+  <div class="site-footer-item">
+    <a href="/car/">Car</a>
+  </div>
+
+
   {{ range .Site.Params.socials }}
   <div class="site-footer-item">
     <a href="{{ .link }}" target="_blank">{{ .name }}</a>
@@ -10,8 +16,7 @@
 </div>
 
 <div class="disclaimer">
-  <strong>&copy; Alex Reid 2022.</strong>
-  <em>Nothing published here represents the views of current or former employers.</em>
+  <strong>&copy; Alex Reid 2022&nbsp;</strong>
   <br/>
 {{ if .IsHome }}
   <pre>Revision: {{ .Site.Params.rev }}</pre>

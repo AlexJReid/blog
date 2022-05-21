@@ -11,7 +11,6 @@ pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
-#disqusShortname = "mybranchblog"
 enableRobotsTXT = true
 
 googleAnalytics = "UA-156939108-1"
@@ -22,12 +21,10 @@ googleAnalytics = "UA-156939108-1"
     title = "Alex Reid"
     info = "Thoughts on software engineering, the cloud and data."
     description = "Alex Reid - thoughts on software engineering, the cloud and data."
-    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb,java,go,python,dynamodb,bigtable,reid,Alex Reid,alexjreid"
-    mainSections = ["posts"]
+    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb,java,go,python,dynamodb,bigtable,reid,Alex Reid,alexjreid,porsche,996,porsche911,porsche996"
+    mainSections = ["posts", "car"]
 
-[[params.socials]]
-name = "RSS Feed"
-link = "/index.xml"
+
 [[params.socials]]
 name = "Twitter"
 link = "https://twitter.com/alexjreid"
