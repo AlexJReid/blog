@@ -20,6 +20,8 @@ I am glad that my car has the more basic audio as the contemporary _cutting edge
 
 The front dash speakers needed to go as the tweeters were blown. I followed [this guide on YouTube](https://www.youtube.com/watch?v=aIC-mP1hH50) which is basically a hack job. Destroy the disintegrated front speakers but salvage the connectors and mounts. You can then mount some [new Alpine speakers](https://www.amazon.co.uk/Alpine-SPG-10C2-10cm-2-Way-Speakers/dp/B002XCNPMS/ref=asc_df_B002XCNPMS/?tag=googshopuk-21&linkCode=df0&hvadid=310873119586&hvpos=&hvnetw=g&hvrand=1216362323464065415&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9046774&hvtargid=pla-562971012200&psc=1) within.
 
+![Hack job on speakers](speaker.jpg)
+
 Very easy if you're happy to take a saw to some brand new speakers. They were less than £50 so I was not expecting much, but this was a huge improvement and great value for money. I only did the fronts but may do the backs later.
 
-The lower door speakers provide most of the bass. These are still crap Nokia units that are well past their best, but good enough for now.
+An even easier solution is to buy some [3D printed mounts on eBay](https://www.ebay.co.uk/itm/314000812679?hash=item491be82a87:g:WMoAAOSwYdRh-TV6) or [the whole kit including speakers, connectors and mounts... for a price](https://www.ebay.co.uk/itm/283868130472?hash=item4217dbeca8:g:~vsAAOSwv-5esIpY). I actually did get a set of the 3D printed mounts but unfortunately the speakers I had already bought were too big. D'oh.

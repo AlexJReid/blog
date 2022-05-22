@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-I booked the 996 into a local specialist [D&G Porsche Specialists](http://www.dg-porsche.co.uk/) for a checkover so I could be confident that I had not bought a death trap.
+I booked the 996 into local specialist [D&G Porsche Specialists](http://www.dg-porsche.co.uk/) for a checkover so I could be confident that I had not bought a death trap and/or money pit. (The money pit bit is assumed.)
 
 They said the car was pretty clean for its miles and suggested the following work:
 - Coffin arms all round

@@ -12,7 +12,7 @@ series = []
 
 Recent cars I've owned have had modern LED lights which makes night driving much easier. Older cars lights are shockingly bad in comparison as technology has moved on a lot in 25 years.
 
-I took a punt on some 50% extra light bulbs from Halfords. Huge upgrade and very cheap. They don't appear to run hotter or draw any more current so I'm confident nothing will melt.
+I took a punt on some [150% extra light bulbs from Halfords](https://www.halfords.com/motoring/bulbs/h7-477-car-headlight-bulb-halfords-advanced-up-to-plus150-percent-brighter-single-pack-718753.html). Huge upgrade and very cheap. They don't appear to run hotter or draw any more current so I'm hopeful nothing will melt.
 
 Changing the bulbs is easy. You insert a special tool through a hole within the frunk and the unit pops out. No wires to undo. You can then take it indoors (it seems huge) and fit the new bulbs. Fitting is a reverse of removal, putting the entire unit back into the rails and rotating the tool until unit pops back in. It's a very loud pop which worried me.
 
