@@ -19,22 +19,28 @@ I first found one at the local Nissan dealer. It was a 2003 C4 cabriolet. I didn
 Fast forward to September. After browsing PistonHeads and seeing the same tatty and overpriced examples at sketchy looking dealers, a promising private ad popped up. It ticked all of the boxes:
 
 - 1998 C2 "sport pack" car
+- Silver with black interior (no wild 90s colour schemes)
 - 3.4 not 3.6 so possibly less chance of the dreaded bore score or IMS issues
-- Dual row IMS replaced in 2017 anyway
+- Bank 1 cylinder head replaced in 2005 due to crack (common on early ones: I guess it has been fine since!)
+- Dual row IMS replaced in 2015 along with clutch, RMS, AOS, brake lines...
+- Matching MPS4 tyres
 - Hard back seats
 - Cable throttle
+- Low temperature thermostat and recent coolant change
 - GT3 style centre console delete
 - No sunroof
 - Hollow spoke wheels
 - M030 suspension originally
-- Recent second hand gearbox
-- Silver with black interior (no wild 90s colour schemes)
-- Recent brake upgrades (EBC yellow stuff pads, some 997 bits and pieces)
-- Recent new RSS engine mounts
-- Gundo'd exhaust
+- 60K second hand gearbox as the old one expired at around 142000 miles
+- Recent brake upgrades (EBC yellow stuff pads, braided hoses, GT3 cooling ducts, 997 master cyl, brake fluid)
+- Recent semi solid RSS engine mounts
+- Gundo'd exhaust as the stock note is very muted
+- Working AC - new condensers in 2018
 - Maintained by well regarded specialists, frequent services
 
 Despite being over five years older than the first one I had looked at, I actually wanted it. It had high miles at just under 152000 but the owner was an enthusiast, having just bought a 997.1 GT3. It looked as if the other recent owners had also spent a fair bit on it. It felt right, so a deal was done and I ventured off to the South East to collect it, unseen without even bothering with a PPI. At the tail end of a pandemic with used car prices at stupid levels. During a petrol crisis. I certainly like to play the game on idiot mode. _What could possibly go wrong?_
+
+My family put this down to one of Alex's mad capers and shrugged.
 
 On my way down, my the bank notified me that they had decided to hold the transfer. After an hour of stress on the train and some frantic calls, the owner confirmed that the funds had been received. I was collected at the train station and was driven back in it. I could tell the car was even better than I was expecting.
 
@@ -42,7 +48,7 @@ I needn't have worried.
 
 ![Photo credit: @moonmilesgt3 on Instagram](new-to-me.jpg)
 
-After filling in the "paperwork" online, I was soon on my way. Next challenge was to find some fuel. Thankfully the first local petrol station I passed had just received a delivery. Rather than drive back in a 23 year old car after a long train journey, I had had the foresight to book a nearby Travelodge. 
+After inspecting the history (some VERY big bills over the years, oh no!) and filling in the "paperwork" online, I was soon on my way. The next challenge was to find some fuel. Thankfully the first local petrol station I passed had just received a delivery. Rather than drive back in a 23 year old car after a long train journey, I had had the foresight to book a nearby Travelodge. 
 
 ![Travelodge](tl.jpg)
 
