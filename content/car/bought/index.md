@@ -36,17 +36,19 @@ Fast forward to September. After browsing PistonHeads and seeing the same tatty 
 
 Despite being over five years older than the first one I had looked at, I actually wanted it. It had high miles at just under 152000 but the owner was an enthusiast, having just bought a 997.1 GT3. It looked as if the other recent owners had also spent a fair bit on it. It felt right, so a deal was done and I ventured off to the South East to collect it, unseen without even bothering with a PPI. At the tail end of a pandemic with used car prices at stupid levels. During a petrol crisis. I certainly like to play the game on idiot mode. _What could possibly go wrong?_
 
-I needn't have worried.
-
 On my way down, my the bank notified me that they had decided to hold the transfer. After an hour of stress on the train and some frantic calls, the owner confirmed that the funds had been received. I was collected at the train station and was driven back in it. I could tell the car was even better than I was expecting.
+
+I needn't have worried.
 
 ![Photo credit: @moonmilesgt3 on Instagram](new-to-me.jpg)
 
-I was soon on my way. Next challenge: find some fuel. I needn't have worried as the first local petrol station I passed had just received a delivery. Thank god. Rather than drive back in a 23 year old car after a long train journey, I had booked a nearby Travelodge. 
+After filling in the "paperwork" online, I was soon on my way. Next challenge was to find some fuel. Thankfully the first local petrol station I passed had just received a delivery. Rather than drive back in a 23 year old car after a long train journey, I had had the foresight to book a nearby Travelodge. 
 
 ![Travelodge](tl.jpg)
 
-It was a pretty grim place but I was glad to decompress there with a sandwich from the Tesco next door. I was probably a little bit stressed out, so it was a huge relief. All I needed to do was get home. I set off at 4AM. It was a pretty steady drive back at no faster than 65mph due to some pretty dense fog. Figuring out how to operate the fog lights was fun.
+It was a pretty grim place, but I was glad to decompress there with a sandwich from the Tesco next door. I was probably more than a little bit stressed out, so it was a huge relief. 
+
+I set off for home at 4AM. It was a pretty steady drive back at no faster than 65mph due to some pretty dense fog. Figuring out how to operate the fog lights was fun.
 
 The car drove well but I didn't want to push it in the early hours. I just wanted to get home one piece. I made it back to the North East without issue. I was still apprehensive, but confident that against the odds, I'd managed to pick up a good 'un.
 
