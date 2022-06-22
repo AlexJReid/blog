@@ -20,6 +20,14 @@ The right hand side took around 2 minutes. The left hand side wasn't quite so ea
 
 The connector that the socket on the back of the light unit is on a stalk so that when the light pops back in, the connector also does. For whatever reason, the connector on this side was loose, so it was just resting on top of the socket. The connector is fitted to the stalk with a flimsy piece of yellow plastic - the only way I can describe it is like something out of a Christmas cracker. This locks the plug into the stack so that it remains rigid when the light unit is offered up to it. 
 
+![Clip](clip.jpg)
+
+Part `996 631 24500` (LH) and `996 631 24600` (RH).
+
 Luckily I managed to locate the yellow fitting that was loose in the headlight cavity and reattach it. Popped the lights in and all is good.
 
-I've had the lights out on other occasions and the whole process takes seconds now. Fantastic design both on the production line and for maintenance.
+Paranoia set in so I paid a stupid amount of postage for two new ones, just in case. They'll probably sit in a box forever now.
+
+I've had the lights out on other occasions and the whole process takes seconds now. A great design both for on the production line and for maintenance.
+
+UPDATE: Well, great until it breaks. Apparently the plug was still misaligned (perhaps due to my ham fisted attempts to reinstall the light the first time) so the garage had to strip the arch out and properly locate the connector when they were replacing another bulb for me.
