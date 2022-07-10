@@ -1,2 +1,2 @@
 # Porsche 996
-> Occasional updates and posts about my 1998 Porsche 911 (996) Carerra 2. After years of leasing a mixture of boring, terrible and very good new cars, I decided to buy what might be my last analogue, manual car.
+> Occasional updates and posts about my 1998 Porsche 911 (996) Carerra 2. After years of leasing a mixture of boring, terrible and very good new cars, I decided to buy what might be my last analogue, manual car. Despite being registered as **PHZ 443**, my daughter has named it **Grampy** as it is "grey, old and a bit smelly." I probably post too many photos of it on [Instagram](https://instagram.com/alexjreid).

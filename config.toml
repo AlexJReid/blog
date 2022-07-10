@@ -48,8 +48,8 @@ url = "https://www.linkedin.com/in/alexjreid/"
 enabled = true
 title = "Alex Reid"
 subtitle = "thoughts on software engineering... and cars"
-#imageUrl = "alexjreid.jpg"
-#imageTitle = "alexjreid"
+imageUrl = "me.jpg"
+imageTitle = "alexjreid avatar"
 
 [[params.profileMode.buttons]]
 name = "Tech"
