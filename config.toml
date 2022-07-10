@@ -30,6 +30,7 @@ googleAnalytics = "UA-156939108-1"
     comments = false
     showPostNavLinks = false
     showtopc = true
+    pluralizelisttitles = false
 
 [[params.socialIcons]]
 name = "twitter"
@@ -59,5 +60,9 @@ name = "Porsche 996"
 url = "/car"
 
 [[params.profileMode.buttons]]
-name = "Tags"
+name = "Most popular posts"
+url = "/tags/greatest-hits"
+
+[[params.profileMode.buttons]]
+name = "All tags"
 url = "/tags"
