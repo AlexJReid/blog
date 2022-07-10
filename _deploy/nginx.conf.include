@@ -45,6 +45,12 @@ http {
 
   server {
       listen $PORT;
+      server_name mybranch.dev;
+      return 301 https://mybranch.dev$request_uri;
+  }
+
+  server {
+      listen $PORT;
       server_name phiz.net;
       return 301 https://alexjreid.dev$request_uri;
   }
