@@ -1,12 +1,9 @@
 steps:
 - name: 'gcr.io/$PROJECT_ID/hugo'
-  env:
-  - 'HUGO_PARAMS_BUILD=$BUILD_ID'
-  - 'HUGO_PARAMS_REV=$SHORT_SHA'
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/blog:$SHORT_SHA', '-f', '_build/Dockerfile.nginx', '.']
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/blog:$SHORT_SHA']
-- name: 'gcr.io/cloud-builders/gcloud'
-  args: ['beta','run','deploy','blog-service','--image=gcr.io/$PROJECT_ID/blog:$SHORT_SHA', '--platform=managed', '--region=europe-west1', '--memory=128Mi']
+#- name: 'gcr.io/cloud-builders/gcloud'
+#  args: ['beta','run','deploy','blog-service','--image=gcr.io/$PROJECT_ID/blog:$SHORT_SHA', '--platform=managed', '--region=europe-west1', '--memory=128Mi']
 images: ['gcr.io/$PROJECT_ID/blog:$SHORT_SHA']
