@@ -36,6 +36,10 @@ name = "twitter"
 url = "https://twitter.com/alexjreid"
 
 [[params.socialIcons]]
+name = "instagram"
+url = "https://instagram.com/alexjreid"
+
+[[params.socialIcons]]
 name = "linkedin"
 url = "https://www.linkedin.com/in/alexjreid/"
 
