@@ -36,17 +36,17 @@ http {
       try_files $uri $uri.html $uri/ =404;
     }
   }
-  
+
   server {
       listen $PORT;
       server_name blog.mybranch.dev;
-      return 301 https://mybranch.dev$request_uri;
+      return 301 https://alexjreid.dev$request_uri;
   }
 
   server {
       listen $PORT;
       server_name mybranch.dev;
-      return 301 https://mybranch.dev$request_uri;
+      return 301 https://alexjreid.dev$request_uri;
   }
 
   server {
