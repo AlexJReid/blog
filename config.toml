@@ -1,6 +1,6 @@
 baseurl = "https://alexjreid.dev/"
 title = "Alex Reid"
-theme = "yinyang"
+theme = "PaperMod"
 languagecode = "en"
 defaultcontentlanguage = "en"
 
@@ -11,23 +11,49 @@ pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
+enableInlineShortcodes = true
+
 enableRobotsTXT = true
 
 googleAnalytics = "UA-156939108-1"
 
 [params]
-    headTitle = "Alex Reid"
     author = "Alex Reid"
+    env = "production"
     title = "Alex Reid"
-    info = "Thoughts on software engineering, the cloud and data."
-    description = "Alex Reid - thoughts on software engineering, the cloud and data."
-    keywords = "blog,developer,data,gcp,aws,nosql,dynamodb,java,go,python,dynamodb,bigtable,reid,Alex Reid,alexjreid,porsche,996,porsche911,porsche996"
+    defaultTheme = "light"
+    info = "Thoughts on software engineering"
+    description = "Alex Reid - thoughts on software engineering"
+    keywords = ["aws", "software", "cloud", "dyanmodb", "envoy", "consul", "Alex Reid", "porsche"]
     mainSections = ["posts", "car"]
+    useHugoToc = true
+    comments = false
+    showPostNavLinks = false
+    showtopc = true
 
+[[params.socialIcons]]
+name = "twitter"
+url = "https://twitter.com/alexjreid"
 
-[[params.socials]]
-name = "Twitter"
-link = "https://twitter.com/alexjreid"
-[[params.socials]]
-name = "LinkedIn"
-link = "https://www.linkedin.com/in/alexjreid/"
+[[params.socialIcons]]
+name = "linkedin"
+url = "https://www.linkedin.com/in/alexjreid/"
+
+[params.profileMode]
+enabled = true
+title = "Alex Reid"
+subtitle = "thoughts on software engineering... and cars"
+#imageUrl = "alexjreid.jpg"
+#imageTitle = "alexjreid"
+
+[[params.profileMode.buttons]]
+name = "Tech"
+url = "/posts"
+
+[[params.profileMode.buttons]]
+name = "Porsche 996"
+url = "/car"
+
+[[params.profileMode.buttons]]
+name = "Tags"
+url = "/tags"
