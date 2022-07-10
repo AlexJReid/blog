@@ -24,7 +24,7 @@ googleAnalytics = "UA-156939108-1"
     defaultTheme = "light"
     info = "Thoughts on software engineering"
     description = "Alex Reid - thoughts on software engineering"
-    keywords = ["aws", "software", "cloud", "dyanmodb", "envoy", "consul", "Alex Reid", "porsche"]
+    keywords = ["aws", "software", "cloud", "dyanmodb", "envoy", "consul", "Alex Reid", "porsche", "porsche 996"]
     mainSections = ["posts", "car"]
     useHugoToc = true
     comments = false
@@ -47,7 +47,7 @@ url = "https://www.linkedin.com/in/alexjreid/"
 [params.profileMode]
 enabled = true
 title = "Alex Reid"
-subtitle = "thoughts on software engineering... and cars"
+subtitle = "Thoughts on software engineering... and cars."
 imageUrl = "me.jpg"
 imageTitle = "alexjreid avatar"
 
@@ -60,9 +60,9 @@ name = "Porsche 996"
 url = "/car"
 
 [[params.profileMode.buttons]]
-name = "Most popular posts"
+name = "Most read"
 url = "/tags/greatest-hits"
 
 [[params.profileMode.buttons]]
-name = "All tags"
+name = "Tags"
 url = "/tags"
