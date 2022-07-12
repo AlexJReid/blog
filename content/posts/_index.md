@@ -1,4 +1,3 @@
 +++ 
 title = "Tech"
 +++
-# Tech
