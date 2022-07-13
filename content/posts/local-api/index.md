@@ -37,7 +37,7 @@ HELLO WORLD!!!
 
 Unfortunately, as our former selves had a shameful history of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. The team that owns it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let's let sleeping dogs lie.
 
-Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive, so we are tasked to create a new version of the service with only one. As we are risk averse, we want to make the changes in a **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with the service it ordinarily calls. It should also be able to receive ingress from any services that call it.
+Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive, so we are tasked to create a new version of the service with only one. As we are risk averse, we want to make the changes in a **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with the service it ordinarily calls. It should also be able to receive ingress from any services that calls it.
 
 **We are patching the local service into the environment so that it appears the same as a deployed service.**
 
