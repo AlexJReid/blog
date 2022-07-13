@@ -24,7 +24,7 @@ My approach is based on a service mesh: a way of connecting services together to
 Consul has a [set of configuration entries](https://www.consul.io/docs/connect/l7-traffic) that can be used to control where a request is sent. It allows us to form subsets of services based on deployment attributes and then route to them, based on the attributes of an incoming HTTP request.
 
 ## A contrived scenario
-Imagine that we have a service that defines `/message` which simply returns `Hello world!!!`. This service also implements subresources `/message/lower` and `/message/upper` that returns lower and uppercase representations of the same string. 
+Imagine that we have a service with the resource `/message` that returns `Hello world!!!`. It also implements subresources `/message/lower` and `/message/upper` which return lower and uppercase representations of the same string. 
 
 ```
 $ curl http://some-service.test-env-1.mycompany.com/message
@@ -35,9 +35,9 @@ $ curl http://some-service.test-env-1.mycompany.com/message/upper
 HELLO WORLD!!!
 ```
 
-It turns out that as our former selves had shameful history of being microservice astronauts, the transformation happens in another service instead of being a local stdlib function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. Oh no.
+Unfortunately, as our former selves had shameful history of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. Besides, the team that own it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let sleeping dogs lie.
 
-Our stakeholders have decided that three exclaimations is excessive, so we are tasked to create a new version of the service with only one. We want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
+Anyway. Our stakeholders have decided that three exclaimations after `Hello world` is excessive, so we are tasked to create a new version of the service with only one. We want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
 
 ## Approach
 _The rest of this post assumes some degree of experience with HTTP, networking and Consul and Envoy itself._
