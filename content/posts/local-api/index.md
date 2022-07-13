@@ -17,14 +17,10 @@ Microservices have been commonplace for several years now. While this is not a p
 
 Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
 
-An alternative idea is to _patch in_ a new implementation of your service from your local environment into a full fat test environment. I have had some ideas on how this might work. Note that it is just an experiment. Your mileage may vary.
-
-My approach is based on a service mesh: a way of connecting services together to build a secure, observable and malleable system. A service mesh consists of a control plane that accepts configuration changes and dynamically applies generated configurations to a data plane. The data plane actually does the work of serving the requests. In this example Consul is the control plane and Envoy Proxy is the data plane. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect).
-
-Consul has a [set of configuration entries](https://www.consul.io/docs/connect/l7-traffic) that can be used to control where a request is sent. It allows us to form subsets of services based on deployment attributes and then route to them, based on the attributes of an incoming HTTP request.
+An alternative idea is to _patch in_ a new implementation of your service from a local environment into a full fat test environment.
 
 ## A contrived scenario
-Imagine that we have a service with the resource `/message` that returns `Hello world!!!`. It also implements subresources `/message/lower` and `/message/upper` which return lower and uppercase representations of the same string. 
+Imagine that we have a service with the resource `/message` that returns `Hello world!!!`. It also provides the subresources `/message/lower` and `/message/upper` which return lower and uppercase representations of the same string. 
 
 ```
 $ curl https://some-service.test-env-1.mycompany.com/message
@@ -35,14 +31,16 @@ $ curl https://some-service.test-env-1.mycompany.com/message/upper
 HELLO WORLD!!!
 ```
 
-Unfortunately, as our former selves had a shameful history of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. The team that owns it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let's let sleeping dogs lie.
+Unfortunately, as our former selves had a shameful past of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. The team that owns it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let's let sleeping dogs lie.
 
-Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive, so we are tasked to create a new version of the service with only one. As we are risk averse, we want to make the changes in a **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with the service it ordinarily calls. It should also be able to receive ingress from any services that calls it.
+Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive and a waste of bandwidth, so we have been tasked to create a new version of the service with only one.
+
+As we are risk averse, we want to make the changes in a **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with the service it ordinarily calls.
 
 **We are patching the local service into the environment so that it appears the same as a deployed service.**
 
 ## Approach
-_The rest of this post assumes some degree of experience with HTTP, networking and Consul and Envoy itself._
+A service mesh is a way of connecting services together to build a secure, observable and malleable system. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect). Consul and Envoy Proxy are used to form this example service mesh.
 
 The test environment is running within a cloud provider. My local development machine, `whitby`, is on the same network, thanks to a [Tailscale](https://tailscale.net) VPN. 
 
