@@ -2,7 +2,7 @@
 draft = false
 date = 2022-07-12T00:03:12Z
 title = "Patching in a development service"
-description = "It is not always feasible to run an entire system composed from microservices locally. This post introduces an experimental approach for patching a local implementation into a remote test environment for development purposes."
+description = "It is not always feasible to run an entire system composed from microservices locally. This post discusses using a service mesh to 'patch' a locally running service into a remote test environment, for development purposes."
 slug = "patching-in-a-development-service" 
 tags = ['api', 'service mesh', 'envoy', 'consul', 'http', 'microservices', 'dev environment', 'local dev', 'tailscale']
 categories = []
