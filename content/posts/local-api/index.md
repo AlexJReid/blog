@@ -15,11 +15,11 @@ series = []
 
 Microservices have been commonplace for several years now. While this is not a post about them being better or worse than a well-structured monolith (as usual, it depends), it is absolutely the case that they can introduce complexity, particularly when running them locally. 
 
-Suppose the system you are working on consists of hundreds of discrete services with a spiderweb of dependencies. If you are unlucky and need to get a complete environment running to try out your proposed changes, you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deploy.
+Suppose the system you are working on consists of hundreds of discrete services with a spider web of dependencies. If you are unlucky and need to get a complete environment running to try out your proposed changes, you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
 
 An alternative idea is to _patch in_ a new implementation of your service from your local environment into a full fat test environment. I have had some ideas on how this might work. Note that it is just an experiment. Your mileage may vary.
 
-My approach is based on a service mesh: a way of connecting services together to build a secure, observable and maliable system. A service mesh consists of a control plane that accepts configuration changes and _reifies_ them into dynamically applied configuration a data plane. The data plane actually does the work of serving the requests. In this example Consul is the control plane and Envoy Proxy is the data plane. [HashiCorp introduce the concepts more fully in this video](https://www.consul.io/docs/connect).
+My approach is based on a service mesh: a way of connecting services together to build a secure, observable and malleable system. A service mesh consists of a control plane that accepts configuration changes and dynamically applies generated configurations to a data plane. The data plane actually does the work of serving the requests. In this example Consul is the control plane and Envoy Proxy is the data plane. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect).
 
 Consul has a [set of configuration entries](https://www.consul.io/docs/connect/l7-traffic) that can be used to control where a request is sent. It allows us to form subsets of services based on deployment attributes and then route to them, based on the attributes of an incoming HTTP request.
 
@@ -35,9 +35,9 @@ $ curl http://some-service.test-env-1.mycompany.com/message/upper
 HELLO WORLD!!!
 ```
 
-Unfortunately, as our former selves had shameful history of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. Besides, the team that own it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let sleeping dogs lie.
+Unfortunately, as our former selves had a shameful history of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. The team that owns it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let's let sleeping dogs lie.
 
-Anyway. Our stakeholders have decided that three exclaimations after `Hello world` is excessive, so we are tasked to create a new version of the service with only one. We want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
+Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive, so we are tasked to create a new version of the service with only one. We want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
 
 ## Approach
 _The rest of this post assumes some degree of experience with HTTP, networking and Consul and Envoy itself._
@@ -132,7 +132,7 @@ HELLO WORLD!
 ```
 
 ## L7 configuration entries to the rescue
-This is great, but it would be better to guard the local version so that it is only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
+This is great, but it would be better to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
 
 Firstly we define the resolver which uses service metadata to form _subsets_ of the service instances. Using metadata specified when the service is registered in Consul, the sets can be defined with a simple expression.
 
@@ -239,7 +239,7 @@ These mechanics can be applied to a blue-green or canary deploy, where traffic i
 
 
 ## Drawbacks
-Asute readers will have noticed I have not mentioned ACLs or certficiates. These are vital part in ensuring that only trusted services can join the mesh.
+Astute readers will have noticed I have not mentioned ACLs or certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
 This pattern would be a bad idea to attempt on a production environment, unless you have a clickbait blog post planned: _I accidentally put my laptop into production and here's what happened!_
 
@@ -251,7 +251,7 @@ There is a lot going on here but the ideas presented could be abstracted by some
 In the example scenario we have:
 
 - started a local version of the service
-- patched it in to a real test envrionment
+- patched it into a real test environment
 - seen requests to the environment be routed to the local service as dictated by matching rules
 - seen the local service call out to the transformation service **through the service mesh**
 - seen how the local service can be called by other mesh services to test integrations
@@ -259,7 +259,7 @@ In the example scenario we have:
 
 **I only needed to run the service I was working on locally.**
 
-What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
