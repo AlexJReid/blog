@@ -132,7 +132,7 @@ HELLO WORLD!
 ```
 
 ## L7 configuration entries to the rescue
-This is great, but it both service instances are receiving requests in a round robin. It would be better to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
+This is great, but both service instances are receiving requests in a round robin. It would be better to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
 
 Firstly we define the resolver which uses service metadata to form _subsets_ of the service instances. Using metadata specified when the service is registered in Consul, the sets can be defined with a simple expression.
 
