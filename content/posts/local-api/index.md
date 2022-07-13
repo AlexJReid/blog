@@ -75,7 +75,7 @@ $ consul agent -retry-join mesh...tailscale.net \
 
 As we need to make changes to the `message` service, it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
-The configuration also references the `transform` service. As the `transform` service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services. _Connecting in this way means that the `message` service can do a dumb HTTP request to localhost, offloading any mTLS complexity while respecting any security constraints or limitations that should be imposed._
+The configuration also references the `transform` service. As the `transform` service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services. This means that the `message` service can do a dumb HTTP request to localhost, offloading  mTLS to Envoy, thus respecting any constraints configured in the service mesh.
 
 ```hcl
 service {
