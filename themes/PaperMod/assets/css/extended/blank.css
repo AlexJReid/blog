@@ -1,5 +1,7 @@
-/*
-This is just a placeholder blank stylesheet so as to support adding custom styles budled with theme's default styles
-
-Read https://github.com/adityatelange/hugo-PaperMod/wiki/FAQs#bundling-custom-css-with-themes-assets for more info
-*/
+/* Fixes iOS font sizing anomaly */
+code {
+    text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
