@@ -35,7 +35,7 @@ $ curl http://some-service.test-env-1.mycompany.com/message/upper
 HELLO WORLD!!!
 ```
 
-It turns out that our former selves had shameful history of being microservice astronauts, the transformation happens in another service instead of being a local stdlib function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. Oh no.
+It turns out that as our former selves had shameful history of being microservice astronauts, the transformation happens in another service instead of being a local stdlib function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. Oh no.
 
 Our stakeholders have decided that three exclaimations is excessive, so I am tasked to create a new version of the service with only one. I want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. My locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
 
@@ -255,7 +255,6 @@ The same mechanics can also be applied to a blue-green or canary deploy, where t
 
 What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
-Let me know what you think. Discuss on Twitter.
 
 ## Links
 - Image credit: photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
