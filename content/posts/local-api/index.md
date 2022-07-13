@@ -233,16 +233,19 @@ $ curl http://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
-This is a great example of being able to _patch_ a service at the resource level. It is useful during development and also for applying the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation.
+This is a great example of using resolvers and routers to to _patch_ a service at the resource level. We can apply the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation. 
+
+These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months during a longer migration project.
+
 
 ## Drawbacks
 Asute readers will have noticed I have not mentioned ACLs or certficiates. These are vital part in ensuring that only trusted services can join the mesh.
 
 This pattern would be a bad idea to attempt on a production environment, unless you have a clickbait blog post planned: _I accidentally put my laptop into production and here's what happened!_
 
-One flaw in this approach is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand, but continue to run Envoy locally. This would require some additional configuration but will probably work.
+Perhaps the biggest flaw in this approach is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work.
 
-There is a lot going on here, however I am confident that the ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
+There is a lot going on here but the ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
 
 ## Conclusion
 In the example scenario we have:
@@ -251,13 +254,14 @@ In the example scenario we have:
 - patched it in to a real test envrionment
 - seen requests to the environment be routed to the local service as dictated by matching rules
 - seen the local service call out to the transformation service **through the service mesh**
+- seen how the local service can be called by other mesh services to test integrations
 - made changes to the local service and seen the changes immediately without redeploying
 
-This approach has **a lot** of potential to be the basis for a very productive and simple development approach. **I only needed to locally run the service I was working on.**
-
-The same mechanics can also be applied to a blue-green or canary deploy, where traffic is routed between multiple deployed versions of a service.
+**I only needed to run the service I was working on locally.**
 
 What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+
+_As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
 
 ## Links
