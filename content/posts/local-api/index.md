@@ -245,7 +245,9 @@ Astute readers will have noticed I have not mentioned security, namely ACLs and 
 
 It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-Perhaps the biggest technical flaw is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work.
+Perhaps the biggest technical flaw is running a Consul agent locally. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work. 
+
+Along the same lines, this latency problem goes away if the exact development setup detailed here happened to be on a remote VM on the same VPC. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is an interesting topic.
 
 There is a lot going on here but the ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
 
