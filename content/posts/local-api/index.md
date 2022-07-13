@@ -54,9 +54,9 @@ For this example scenario, we are running services called `message` and `transfo
 
 ![Service topology](service-topology.png)
 
-Services within the mesh are accessed from the outside via an _ingress gateway_ also shown here. This is where the above `curl` commands are issued. It is the entry point into the environment.
+Services within the mesh are accessed from the outside via an _ingress gateway_ also shown here. This is where the above `curl` commands are issued. It is the entry point into the environment. The ingress gateway is configured to accept ingress into the `message` service, but not `transform`. Requests to `transform` can only originate within the mesh.
 
-The test environment uses Nomad to schedule the services running as Docker containers, but this is irrelevant really. The same would apply if it were AWS ECS, Kubernetes or VMs.
+The test environment uses Nomad to schedule the services running as Docker containers, but this is irrelevant really. The service instances would look the same if they were running on AWS ECS, Kubernetes, VMs... or a development machine, as we will soon see.
 
 ![Consul services](consul-services.png)
 
