@@ -13,9 +13,9 @@ series = []
 
 ![Patch cables](cover.jpg)
 
-Microservices have been commonplace for several years now. They provide many benefits and some drawbacks, one of which is increased complexity, particularly when running a system of composed of them locally. 
+Microservices have been commonplace for several years now. They provide many benefits and some drawbacks, one of which is increased complexity when attempting to run a system of composed of them locally. 
 
-Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
+The answer is of course _to not even try_. But, suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
 
 An alternative idea is to _patch in_ a new implementation of your service from a local environment into a full fat test environment.
 
