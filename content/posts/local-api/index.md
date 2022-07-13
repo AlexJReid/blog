@@ -2,9 +2,9 @@
 draft = false
 date = 2022-07-12T00:03:12Z
 title = "Patching in a development service"
-description = "It is not always feasible to run an entire system composed from microservices locally. This post introduces an approach for patching a local implementation into a remote test environment for development purposes."
+description = "It is not always feasible to run an entire system composed from microservices locally. This post introduces an experimental approach for patching a local implementation into a remote test environment for development purposes."
 slug = "patching-in-a-development-service" 
-tags = ['api', 'service mesh', 'envoy', 'consul', 'greatest-hits']
+tags = ['api', 'service mesh', 'envoy', 'consul', 'http', 'microservices', 'dev environment']
 categories = []
 author = "Alex Reid"
 externalLink = ""
@@ -17,14 +17,14 @@ Microservices have been commonplace for several years now. While this is not a p
 
 Suppose the system you are working on consists of hundreds of discrete services with a spiderweb of dependencies. If you are unlucky and need to get a complete environment running to try out your proposed changes, you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deploy.
 
-An alternative is to _patch in_ a new implementation of your service from your local environment into a full fat test environment. Let us explore how.
+An alternative idea is to _patch in_ a new implementation of your service from your local environment into a full fat test environment. I have had some ideas on how this might work. Note that it is just an experiment. Your mileage may vary.
 
-This approach is based on a service mesh, which is a way of connecting services together to build a secure, observable and maliable system. A service mesh consists of a control plane that accepts configuration changes and _reifies_ them into dynamically applied configuration a data plane. The data plane actually does the work of serving the requests. In this example Consul is the control plane and Envoy Proxy is the data plane. [HashiCorp introduce the concepts more fully in this video](https://www.consul.io/docs/connect).
+My approach is based on a service mesh: a way of connecting services together to build a secure, observable and maliable system. A service mesh consists of a control plane that accepts configuration changes and _reifies_ them into dynamically applied configuration a data plane. The data plane actually does the work of serving the requests. In this example Consul is the control plane and Envoy Proxy is the data plane. [HashiCorp introduce the concepts more fully in this video](https://www.consul.io/docs/connect).
 
 Consul has a [set of configuration entries](https://www.consul.io/docs/connect/l7-traffic) that can be used to control where a request is sent. It allows us to form subsets of services based on deployment attributes and then route to them, based on the attributes of an incoming HTTP request.
 
 ## A contrived scenario
-I have a service that defines `/message` which simply returns `Hello world!!!`. This service also implements subresources `/message/lower` and `/message/upper` that returns lower and uppercase representations of the same string. 
+Imagine that we have a service that defines `/message` which simply returns `Hello world!!!`. This service also implements subresources `/message/lower` and `/message/upper` that returns lower and uppercase representations of the same string. 
 
 ```
 $ curl http://some-service.test-env-1.mycompany.com/message
@@ -37,12 +37,12 @@ HELLO WORLD!!!
 
 It turns out that as our former selves had shameful history of being microservice astronauts, the transformation happens in another service instead of being a local stdlib function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. Oh no.
 
-Our stakeholders have decided that three exclaimations is excessive, so I am tasked to create a new version of the service with only one. I want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. My locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
+Our stakeholders have decided that three exclaimations is excessive, so we are tasked to create a new version of the service with only one. We want to make the changes in my **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with any dependencies (for instance, the transformation service) as if it were deployed. It should also be able to receive ingress from any services that call it.
 
-## Solution
+## Approach
 _The rest of this post assumes some degree of experience with HTTP, networking and Consul and Envoy itself._
 
-The test environment is running within a cloud provider. My local environment is on the same network, thanks to a [Tailscale](https://tailscale.net) VPN. `whitby` is my local development machine.
+The test environment is running within a cloud provider. My local development machine, `whitby`, is on the same network, thanks to a [Tailscale](https://tailscale.net) VPN. 
 
 ![Tailscale machine list](tailscale-machines.png)
 
@@ -50,7 +50,11 @@ We can see the test environment has a single node in Consul where all of the ser
 
 ![Consul nodes](consul-nodes.png)
 
-For this example scenario, we are running the `message` and `transform` services. Services within the mesh are accessed from the outside via an _ingress gateway_ also shown here. This is where the above `curl` commands are issued. It is the entry point into the environment.
+For this example scenario, we are running services called `message` and `transform`. `message` makes calls to the `transform` service.
+
+![Service topology](service-topology.png)
+
+Services within the mesh are accessed from the outside via an _ingress gateway_ also shown here. This is where the above `curl` commands are issued. It is the entry point into the environment.
 
 The test environment uses Nomad to schedule the services running as Docker containers, but this is irrelevant really. The same would apply if it were AWS ECS, Kubernetes or VMs.
 
@@ -67,7 +71,7 @@ $ consul agent -retry-join mesh...tailscale.net \
 
 ![Consul nodes with local addition showing](consul-local-node.png)
 
-I need to make changes to the `message` service, so it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
+As we need to make changes to the `message` service, it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
 The configuration also references the `transform` service. As the transformation service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services. _Connecting in this way means the service can do a dumb HTTP request to localhost, hiding any complexity and respecting any security constraints or limitations defined within the service mesh._
 
@@ -110,7 +114,7 @@ The service appears as an instance alongside the _real_ deployed instance.
 Finally, the service itself can be started. 
 
 ```bash
-$ PORT=5001 MESSAGE="Hello world!!" TRANSFORM_SERVICE_URL=http://localhost:4001 \
+$ PORT=5001 MESSAGE="Hello world!" TRANSFORM_SERVICE_URL=http://localhost:4001 \
     ./routing-demo
 ```
 
@@ -119,11 +123,11 @@ Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the 
 The big moment. **We get traffic to both the deployed and locally running service.**
 
 ```bash
-$ curl http://some-service.mycompany.com/message # local
+$ curl http://some-service.test-env-1.mycompany.com/message # local
 Hello world!
-$ curl http://some-service.mycompany.com/message # live
+$ curl http://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
-$ curl http://some-service.mycompany.com/message/upper # local
+$ curl http://some-service.test-env-1.mycompany.com/message/upper # local
 HELLO WORLD!
 ```
 
@@ -184,17 +188,17 @@ Config entry written: service-router/message
 ![Consul routing](consul-routing.png)
 
 ```bash
-$ curl -H "x-debug: 1" http://some-service.mycompany.com/message # local
+$ curl -H "x-debug: 1" http://some-service.test-env-1.mycompany.com/message # local
 Hello world!
-$ curl http://some-service.mycompany.com/message # live
+$ curl http://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
 ```
 
-I can change the local service by restarting it with a different environment variable value for message and see the results instantly, as can **anyone else who has access to the environment and knows the pass the `x-debug: 1` header.**
+We can change the local service by restarting it with a different environment variable value for message and see the results instantly, as can **anyone else who has access to the environment and knows the pass the `x-debug: 1` header.**
 
 ```bash
 $ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4001 ./routing-demo 
-$ curl -H "x-debug: 1" http://some-service.mycompany.com/message/upper
+$ curl -H "x-debug: 1" http://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
@@ -223,9 +227,9 @@ Routes = [
 Notice that as the routing logic is now different, the `x-debug: 1` header no longer needs to be sent as part of the request.
 
 ```bash
-$ curl http://some-service.mycompany.com/message
+$ curl http://some-service.test-env-1.mycompany.com/message
 Hello world!!!
-$ curl http://some-service.mycompany.com/message/upper
+$ curl http://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
