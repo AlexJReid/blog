@@ -27,11 +27,11 @@ Consul has a [set of configuration entries](https://www.consul.io/docs/connect/l
 Imagine that we have a service with the resource `/message` that returns `Hello world!!!`. It also implements subresources `/message/lower` and `/message/upper` which return lower and uppercase representations of the same string. 
 
 ```
-$ curl http://some-service.test-env-1.mycompany.com/message
+$ curl https://some-service.test-env-1.mycompany.com/message
 Hello world!!!
-$ curl http://some-service.test-env-1.mycompany.com/message/lower 
+$ curl https://some-service.test-env-1.mycompany.com/message/lower 
 hello world!!!
-$ curl http://some-service.test-env-1.mycompany.com/message/upper
+$ curl https://some-service.test-env-1.mycompany.com/message/upper
 HELLO WORLD!!!
 ```
 
@@ -125,11 +125,11 @@ Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the 
 The big moment. **We get traffic to both the deployed and locally running service.**
 
 ```bash
-$ curl http://some-service.test-env-1.mycompany.com/message # local
+$ curl https://some-service.test-env-1.mycompany.com/message # local
 Hello world!
-$ curl http://some-service.test-env-1.mycompany.com/message # live
+$ curl https://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
-$ curl http://some-service.test-env-1.mycompany.com/message/upper # local
+$ curl https://some-service.test-env-1.mycompany.com/message/upper # local
 HELLO WORLD!
 ```
 
@@ -190,9 +190,9 @@ Config entry written: service-router/message
 ![Consul routing](consul-routing.png)
 
 ```bash
-$ curl -H "x-debug: 1" http://some-service.test-env-1.mycompany.com/message # local
+$ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message # local
 Hello world!
-$ curl http://some-service.test-env-1.mycompany.com/message # live
+$ curl https://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
 ```
 
@@ -202,7 +202,7 @@ We can change the local service by restarting it with a different environment va
 $ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4001 \
     ./routing-demo
 
-$ curl -H "x-debug: 1" http://some-service.test-env-1.mycompany.com/message/upper
+$ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
@@ -231,9 +231,9 @@ Routes = [
 Notice that as the routing logic is now different, the `x-debug: 1` header no longer needs to be sent as part of the request.
 
 ```bash
-$ curl http://some-service.test-env-1.mycompany.com/message
+$ curl https://some-service.test-env-1.mycompany.com/message
 Hello world!!!
-$ curl http://some-service.test-env-1.mycompany.com/message/upper
+$ curl https://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
