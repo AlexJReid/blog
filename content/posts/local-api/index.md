@@ -269,6 +269,8 @@ What I particularly like about it is the rapid feedback loop. I was able to patc
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
+[Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fpatching-in-a-development-service%2F&src=typed_query&f=top)
+
 
 ## Links
 - Image credit: photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
