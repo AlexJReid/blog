@@ -124,6 +124,7 @@ Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the 
 
 The big moment. **We get traffic to both the deployed and locally running service.**
 
+
 ```bash
 $ curl https://some-service.test-env-1.mycompany.com/message # local
 Hello world!
