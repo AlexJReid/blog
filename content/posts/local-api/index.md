@@ -15,7 +15,7 @@ series = []
 
 Microservices have been commonplace for several years now. While this is not a post about them being better or worse than a well-structured monolith (as usual, it depends), it is absolutely the case that they can introduce complexity, particularly when running them locally. 
 
-Suppose the system you are working on consists of hundreds of discrete services with a spider web of dependencies. If you are unlucky and need to get a complete environment running to try out your proposed changes, you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
+Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky and need to get a complete environment running to try out your proposed changes, you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
 
 An alternative idea is to _patch in_ a new implementation of your service from your local environment into a full fat test environment. I have had some ideas on how this might work. Note that it is just an experiment. Your mileage may vary.
 
