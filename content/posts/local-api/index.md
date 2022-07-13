@@ -15,7 +15,7 @@ series = []
 
 Microservices have been commonplace for several years now. While this is not a post about them being better or worse than a well-structured monolith (as usual, it depends), it is absolutely the case that they can introduce complexity, particularly when running them locally. 
 
-Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky and need to get a complete environment running to try out your proposed changes, you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
+Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. This is costly and probably too much work, so you might be inclined to simply YOLO and deploy to a test or staging environment, potentially breaking things for other users. You will likely suffer from a slow feedback loop with every single change requiring a build and deployment.
 
 An alternative idea is to _patch in_ a new implementation of your service from your local environment into a full fat test environment. I have had some ideas on how this might work. Note that it is just an experiment. Your mileage may vary.
 
@@ -118,7 +118,7 @@ $ PORT=5001 MESSAGE="Hello world!" TRANSFORM_SERVICE_URL=http://localhost:4001 \
     ./routing-demo
 ```
 
-Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the local process can address a remote version of the `transform` service, via Envoy.
+Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the local process can address a remote version of the `transform` service, via Envoy. The port was defined in the above service registration.
 
 The big moment. **We get traffic to both the deployed and locally running service.**
 
@@ -197,12 +197,14 @@ Hello world!!!
 We can change the local service by restarting it with a different environment variable value for message and see the results instantly, as can **anyone else who has access to the environment and knows the pass the `x-debug: 1` header.**
 
 ```bash
-$ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4001 ./routing-demo 
+$ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4001 \
+    ./routing-demo
+
 $ curl -H "x-debug: 1" http://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
-The L7 routing constructs in Consul are very flexible. Perhaps we do not want to pass a header around to use the local version. Maybe we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` deployed version. This is a minor change to the service router.
+The L7 routing constructs in Consul are very flexible. Perhaps we do not want to pass a header around to use the local version and instead we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` deployed version. This is a minor change to the service router.
 
 ```hcl
 Kind = "service-router"
@@ -233,17 +235,17 @@ $ curl http://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
-This is a great example of using resolvers and routers to to _patch_ a service at the resource level. We can apply the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation. 
+**This is a great example of using resolvers and routers to to _patch_ a service at the resource level.** We can apply the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation. 
 
-These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months during a longer migration project.
+These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months as part of a longer running migration project.
 
 
 ## Drawbacks and TODOs
-Astute readers will have noticed I have not mentioned security - ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
+Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
-This is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
+It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-Perhaps the biggest technical flaw in this approach is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work.
+Perhaps the biggest technical flaw is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work.
 
 There is a lot going on here but the ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
 
