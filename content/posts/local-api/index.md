@@ -239,7 +239,6 @@ LOCAL HELLO WORLD
 
 These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months as part of a longer running migration project.
 
-
 ## Drawbacks and TODOs
 Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
