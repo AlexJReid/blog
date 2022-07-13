@@ -11,7 +11,7 @@ externalLink = ""
 series = []
 +++
 
-![Patch cables - John Barkiple](john-barkiple-l090uFWoPaI-unsplash.jpg)
+![Patch cables](cover.jpg)
 
 Microservices have been commonplace for several years now. While this is not a post about them being better or worse than a well-structured monolith (as usual, it depends), it is absolutely the case that they can introduce complexity, particularly when running them locally. 
 
