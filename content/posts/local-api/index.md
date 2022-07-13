@@ -4,7 +4,7 @@ date = 2022-07-12T00:03:12Z
 title = "Patching in a development service"
 description = "It is not always feasible to run an entire system composed from microservices locally. This post introduces an experimental approach for patching a local implementation into a remote test environment for development purposes."
 slug = "patching-in-a-development-service" 
-tags = ['api', 'service mesh', 'envoy', 'consul', 'http', 'microservices', 'dev environment']
+tags = ['api', 'service mesh', 'envoy', 'consul', 'http', 'microservices', 'dev environment', 'local dev']
 categories = []
 author = "Alex Reid"
 externalLink = ""
@@ -238,12 +238,12 @@ This is a great example of using resolvers and routers to to _patch_ a service a
 These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months during a longer migration project.
 
 
-## Drawbacks
-Astute readers will have noticed I have not mentioned ACLs or certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
+## Drawbacks and TODOs
+Astute readers will have noticed I have not mentioned security - ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
-This pattern would be a bad idea to attempt on a production environment, unless you have a clickbait blog post planned: _I accidentally put my laptop into production and here's what happened!_
+This is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-Perhaps the biggest flaw in this approach is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work.
+Perhaps the biggest technical flaw in this approach is running a Consul agent locally over a potentially slow connection. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work.
 
 There is a lot going on here but the ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
 
