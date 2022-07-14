@@ -248,6 +248,7 @@ These mechanics can be applied to a blue-green or canary deploy, where traffic i
 ## LAN gossip and slow networks
 Consul agents are designed to run in close proximity on the same low latency network. This is clearly not the case if an engineer is working from home or a train. 
 
+### Remote Consul agent
 An alternative approach is to provision a remote Consul agent on-demand that the local Envoy connects to.
 
 For this to work, a minor adjustment is made to the service registration.
@@ -293,7 +294,8 @@ Starting Envoy proxy.
 Ready to go. Please start your local service on port 5001.
 ```
 
-This latency problem also goes away if what we have been calling the _local_ environment was on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
+### Make your local environment remote
+The latency problem also goes away if what we have been calling the _local_ environment was on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
 
 
 ## Drawbacks and TODOs
