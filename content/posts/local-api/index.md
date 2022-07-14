@@ -308,9 +308,11 @@ In the example scenario we have:
 
 What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
-Taking a step back, it is possibly debatable as to whether jumping through quite so many hoops to facilitate _patching in a **local** service_ is worthwhile. Deploying a version to the test environment and _patching that in_ might be good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature.
+Very cool.
 
-Either way, it is very interesting just what is possible.
+But that said... it is now debatable whether jumping through quite so many hoops to facilitate _patching in a **local** service_ is justifiable. Deploying a branch to a test environment and _patching that in_ might be good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature here.
+
+Nevertheless, it is very interesting just what is possible.
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
