@@ -15,7 +15,7 @@ series = []
 
 Composing systems out of smaller microservices has been commonplace for several years now. One trade off is increased complexity around development environments.
 
-Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. 
+Suppose the system you are working on consists of hundreds of services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. 
 
 This is costly and often too much work. You might be inclined to blindly deploy to a test or staging environment, after testing your service runs as expected in isolation. Even then, there is a high probability of breaking things for other users. You are also likely to suffer a slow feedback loop with every single change requiring a build and deployment.
 
