@@ -73,7 +73,7 @@ The agent appears.
 
 ![Consul nodes with local addition showing](consul-local-node.png)
 
-> Consul's LAN gossip protocol, as its name would imply, is designed to run on low latency networks. Running a local agent is a bad idea and a fix for this [is described below](#lan-gossip-and-slow-networks).
+> Consul's LAN gossip protocol, as its name would imply, is designed to run on low latency networks. Running a local agent is a bad idea and a fix for this [is described later on](#lan-gossip-and-slow-networks).
 
 Our _service under development_ is the `message` service, which needs to be registered the local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
