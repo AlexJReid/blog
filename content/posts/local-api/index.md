@@ -200,7 +200,7 @@ $ curl https://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
 ```
 
-The output from the local `message` service instance can be changed by restarting it with a different environment variable. The change is immediately available to **anyone who has access to the environment and knows the pass the `x-debug: 1` header.** There was no need for a redeploy.
+The output from the local `message` service instance can be changed by restarting the process with a different environment variable. The change is immediately available to **anyone who has access to the environment and knows to pass the `x-debug: 1` header.** There was no need for a redeploy.
 
 ```bash
 $ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4001 \
@@ -210,7 +210,7 @@ $ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message/upp
 LOCAL HELLO WORLD
 ```
 
-Perhaps we do not want to pass a header around to use the local version and instead we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` deployed version. This is a minor change to the service router.
+Perhaps we do not want to pass a header around to use the local version and instead we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` version. This is a minor change to the service router.
 
 ```hcl
 Kind = "service-router"
@@ -243,13 +243,13 @@ LOCAL HELLO WORLD
 
 **This is a great example of using resolvers and routers to to _patch_ a service at the resource level.** We can apply the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation. 
 
-These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months as part of a longer running migration project.
+The same mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months as part of a longer running migration project.
 
 ## LAN gossip and slow networks
 Consul agents are designed to run in close proximity on the same low latency network. This is clearly not the case if an engineer is working from home or a train. 
 
 ### Remote Consul agent
-An alternative approach is to provision a remote Consul agent on-demand that the local Envoy connects to.
+An alternative approach is to provision a remote Consul agent.
 
 For this to work, a minor adjustment is made to the service registration.
 
@@ -276,14 +276,14 @@ service {
 }
 ```
 
-Starting Consul is almost the same. We need to tell Envoy to connect to the remote Consul agent for its configuration.
+Starting Consul is almost the same. We need to tell Envoy to connect to the remote Consul agent.
 
 ```
 $ consul connect envoy -sidecar-for ajr-local-fix \
     -grpc-addr remote-consul-patch-in...tailscale.net:8502
 ```
 
-An API and command line tool that provisions _patch in_ agents on demand and the associated configuration would be straight forward to implement.
+To abstract things, a tool that provisions _patch in_ agents on demand with associated configuration would be straight forward to implement.
 
 ```
 $ patch-in -env test-1 -service message -port 5001
@@ -303,7 +303,7 @@ Astute readers will have noticed I have not mentioned security, namely ACLs and 
 
 It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-The ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
+Tooling to automate the setup process could make it almost invisible to developers.
 
 ## Conclusion
 In the example scenario we have:
@@ -319,9 +319,7 @@ In the example scenario we have:
 
 What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
-Very cool.
-
-But that said... it is now debatable whether jumping through quite so many hoops to facilitate _patching in a **local** service_ is justifiable. Deploying a branch to a test environment and _patching that in_ might be good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature here.
+Very cool. But that said, deploying a branch to a test environment and _patching that in_ might be good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature here.
 
 Nevertheless, it is very interesting just what is possible.
 
