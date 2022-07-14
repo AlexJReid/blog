@@ -138,9 +138,9 @@ HELLO WORLD!
 ```
 
 ## L7 configuration entries to the rescue
-This is a good start, but both service instances are receiving requests in a round robin. It would be better to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
+This is a good start, but both service instances are receiving requests in a round robin. We need to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
 
-Firstly we define the resolver which uses service metadata to form _subsets_ of the service instances. Using metadata specified when the service is registered in Consul, the sets can be defined with a simple expression.
+Firstly, we define the resolver which uses service metadata to form _subsets_ of the service instances. Using metadata specified when the service is registered in Consul, the sets can be defined with an expression.
 
 ```hcl
 Kind = "service-resolver"
@@ -299,14 +299,6 @@ Ready to go. Please start your local service on port 5001.
 ### Make your local environment remote
 The latency problem also goes away if what we have been calling the _local_ environment was on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
 
-
-## Drawbacks and TODOs
-Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
-
-It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
-
-Tooling to automate the setup process could make it almost invisible to developers.
-
 ## Conclusion
 In the example scenario we have:
 
@@ -319,11 +311,15 @@ In the example scenario we have:
 
 **I only needed to run the service I was working on locally.**
 
-What particularly struck me was the tight feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+What particularly impressed me was the tight feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
-Very cool. But that said, deploying a branch to a test environment and _patching that in_ might be good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature here.
+Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
-Nevertheless, it is very interesting just what is possible.
+It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
+
+Tooling to automate patch in process would be essential. It needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
+
+Some might say that running locally is irrelevant and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just _patching that in is good enough.
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
