@@ -315,7 +315,7 @@ Astute readers will have noticed I have not mentioned security, namely ACLs and 
 
 It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-Tooling to automate patch in process would be essential. It needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
+Tooling to automate patch in process is be essential. This needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
 
 Some might say that running locally is irrelevant and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just patching that in is good enough.
 
