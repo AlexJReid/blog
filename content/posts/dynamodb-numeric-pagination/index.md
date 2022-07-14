@@ -59,7 +59,7 @@ It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` 
 
 Storing a large number of sorted sets with millions of members could get expensive due to how a sorted set is implemented by Redis: a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed.
 
-However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance. 
+However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
 ### Relational sorted sets
 If you do not or cannot run Redis, sorted sets can be implemented in a relational database such as MySQL. This could use a managed service like AWS RDS in its various flavours. This approach also performed very well with `sqlite`.

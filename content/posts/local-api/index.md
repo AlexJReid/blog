@@ -103,24 +103,24 @@ $ consul services register message-service.hcl
 Registered service: message
 ```
 
-To receive traffic, Envoy is started. Consul configures it for us.
+To receive traffic, Envoy is started. Consul configures it for us. All we need to do is specify the service ID we just registered.
 
 ```bash
 $ consul connect envoy -sidecar-for ajr-local-fix
 ```
 
-The service appears as an instance alongside the _real_ deployed instance. 
+The service appears in Consul as a new instance alongside the _real_ deployed instance. 
 
 ![Service instance](service-instance.png)
 
-Finally, the service itself can be started. 
+Finally, the service itself is started. 
 
 ```bash
 $ PORT=5001 MESSAGE="Hello world!" TRANSFORM_SERVICE_URL=http://localhost:4001 \
     ./routing-demo
 ```
 
-Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the local process can address a remote version of the `transform` service, via Envoy. Calling the service via Envoy offloads the effort of configuring mTLS and ensures any constraints configured in the service mesh are respected.
+Note the `TRANSFORM_SERVICE_URL` environment variable. By calling the `transform` service via its locally running Envoy, the `message` service offloads the effort of having to deal with mTLS and can just do a dumb HTTP call. This also ensures any constraints configured in the service mesh are respected.
 
 The big moment. **We get traffic to both the deployed and locally running service.**
 
