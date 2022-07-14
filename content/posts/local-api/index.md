@@ -283,7 +283,7 @@ $ consul connect envoy -sidecar-for ajr-local-fix \
     -grpc-addr remote-consul-patch-in...tailscale.net:8502
 ```
 
-To abstract things, a tool that provisions _patch in_ agents on demand with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process. It might look like this:
+To abstract things, a tool that provisions _patch in_ agents on demand (perhaps on something like AWS Fargate) with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process. It might look like this:
 
 ```
 $ patch-in -env test-1 -service message -port 5001
