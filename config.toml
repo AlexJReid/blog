@@ -22,7 +22,7 @@ googleAnalytics = "UA-156939108-1"
     env = "production"
     title = "Alex Reid"
     defaultTheme = "light"
-    info = "Thoughts on software engineering"
+    info = "Thoughts on cloud software engineering"
     description = "Alex Reid - thoughts on software engineering"
     keywords = ["aws", "software", "cloud", "dyanmodb", "envoy", "consul", "Alex Reid", "porsche", "porsche 996"]
     mainSections = ["posts", "car"]
@@ -30,6 +30,7 @@ googleAnalytics = "UA-156939108-1"
     comments = false
     showPostNavLinks = false
     showtopc = true
+    showBreadCrumbs = true
     pluralizelisttitles = false
 
 [[params.socialIcons]]
@@ -47,7 +48,7 @@ url = "https://www.linkedin.com/in/alexjreid/"
 [params.profileMode]
 enabled = true
 title = "Alex Reid"
-subtitle = "Thoughts on software engineering... and cars."
+subtitle = "Thoughts on software engineering"
 imageUrl = "me.jpg"
 imageTitle = "alexjreid avatar"
 
