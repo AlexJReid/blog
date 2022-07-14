@@ -71,9 +71,13 @@ $ consul agent -retry-join mesh...tailscale.net \
     -hcl 'ports { grpc = 8502 }'
 ```
 
+The agent appears.
+
 ![Consul nodes with local addition showing](consul-local-node.png)
 
-As we need to make changes to the `message` service, it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
+> Consul LAN gossip, as its name would imply, is designed to run on low latency networks. Running a local agent is a bad idea, but it does not affect this demo. Alternatives are discussed later in this post.
+
+Our _service under development_ is the `message` service, so it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
 The configuration also references the `transform` service. As the `transform` service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services.
 
@@ -241,16 +245,53 @@ LOCAL HELLO WORLD
 
 These mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months as part of a longer running migration project.
 
+## LAN gossip and slow networks
+Consul agents are designed to run in close proximity on the same low latency network. This is clearly not the case if an engineer is working from home or a train. 
+
+An alternative approach is to provision a remote Consul agent on-demand that the local Envoy connects to.
+
+For this to work, a minor adjustment is made to the service registration.
+
+```
+service {
+    id = "ajr-local-fix"
+    name = "message"
+    port = 5001
+    address = "whitby...tailscale.net" # use service instance IP, not that of the remote Consul agent
+    meta {
+        version = "local"
+    }
+    connect {
+        sidecar_service {
+            proxy {
+                local_service_address = "whitby...tailscale.net" # also set here for checks to pass
+                upstreams {
+                    destination_name = "transform"
+                    local_bind_port  = 4001
+                }
+            }
+        }
+    }
+}
+```
+
+Starting Consul is almost the same. We need to tell Envoy to connect to the remote Consul agent for its configuration.
+
+```
+$ consul connect envoy -sidecar-for ajr-local-fix -grpc-addr remote-consul-patch-in...tailscale.net:8502
+```
+
+The setup now works exactly the same as it did before.
+
+The latency problem also goes away if the exact development setup detailed here happened to be on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
+
+
 ## Drawbacks and TODOs
 Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
 It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-Perhaps the biggest technical flaw is running a Consul agent locally. Consul agents are designed to run within the same data center with a low latency (< 10ms). An alternative approach would be to provision a remote Consul agent on-demand (or make a pool available to developers), but continue to run Envoy locally. This would require some additional configuration but is likely to work. 
-
-Along the same lines, this latency problem goes away if the exact development setup detailed here happened to be on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
-
-There is a lot going on here but the ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
+The ideas presented could be abstracted by some scripts to automate and simplify the process so that it is almost invisible to developers.
 
 ## Conclusion
 In the example scenario we have:
@@ -265,6 +306,8 @@ In the example scenario we have:
 **I only needed to run the service I was working on locally.**
 
 What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+
+It is perhaps debatable whether jumping through quite so many hoops to facilitate _patching in a local service_ is worthwhile. Perhaps deploying a version to the test environment and _patching that in_ is good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature.
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
