@@ -283,13 +283,13 @@ $ consul connect envoy -sidecar-for ajr-local-fix \
     -grpc-addr remote-consul-patch-in...tailscale.net:8502
 ```
 
-To abstract things, a tool that provisions _patch in_ agents on demand with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process.
+To abstract things, a tool that provisions _patch in_ agents on demand with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process. It might look like this:
 
 ```
 $ patch-in -env test-1 -service message -port 5001
 Provisioning a remote dev Consul agent... done!
-Registering service: message
-Starting Envoy proxy.
+Registering service: message with ID local_message_d4ce479a-5bb2-4a2c-a802-ef1ee47d0465
+Starting local Envoy proxy.
 
 Ready to go. Please start your local service on port 5001.
 ```
@@ -307,7 +307,7 @@ In the example scenario we have:
 - seen how the local service can be called by other mesh services to test integrations
 - made changes to the local service and seen the changes immediately without redeploying
 
-What particularly impressed me was the tight feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+**What particularly impressed me was the tight feedback loop.** I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
 Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
