@@ -39,8 +39,6 @@ Anyway, our stakeholders have decided that three exclamations after `Hello world
 
 Before deploying, we want to preview the change running locally by having it appear in a **remote test** environment. This provides an opportunity to test its interaction with other services.
 
-This post sets out a way of achieving that.
-
 ## A solution with Consul and Envoy
 One way to do this is with a service mesh. This is a way of connecting services together to build a secure, observable and malleable system. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect). Consul and Envoy Proxy are used to form this example service mesh.
 
