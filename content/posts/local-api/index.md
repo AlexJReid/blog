@@ -283,7 +283,7 @@ $ consul connect envoy -sidecar-for ajr-local-fix \
     -grpc-addr remote-consul-patch-in...tailscale.net:8502
 ```
 
-To abstract things, a tool that provisions _patch in_ agents on demand (perhaps on something like AWS Fargate) with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process. It might look like this:
+To abstract things, a tool that provisions _patch in_ agents on demand (perhaps on something like AWS Fargate or very small VM) with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process. It might look like this:
 
 ```
 $ patch-in -env test-1 -service message -port 5001
@@ -315,7 +315,7 @@ It is likely that this approach is only appropriate for test environments. It wo
 
 Tooling to automate and secure the patch in process would be essential. This needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
 
-Some might say that running locally is being overstated and that the traffic management features of Consul are the real killer feature here. Deploying a branch to a test environment and just patching that in is actually _good enough_. I'd love to know what you think. Comments and corrections are also welcome.
+Some might say that the importance of running locally is being overstated and that the traffic management features of Consul are the real killer feature here. Deploying a branch to a test environment and just patching that in is actually _good enough_. I'd love to know what you think. Comments and corrections are also welcome.
 
 ## Links
 - [Consul L7 Traffic Management](https://www.consul.io/docs/connect/l7-traffic) describes service resolvers, routers and splitters in more detail.
