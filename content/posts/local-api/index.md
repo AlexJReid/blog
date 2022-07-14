@@ -309,8 +309,6 @@ In the example scenario we have:
 - seen how the local service can be called by other mesh services to test integrations
 - made changes to the local service and seen the changes immediately without redeploying
 
-**I only needed to run the service I was working on locally.**
-
 What particularly impressed me was the tight feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
 Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
@@ -319,7 +317,7 @@ It is likely that this approach is only appropriate for test environments. It wo
 
 Tooling to automate patch in process would be essential. It needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
 
-Some might say that running locally is irrelevant and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just _patching that in is good enough.
+Some might say that running locally is irrelevant and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just patching that in is good enough.
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
