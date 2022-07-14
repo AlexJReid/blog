@@ -30,9 +30,7 @@ Rather than conveying it as part of the URL which is ugly and possibly leaks imp
 
 The drawback of this approach is the added complexity around building, maintaining, storing and serving this numeric index of rows. To avoid a confusing user experience, it is vital that the system of record and numeric index are kept consistent. Allowing users to filter the results will invalidate any pre-calculated page numbers, so additional indexes will need to be maintained. Only low cardinality, coarse filters are likely to be feasible in order to minimize the number of page indexes that need to be built.
 
-The next section details some theoretical (read: half-baked and unproven) approaches. Note that there may be WTFs, misunderstandings or things I have not considered. **Consider them to be non-production ready musings.**
-
-# Approaches
+## Example
 Our example scenario is an e-commerce site that has product pages where users can comment on a product.
 
 The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is a randomly generated comment ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key, the SKU of a product the comment relates to. A global secondary index on `PK2, SK` is used by the application to show sets of comments, in reverse order.
@@ -44,7 +42,7 @@ The following approaches assume `comments` DynamoDB table has the string keys `P
 | abc912 | 2021-08-25 13:42 | DAFT_PUNK_TSHIRT | ...              |
 | ccc232 | 2021-08-25 13:55 | DAFT_PUNK_TSHIRT | ...              |
 
-## Redis sorted sets
+### Redis sorted sets
 The simplest approach is to bring out everyone's favourite swiss army knife, Redis. The partition and sort keys would be loaded into Redis sorted sets. Redis itself could be run on a managed service like AWS Elasticache.
 
 A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member), which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering using a _score_ value. We will use a numeric representation of the _creation date_ as the score.
@@ -61,9 +59,9 @@ It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` 
 
 Storing a large number of sorted sets with millions of members could get expensive due to how a sorted set is implemented by Redis: a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed.
 
-However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
+However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance. 
 
-## Relational sorted sets
+### Relational sorted sets
 If you do not or cannot run Redis, sorted sets can be implemented in a relational database such as MySQL. This could use a managed service like AWS RDS in its various flavours. This approach also performed very well with `sqlite`.
 
 The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, a query like `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` is used. 
@@ -77,6 +75,8 @@ Before making the leap, consider whether the approaches discussed in this post a
 
 **Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
-We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided, particularly when dealing with older systems. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
+We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided, particularly when dealing with older systems. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. 
+
+I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
 
 [Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fdynamodb-numeric-pagination%2F&src=typed_query)
