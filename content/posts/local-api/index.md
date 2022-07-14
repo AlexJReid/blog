@@ -56,7 +56,7 @@ For this example scenario, we are running services called `message` and `transfo
 
 Services within the mesh are accessed from the outside via an _ingress gateway_ also shown here. This is where the above `curl` commands are issued. It is the entry point into the environment. The ingress gateway is configured to accept ingress into the `message` service, but not `transform`. Requests to `transform` can only originate within the mesh.
 
-The test environment uses Nomad to schedule the services running as Docker containers, but this is irrelevant really. The service instances would look the same if they were running on AWS ECS, Kubernetes, VMs... or a development machine, as we will soon see.
+The test environment uses Nomad to schedule the services running as Docker containers but they could be running on AWS ECS, Kubernetes, VMs... or a development machine, as we will soon see.
 
 ![Consul services](consul-services.png)
 
@@ -69,11 +69,11 @@ $ consul agent -retry-join mesh...tailscale.net \
     -hcl 'ports { grpc = 8502 }'
 ```
 
-The agent appears.
+The agent appears in Consul.
 
 ![Consul nodes with local addition showing](consul-local-node.png)
 
-> Consul's LAN gossip protocol, as its name would imply, is designed to run on low latency networks. Running a local agent is a bad idea and a fix for this [is described later on](#lan-gossip-and-slow-networks).
+> Note that Consul's LAN gossip protocol, as its name would imply, is not designed to run across the Internet. Running a local agent is a bad idea and a fix for this [is described later on](#lan-gossip-and-slow-networks).
 
 Our _service under development_ is the `message` service, which needs to be registered the local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
