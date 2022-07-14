@@ -13,13 +13,13 @@ series = []
 
 ![Patch cables](cover.jpg)
 
-Microservices have been commonplace for several years now. They provide many benefits but also some drawbacks, one of which is increased complexity when attempting to run a system of composed of them locally when developing.
+Composing systems out of smaller microservices has been commonplace for several years now. One trade off is increased complexity around development environments.
 
 Suppose the system you are working on consists of hundreds of discrete services that all potentially make requests to one and other. If you are unlucky you might be faced with the task of spinning _everything_ up locally or within a new cloud provider account. 
 
-This is costly and probably too much work, so you might be inclined to blindly deploy to a test or staging environment, with a high probability of breaking things for other users. You are also likely to suffer a long feedback loop with every single change requiring a build and deployment.
+This is costly and often too much work. You might be inclined to blindly deploy to a test or staging environment, after testing your service runs as expected in isolation. Even then, there is a high probability of breaking things for other users. You are also likely to suffer a slow feedback loop with every single change requiring a build and deployment.
 
-An alternative idea is to _patch in_ a new implementation of your service from a local environment into a real test environment.
+An alternative idea is to _patch in_ a new implementation from a local environment into a real test environment that is already running all of the other services. This could be a full or partial replacement. You could just patch in or _overlay_ a new implementation of an existing resource, with all other requests going to the existing implementation.
 
 ## A contrived scenario
 Imagine that we have a service with the resource `/message` that returns `Hello world!!!`. It also provides the subresources `/message/lower` and `/message/upper` which return lower and uppercase representations of the same string. 
@@ -37,12 +37,12 @@ Unfortunately, as our former selves had a shameful past of being microservice as
 
 Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive and a waste of bandwidth, so we have been tasked to create a new version of the service with only one.
 
-As we are risk averse, we want to make the changes in a **local** environment and have those changes visible in the **remote test** environment. A locally running service should be able to interact with the service it ordinarily calls.
+Before deploying, we want to preview the change running locally by having it appear in a **remote test** environment. This provides an opportunity to test its interaction with other services.
 
-**We are patching the local service into the environment so that it appears the same as a deployed service.**
+This post sets out a way of achieving that.
 
-## Approach
-A service mesh is a way of connecting services together to build a secure, observable and malleable system. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect). Consul and Envoy Proxy are used to form this example service mesh.
+## A solution with Consul and Envoy
+One way to do this is with a service mesh. This is a way of connecting services together to build a secure, observable and malleable system. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect). Consul and Envoy Proxy are used to form this example service mesh.
 
 The test environment is running within a cloud provider. My local development machine, `whitby`, is on the same network, thanks to a [Tailscale](https://tailscale.net) VPN. 
 
@@ -77,7 +77,7 @@ The agent appears.
 
 > Consul LAN gossip, as its name would imply, is designed to run on low latency networks. Running a local agent is a bad idea, but it does not affect the concepts described in this demo. A fix for this [is described below](#lan-gossip-and-slow-networks).
 
-Our _service under development_ is the `message` service, so it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
+Our _service under development_ is the `message` service, which needs to be registered the local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
 The configuration also references the `transform` service. As the `transform` service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services.
 
@@ -124,9 +124,9 @@ $ PORT=5001 MESSAGE="Hello world!" TRANSFORM_SERVICE_URL=http://localhost:4001 \
     ./routing-demo
 ```
 
-Note the `TRANSFORM_SERVICE_URL` environment variable. By calling the `transform` service via its locally running Envoy, the `message` service offloads the effort of having to deal with mTLS and can just do a dumb HTTP call. This also ensures any constraints configured in the service mesh are respected.
+Note the `TRANSFORM_SERVICE_URL` environment variable. By calling the `transform` service through Envoy, the `message` service can just do a dumb HTTP call, offloading any security (mTLS, access control) considerations.
 
-The big moment. **We get traffic to both the deployed and locally running service.**
+We get traffic to both the deployed and locally running service.
 
 ```bash
 $ curl https://some-service.test-env-1.mycompany.com/message # local
@@ -138,7 +138,7 @@ HELLO WORLD!
 ```
 
 ## L7 configuration entries to the rescue
-This is great, but both service instances are receiving requests in a round robin. It would be better to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
+This is a good start, but both service instances are receiving requests in a round robin. It would be better to guard the local version so that it only receives traffic when a certain condition is met, such as an HTTP header being present and containing a certain value. This can be achieved with a service resolver and service router.
 
 Firstly we define the resolver which uses service metadata to form _subsets_ of the service instances. Using metadata specified when the service is registered in Consul, the sets can be defined with a simple expression.
 
@@ -210,7 +210,7 @@ $ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message/upp
 LOCAL HELLO WORLD
 ```
 
-Perhaps we do not want to pass a header around to use the local version and instead we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` version. This is a minor change to the service router.
+The routing rules can be changed without restarting or redeploying anything. Instead of looking for the `x-debug` header, we could specify that requests made to the `/message/upper` subresource are sent to the new implementation. This is a minor change to the service router.
 
 ```hcl
 Kind = "service-router"
@@ -230,9 +230,9 @@ Routes = [
 ]
 ```
 
-![Consul routing 2](consul-routing-2.png)
+The change takes effect immediately.
 
-Notice that as the routing logic is now different, the `x-debug: 1` header no longer needs to be sent as part of the request.
+![Consul routing 2](consul-routing-2.png)
 
 ```bash
 $ curl https://some-service.test-env-1.mycompany.com/message
@@ -241,7 +241,7 @@ $ curl https://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
 
-**This is a great example of using resolvers and routers to to _patch_ a service at the resource level.** We can apply the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation. 
+This is a great example of using resolvers and routers to to _patch_ a service at the resource level. We can apply the _strangler pattern_ to older services, by gradually overriding resources and pointing them to a new implementation, while sending _everything else_ to the old implementation. 
 
 The same mechanics can be applied to a blue-green or canary deploy, where traffic is routed between different deployed versions of a service. This arrangement could be for a few minutes during a deployment, or for several months as part of a longer running migration project.
 
@@ -258,14 +258,16 @@ service {
     id = "ajr-local-fix"
     name = "message"
     port = 5001
-    address = "whitby...tailscale.net" # use service instance IP, not that of the remote Consul agent
+    # use service instance IP, not that of the remote Consul agent
+    address = "whitby...tailscale.net" 
     meta {
         version = "local"
     }
     connect {
         sidecar_service {
             proxy {
-                local_service_address = "whitby...tailscale.net" # also set here for checks to pass
+                # also set here for checks to pass
+                local_service_address = "whitby...tailscale.net"
                 upstreams {
                     destination_name = "transform"
                     local_bind_port  = 4001
@@ -283,11 +285,11 @@ $ consul connect envoy -sidecar-for ajr-local-fix \
     -grpc-addr remote-consul-patch-in...tailscale.net:8502
 ```
 
-To abstract things, a tool that provisions _patch in_ agents on demand with associated configuration would be straight forward to implement.
+To abstract things, a tool that provisions _patch in_ agents on demand with associated configuration would be straightforward to implement. This could make _patching in_ a very simple process.
 
 ```
 $ patch-in -env test-1 -service message -port 5001
-Provisioning dev Consul agent... done!
+Provisioning a remote dev Consul agent... done!
 Registering service: message
 Starting Envoy proxy.
 
@@ -317,7 +319,7 @@ In the example scenario we have:
 
 **I only needed to run the service I was working on locally.**
 
-What I particularly like about it is the rapid feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+What particularly struck me was the tight feedback loop. I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
 Very cool. But that said, deploying a branch to a test environment and _patching that in_ might be good enough, when coupled with Consul's routing capabilities. Maybe they're the actual killer feature here.
 
