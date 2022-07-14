@@ -314,6 +314,8 @@ Either way, it is very interesting just what is possible.
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
+[Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fpatching-in-a-development-service%2F&src=typed_query)
+
 ## Links
 - [Consul L7 Traffic Management](https://www.consul.io/docs/connect/l7-traffic) describes service resolvers, routers and splitters in more detail.
 - Image credit: photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
