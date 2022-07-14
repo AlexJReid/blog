@@ -19,7 +19,7 @@ Suppose the system you are working on consists of hundreds of discrete services 
 
 This is costly and probably too much work, so you might be inclined to blindly deploy to a test or staging environment, with a high probability of breaking things for other users. You are also likely to suffer a long feedback loop with every single change requiring a build and deployment.
 
-An alternative idea is to _patch in_ a new implementation of your service from a local environment into a full fat test environment.
+An alternative idea is to _patch in_ a new implementation of your service from a local environment into a real test environment.
 
 ## A contrived scenario
 Imagine that we have a service with the resource `/message` that returns `Hello world!!!`. It also provides the subresources `/message/lower` and `/message/upper` which return lower and uppercase representations of the same string. 
@@ -75,7 +75,7 @@ $ consul agent -retry-join mesh...tailscale.net \
 
 As we need to make changes to the `message` service, it is registered with this local Consul agent. The configuration is largely the same as a deployed version of the service, only with different metadata. This is important as it means that we can isolate this instance of the service later on.
 
-The configuration also references the `transform` service. As the `transform` service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services. This means that the `message` service can do a dumb HTTP request to localhost, offloading  mTLS to Envoy, thus respecting any constraints configured in the service mesh.
+The configuration also references the `transform` service. As the `transform` service is within the mesh with no external ingress configured, a non-mesh client cannot just connect to it directly as mTLS is used between services.
 
 ```hcl
 service {
@@ -120,10 +120,9 @@ $ PORT=5001 MESSAGE="Hello world!" TRANSFORM_SERVICE_URL=http://localhost:4001 \
     ./routing-demo
 ```
 
-Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the local process can address a remote version of the `transform` service, via Envoy. The port was defined in the above service registration.
+Note the `TRANSFORM_SERVICE_URL` environment variable. This is the URL that the local process can address a remote version of the `transform` service, via Envoy. Calling the service via Envoy offloads the effort of configuring mTLS and ensures any constraints configured in the service mesh are respected.
 
 The big moment. **We get traffic to both the deployed and locally running service.**
-
 
 ```bash
 $ curl https://some-service.test-env-1.mycompany.com/message # local
@@ -207,7 +206,7 @@ $ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message/upp
 LOCAL HELLO WORLD
 ```
 
-The L7 routing constructs in Consul are very flexible. Perhaps we do not want to pass a header around to use the local version and instead we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` deployed version. This is a minor change to the service router.
+Perhaps we do not want to pass a header around to use the local version and instead we want to capture all requests made to the `/message/upper` subresource and send all other traffic to the `live` deployed version. This is a minor change to the service router.
 
 ```hcl
 Kind = "service-router"
@@ -269,7 +268,6 @@ What I particularly like about it is the rapid feedback loop. I was able to patc
 
 _As usual, I'd love to know what you think. Comments and corrections are always welcome._
 
-
 ## Links
-- Image credit: photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - [Consul L7 Traffic Management](https://www.consul.io/docs/connect/l7-traffic) describes service resolvers, routers and splitters in more detail.
+- Image credit: photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
