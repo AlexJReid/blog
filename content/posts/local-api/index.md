@@ -42,7 +42,7 @@ Before deploying, we want to preview the change running locally by having it app
 ## A solution with Consul and Envoy
 One way to do this is with a service mesh. This is a way of connecting services together to build a secure, observable and malleable system. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect). Consul and Envoy Proxy are used to form this example service mesh.
 
-The test environment is running within a cloud provider. My local development machine, `whitby`, is on the same network, thanks to a [Tailscale](https://tailscale.net) VPN. 
+The test environment is running within a cloud provider. My local development machine, `whitby`, is on the same network, thanks to a [Tailscale](https://tailscale.net). Other VPNs are available!
 
 ![Tailscale machine list](tailscale-machines.png)
 
@@ -313,11 +313,9 @@ Astute readers will have noticed I have not mentioned security, namely ACLs and 
 
 It is likely that this approach is only appropriate for test environments. It would be a bad idea to attempt on a production environment, unless you have a clickbait blog post cued up: _I accidentally put my laptop into production and here's what happened!_
 
-Tooling to automate patch in process is be essential. This needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
+Tooling to automate and secure the patch in process would be essential. This needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
 
-Some might say that running locally is irrelevant and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just patching that in is good enough.
-
-_As usual, I'd love to know what you think. Comments and corrections are always welcome._
+Some might say that running locally is being overstated and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just patching that in is actually _good enough_. I'd love to know what you think. Comments and corrections are also welcome.
 
 [Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fpatching-in-a-development-service%2F&src=typed_query)
 
