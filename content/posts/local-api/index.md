@@ -315,7 +315,7 @@ It is likely that this approach is only appropriate for test environments. It wo
 
 Tooling to automate and secure the patch in process would be essential. This needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
 
-Some might say that running locally is being overstated and that the traffic management features of Consul are the actual killer feature here. Deploying a branch to a test environment and just patching that in is actually _good enough_. I'd love to know what you think. Comments and corrections are also welcome.
+Some might say that running locally is being overstated and that the traffic management features of Consul are the real killer feature here. Deploying a branch to a test environment and just patching that in is actually _good enough_. I'd love to know what you think. Comments and corrections are also welcome.
 
 [Discuss on Twitter](https://twitter.com/search?q=https%3A%2F%2Falexjreid.dev%2Fposts%2Fpatching-in-a-development-service%2F&src=typed_query)
 
