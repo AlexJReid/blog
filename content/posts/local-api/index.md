@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2022-07-12T00:03:12Z
+date = 2022-07-14T00:03:12Z
 title = "Patching in a development service"
 description = "It is not always feasible to run an entire system composed from microservices locally. This post discusses using a service mesh to 'patch' a locally running service into a remote test environment, for development purposes."
 slug = "patching-in-a-development-service" 
