@@ -33,7 +33,7 @@ $ curl https://some-service.test-env-1.mycompany.com/message/upper
 HELLO WORLD!!!
 ```
 
-Unfortunately, as our former selves had a shameful past of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service runs on a Windows EC2 instance and cannot be run locally. As our team does not own this service, we cannot rewrite it. The team that owns it have warned us that it incorrectly interprets certain extended characters and a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let's let sleeping dogs lie.
+Unfortunately, as our former selves had a shameful past of being microservice astronauts, the case transformation happens in another service instead of being a local function call. To make matters worse, the transformation service cannot be recompiled for Linux as the code was lost in a fire. The team that owns it have warned us that it incorrectly interprets certain extended characters and that a _correct_ implementation would actually cause huge problems to other services that have worked around it. Let's let sleeping dogs lie.
 
 Anyway, our stakeholders have decided that three exclamations after `Hello world` is excessive and a waste of bandwidth, so we have been tasked to create a new version of the service with only one.
 
