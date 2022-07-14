@@ -278,12 +278,13 @@ service {
 Starting Consul is almost the same. We need to tell Envoy to connect to the remote Consul agent for its configuration.
 
 ```
-$ consul connect envoy -sidecar-for ajr-local-fix -grpc-addr remote-consul-patch-in...tailscale.net:8502
+$ consul connect envoy -sidecar-for ajr-local-fix \
+    -grpc-addr remote-consul-patch-in...tailscale.net:8502
 ```
 
-The setup now works exactly the same as it did before.
+Provisioning _patch in_ agents on demand and the associated configuration would be straight forward with Nomad, ECS, etc.
 
-The latency problem also goes away if the exact development setup detailed here happened to be on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
+This latency problem also goes away if what we have been calling the _local_ environment was on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
 
 
 ## Drawbacks and TODOs
