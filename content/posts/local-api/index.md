@@ -288,9 +288,10 @@ An API and command line tool that provisions _patch in_ agents on demand and the
 $ patch-in -env test-1 -service message -port 5001
 Provisioning dev Consul agent... done!
 Registering service: message
-Please start your local service on port 5001.
-```
+Starting Envoy proxy.
 
+Ready to go. Please start your local service on port 5001.
+```
 
 This latency problem also goes away if what we have been calling the _local_ environment was on a remote VM on the same network as the rest of the Consul agents. [Remote development](https://code.visualstudio.com/docs/remote/vscode-server) is a very interesting topic.
 
