@@ -62,7 +62,7 @@ The test environment uses Nomad to schedule the services running as Docker conta
 
 ![Consul services](consul-services.png)
 
-To patch in to the test environment, I start a Consul agent on my local machine, ensuring the Tailscale IP is used and enabling gRPC, which is how the Envoy communicates with it as a control plane.
+To patch in to the test environment, I start a Consul agent on my local machine, ensuring the Tailscale IP is used and enabling gRPC, which is how the Envoy retrieves its configuration on an on-going basis.
 
 ```bash
 $ consul agent -retry-join mesh...tailscale.net \
