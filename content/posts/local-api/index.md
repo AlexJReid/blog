@@ -316,7 +316,7 @@ It is likely that this approach is only appropriate for test environments. It wo
 
 Tooling to automate and secure the patch in process would be essential. This needs to just work for engineers and not get in their way. The whole point of this exercise is to make things easier.
 
-Some might say that the importance of running locally is being overstated and that the traffic management features of Consul are the real killer feature here. Deploying a branch to a test environment and just patching that in is actually _good enough_. I'd love to know what you think. Comments and corrections are also welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
+Some might say that the importance of running locally is being overstated and that the traffic management features of Consul are the real killer feature here. Deploying a branch to a test environment and just patching that in might actually be _good enough_. I'd love to know what you think. Comments and corrections are also welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
 ## Links
 - [Consul L7 Traffic Management](https://www.consul.io/docs/connect/l7-traffic) describes service resolvers, routers and splitters in more detail.
