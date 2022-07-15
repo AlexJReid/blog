@@ -2,7 +2,7 @@
 draft = false
 date = 2021-10-27T10:03:12Z
 title = "DynamoDB pagination with page numbers in URLs"
-description = "For SEO reasons, we might want to use page numbers in URLs. This post discusses how this is possible with DynamoDB and Redis."
+description = "For SEO reasons, we might want to include page numbers in URLs when displaying a large set of items. This post discusses how this is possible with DynamoDB and Redis."
 slug = "dynamodb-page-numbers" 
 tags = ['dynamodb', 'pagination', 'redis', 'zset', 'sqlite', 'aws', 'paging', 'greatest-hits']
 categories = []
