@@ -63,10 +63,10 @@ Storing a large number of sorted sets with millions of members could get expensi
 
 However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
-### Relational sorted sets
+### Can't run Redis? Go relational
 If you do not or cannot run Redis, sorted sets can be implemented in a relational database such as MySQL. This could use a managed service like AWS RDS in its various flavours. This approach also performed very well with `sqlite`.
 
-The sorted sets would live in a single table with a convering index on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, a query like `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` is used. 
+The sorted sets would live in a single table with a **covering index** on `PK2 ASC, SK DESC`. Instead of a `ZREVRANGE` Redis command, a query like `SELECT PK, SK FROM pages WHERE PK2=? ORDER BY SK DESC LIMIT n, 1` is used. 
 
 Despite using `LIMIT`, performance is expected to be reasonable due to the small row size. Instead of `ZCARD` a `SELECT COUNT(*) FROM pages WHERE PK2=?` query would be used, but it would be worth understanding the performance characteristics, despite an index being present.
 
