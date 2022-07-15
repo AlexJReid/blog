@@ -198,7 +198,8 @@ $ curl https://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
 ```
 
-The output from the local `message` service instance can be changed by restarting the process with a different environment variable. The change is immediately available to **anyone who has access to the environment and knows to pass the `x-debug: 1` header.** There was no need for a redeploy.
+The output from the local `message` service instance can be changed by restarting the process with a different environment variable. The change is immediately available all other services running in this environment that know to pass the `x-debug: 1` header. There was no need for a redeploy.
+
 
 ```bash
 $ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4001 \
