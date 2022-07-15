@@ -326,6 +326,11 @@ Some might say that the importance of running locally is being overstated and th
 
 Comments and corrections are also welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
+## Update: prior art
+It turns out that this is not a new idea. [Ambassador Telepresence](https://www.getambassador.io/docs/telepresence/latest/concepts/intercepts/) sums up what I have been trying to say far better [in their documentation](https://www.getambassador.io/docs/telepresence/latest/concepts/faster/):
+
+>A good way to meet the goals of faster feedback, possibilities for collaboration, and scale in a realistic production environment is the "single service local, all other remote" environment. Developing in a fully remote environment offers some benefits, but for developers, it offers the slowest possible feedback loop. With local development in a remote environment, the developer retains considerable control while using tools like Telepresence to facilitate fast feedback, debugging and collaboration.
+
 ## Links
 - [Consul L7 Traffic Management](https://www.consul.io/docs/connect/l7-traffic) describes service resolvers, routers and splitters in more detail.
 - [Teleprescence](https://www.getambassador.io/docs/telepresence/latest/concepts/devloop/) from Ambassador is a similar idea if you're on Kubernetes
