@@ -155,7 +155,10 @@ Subsets {
 }
 ```
 
+### Routing by a header
 A router allows us to direct traffic to those subsets with some simple rules. Note that if none of the rules defined below match, the default subset, `live` is used.
+
+It is possible to route to the `local` subset if a header is set.
 
 ```hcl
 Kind = "service-router"
@@ -209,7 +212,8 @@ $ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message/upp
 LOCAL HELLO WORLD
 ```
 
-The routing rules can be changed without restarting or redeploying anything. Instead of looking for the `x-debug` header, we could specify that requests made to the `/message/upper` subresource are sent to the new implementation. This is a minor change to the service router.
+### Routing an entire resource
+Instead of looking for the `x-debug` header, we could specify that requests made to the `/message/upper` subresource are sent to the new implementation. This is a minor change to the service router.
 
 ```hcl
 Kind = "service-router"
@@ -229,7 +233,7 @@ Routes = [
 ]
 ```
 
-The change takes effect immediately.
+The routing rules can be changed without restarting or redeploying. The change takes effect immediately.
 
 ![Consul routing 2](consul-routing-2.png)
 
