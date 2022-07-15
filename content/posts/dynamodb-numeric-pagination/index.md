@@ -21,7 +21,9 @@ As the `ExclusiveStartKey` is embedded into a URL, this means that this _next li
 
 Some may also say that `?page=2` looks nicer than an encoded exclusive start key (which itself may consist of several key-value pairs, possibly as a base64-encoded structure), but this might just be vanity.
 
-What if, for whatever reason, we wanted to bring back those old-school, things-were-better-back-in-the-old-days page numbers?
+What if, for whatever reason, we wanted to bring back those old-school, things-were-better-back-in-the-old-days page numbers? 
+
+**In this post I will detail a _duct tape_ solution that augments a DynamoDB table with Redis. It has been happily running in production for well over a year. It provides very fast pagination on a total store of half a billion entries, partitioned into sets ranging from a few hundred to several million.**
 
 # The pattern: map exclusive start keys to a numeric index
 An exclusive start key is just a structure containing the keys needed to _resume_ the query and grab the next n items. It is nothing more than a reference point. 
@@ -75,7 +77,7 @@ Before making the leap, consider whether the approaches discussed in this post a
 
 **Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
 
-We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided, particularly when dealing with older systems. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_. 
+We don't live in a one-size-fits-all world and sometimes creative solutions cannot be avoided, particularly when dealing with older systems. Workloads have varying levels of tolerance to eventual consistency and degrees of _acceptable correctness_.
 
 I'd be interested to hear thoughts on these approaches and if you've solved this problem in similar or entirely different way.
 
