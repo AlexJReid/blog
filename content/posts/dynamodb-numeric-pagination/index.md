@@ -35,7 +35,9 @@ The drawback of this approach is the added complexity around building, maintaini
 ## Example
 Our example scenario is an e-commerce site that has product pages where users can comment on a product.
 
-The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is a randomly generated comment ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key, the SKU of a product the comment relates to. A global secondary index on `PK2, SK` is used by the application to show sets of comments, in reverse order.
+The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is a randomly generated comment ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key, the SKU of a product the comment relates to. 
+
+A global secondary index on `PK2, SK` is used by the application to show sets of comments, in reverse order.
 
 | PK     | SK               | PK2 (GSI PK)     | other attributes |
 |--------|------------------|------------------| ---------------- |
@@ -53,13 +55,13 @@ Assuming the table outlined above, we will use `PK2` as the Redis key for a sort
 
 A Lambda function connected to a DynamoDB Stream off the table could issue these commands so that both stores remain in-sync. It'd also need to send `ZREM/ZADD` to handle any deletions and changes.
 
-To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the item to retrieve the keys of, would be sent to Redis. 
+To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the set member to retrieve the keys of, would be sent to Redis. If you had a page size of 20 and you wanted page 2, the index would be 19.
 
-This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should be converted back to a date time string from UNIX time. This is all that is needed to construct an `ExclusiveStartKey` which can be used in a DynamoDB query.
+This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should be converted back to a date time string from UNIX time. Along with `PK2`, which we already know, this is all that is needed to construct an `ExclusiveStartKey` which can be used in a DynamoDB query to get page _n_.
 
 It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
 
-Storing a large number of sorted sets with millions of members could get expensive due to how a sorted set is implemented by Redis: a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed.
+Storing a large number of sorted sets with millions of members can add up due to how a sorted set is implemented by Redis, a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed.
 
 However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
