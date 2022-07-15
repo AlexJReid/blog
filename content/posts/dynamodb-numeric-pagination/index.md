@@ -26,7 +26,7 @@ What if, for whatever reason, we wanted to bring back those old-school, things-w
 **In this post I will detail a _duct tape_ solution that augments a DynamoDB table with Redis. It has been happily running in production for well over a year. It provides very fast pagination on a total store of half a billion entries, partitioned into sets ranging from a few hundred to several million.**
 
 # The pattern: map exclusive start keys to a numeric index
-An exclusive start key is just a structure containing the keys needed to _resume_ the query and grab the next n items. It is nothing more than a reference point. 
+A DynamoDB exclusive start key is just a structure containing the keys needed to _resume_ the query and grab the next n items. It is nothing more than a reference point. 
 
 Rather than conveying it as part of the URL which is ugly and possibly leaks implementation details, we could instead store the key components needed to generate an exclusive start key from a numeric index. A `page` or `skip` query parameter would be included in the URL. A look up for _item 20_ will internally yield the keys needed to construct an exclusive start key to _skip_ results by arbitrary intervals.
 
@@ -73,6 +73,8 @@ Despite using `LIMIT`, performance is expected to be reasonable due to the small
 A similar Lambda function would keep this table in-sync with the DynamoDB table.
 
 # Conclusion
+The solution works technically and solved an immediate problem without making other changes to our the site worked.
+
 Before making the leap, consider whether the approaches discussed in this post are even necessary. In your context, is it really the best user experience to present users with _page 1 of 392716_? Must they be able to randomly jump to page 392701? Could your user interface slim down the result set more intuitively, so that using your application is less _database-y_? For example, infinite scrolling (think Twitter) is simpler for the user and seems more _native_ these days. [Guys, we're doing pagination wrong](https://hackernoon.com/guys-were-doing-pagination-wrong-f6c18a91b232) is a great post that delves into the details further.
 
 **Perhaps this is a solved problem in some database you don't use but maybe should do. Maybe you just need to use whatever you are already using correctly.** In this age of polyglot persistence, Kafka and so on, data has become liberated and can be streamed into multiple stores, each filling a particular niche. However, this is still operational overhead. 
