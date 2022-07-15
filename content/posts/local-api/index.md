@@ -314,7 +314,7 @@ In the example scenario we have:
 - seen how the local service can be called by other mesh services to test integrations
 - made changes to the local service and seen the changes immediately without redeploying
 
-**What particularly impressed me was the tight feedback loop.** I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
+**What particularly impressed me was the tight _inner_ feedback loop.** I was able to patch a local implementation of the `message` service into a real environment and make changes to it without redeploying. I could potentially attach a debugger or REPL to the running process for even more insight into the running of my development service.
 
 Astute readers will have noticed I have not mentioned security, namely ACLs and certificates. These are an essential ingredient to ensuring that only trusted services can join the mesh.
 
