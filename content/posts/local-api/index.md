@@ -201,7 +201,7 @@ $ curl https://some-service.test-env-1.mycompany.com/message # live
 Hello world!!!
 ```
 
-The output from the local `message` service instance can be changed by restarting the process with a different environment variable. The change is immediately available all other services running in this environment that know to pass the `x-debug: 1` header. There was no need for a redeploy.
+The output from the local `message` service instance can be changed by restarting the process with a different environment variable. The change is immediately available all other services running in this environment that know to pass the `x-debug: 1` header. If the services are set to _propagate context_ or in other words, pass that header on to any services that they call, end to end tests can be run that exercise the local service.
 
 
 ```bash
@@ -211,6 +211,8 @@ $ PORT=5001 MESSAGE="Local hello world" TRANSFORM_SERVICE_URL=http://localhost:4
 $ curl -H "x-debug: 1" https://some-service.test-env-1.mycompany.com/message/upper
 LOCAL HELLO WORLD
 ```
+
+There was no need for a redeploy, just a restart of the process.
 
 ### Routing an entire resource
 Instead of looking for the `x-debug` header, we could specify that requests made to the `/message/upper` subresource are sent to the new implementation. This is a minor change to the service router.
