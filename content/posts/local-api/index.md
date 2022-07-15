@@ -326,5 +326,5 @@ Comments and corrections are also welcome. I'm [@alexjreid](https://twitter.com/
 
 ## Links
 - [Consul L7 Traffic Management](https://www.consul.io/docs/connect/l7-traffic) describes service resolvers, routers and splitters in more detail.
-- [Teleprescence](https://www.getambassador.io/products/telepresence/) from Ambassador might be a similar idea if you're on Kubernetes
+- [Teleprescence](https://www.getambassador.io/docs/telepresence/latest/concepts/devloop/) from Ambassador is a similar idea if you're on Kubernetes
 - Image credit: photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
