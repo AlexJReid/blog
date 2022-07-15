@@ -41,9 +41,6 @@ url = "https://twitter.com/alexjreid"
 name = "instagram"
 url = "https://instagram.com/alexjreid"
 
-[[params.socialIcons]]
-name = "linkedin"
-url = "https://www.linkedin.com/in/alexjreid/"
 
 [params.profileMode]
 enabled = true
