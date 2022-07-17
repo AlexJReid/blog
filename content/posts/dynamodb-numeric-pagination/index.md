@@ -11,7 +11,7 @@ externalLink = ""
 series = []
 +++
 
-Back when we all used SQL databases, it was common to paginate through large result sets by appending `LIMIT offset, rows per page` to a `SELECT` query. Depending on the schema, data volume and database engine, this was [inefficient to varying degrees](https://tusharsharma.dev/posts/api-pagination-the-right-way). On smaller result sets and with the right indexes, it was... posssibly OK.
+Back when we all used SQL databases, it was common to paginate through large result sets by appending `LIMIT offset, rows per page` to a `SELECT` query. Depending on the schema, data volume and database engine, this was [inefficient to varying degrees](https://tusharsharma.dev/posts/api-pagination-the-right-way). On smaller result sets and with the right indexes, it was... posssibly OK. On larger result sets, the _high_ page numbers would get progressively slower.
 
 Databases like DynamoDB prevent this inefficiency by handling pagination differently. You can page through a pre-sorted table by selecting a partition and optionally a range within the sort key. After DynamoDB has returned a page of results and there are more to follow, it provides you with `LastEvaluatedKey` which you can pass to the next iteration of the query as `ExclusiveStartKey` in order to get the next page.
 
@@ -23,7 +23,7 @@ Some may also say that `?page=2` looks nicer than an encoded exclusive start key
 
 What if, for whatever reason, we wanted to bring back those old-school, things-were-better-back-in-the-old-days page numbers? 
 
-**In this post I will detail a _duct tape_ solution that augments a DynamoDB table with Redis. It has been happily running in production for well over a year on the busiest, public facing part of a reviews site. It provides very fast pagination on a total store of half a billion entries, partitioned into sets ranging from a few hundred to several million.**
+**In this post I will detail a _duct tape_ solution that augments a DynamoDB table with Redis. It has been happily running in production for over a year on a relatively high traffic public estate. It provides consistently fast pagination on a total store of half a billion entries, partitioned into sets ranging from a few hundred to tens of million.**
 
 # The pattern: map exclusive start keys to a numeric index
 A DynamoDB exclusive start key is just a structure containing the keys needed to _resume_ the query and grab the next n items. It is nothing more than a reference point. 
@@ -61,7 +61,7 @@ This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should
 
 It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
 
-Storing a large number of sorted sets with millions of members can add up due to how a sorted set is implemented by Redis, a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed.
+Storing a large number of sorted sets with millions of members can add up due to how a sorted set is implemented by Redis, a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed. Large partitions can only be as big as a Redis node, they cannot be distributed.
 
 However this may be a reasonable trade off as it is a very simple solution that is likely to have predictable, consistent high performance.
 
