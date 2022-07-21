@@ -70,7 +70,8 @@ Here is an example session.
 # Get the set count
 > ZCARD DAFT_PUNK_TSHIRT => (integer) 1
 
-# Get the keys in reverse order. The most recent appear first as Redis keeps them sorted.
+# Get the keys in reverse order. 
+# The most recent appear first as Redis keeps them sorted.
 > ZREVRANGE DAFT_PUNK_TSHIRT 0 19 WITHSCORES
 1) "abc281"
 2) "1629892800"
