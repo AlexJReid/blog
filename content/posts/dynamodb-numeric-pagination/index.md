@@ -49,7 +49,7 @@ A global secondary index on `PK2, SK` is used by the application to show sets of
 ### Redis sorted sets
 The simplest approach is to bring out everyone's favourite swiss army knife, Redis. The partition and sort keys would be loaded into Redis sorted sets. Redis itself could be run on a managed service like AWS Elasticache.
 
-A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member), which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name of the type implies, Redis maintains the ordering using a _score_ value. We will use a numeric representation of the _creation date_ as the score.
+A sorted set provides numeric index-based access to the keys (referred to as the _rank_ of a set member) which can then be used to construct an `ExclusiveStartKey` to pass to DynamoDB. As the name implies, Redis maintains the ordering using a _score_ value. We will use a numeric representation of the _creation date_ as the _score_.
 
 Assuming the table outlined above, we will use `PK2` as the Redis key for a sorted set, `PK` as the member and `SK` (converted to UNIX time) as the score. In other words: `ZADD <PK2> to_unixtime(<SK>) <PK>`, would be sent to Redis.
 
@@ -57,9 +57,33 @@ A Lambda function connected to a DynamoDB Stream off the table could issue these
 
 To get the exclusive start key for any page, the Redis command `ZREVRANGE <PK2> <start> <end> WITHSCORES` where both _start_ and _end_ is the index of the set member to retrieve the keys of, would be sent to Redis. If you had a page size of 20 and you wanted page 2, the index would be 19.
 
-This will yield a list response where `0` is `<PK>` and `1` is `<SK>`. SK should be converted back to a date time string from UNIX time. Along with `PK2`, which we already know, this is all that is needed to construct an `ExclusiveStartKey` which can be used in a DynamoDB query to get page _n_.
+This will yield a list response where `1` is `<PK>` and `2` is `<SK>`. SK should be converted back to a date time string from UNIX time. Along with `PK2`, which we already know, this is all that is needed to construct an `ExclusiveStartKey` which can be used in a DynamoDB query to get page _n_.
 
 It is possible to get the total cardinality for grouping key with `ZCARD <PK2>` which is needed to calculating the total number of pages.
+
+Here is an example session.
+
+```
+# Add a product comment
+> ZADD DAFT_PUNK_TSHIRT 1629892800 "abc281"
+
+# Get the set count
+> ZCARD DAFT_PUNK_TSHIRT => (integer) 1
+
+# Get the keys in reverse order. The most recent appear first as Redis keeps them sorted.
+> ZREVRANGE DAFT_PUNK_TSHIRT 0 19 WITHSCORES
+1) "abc281"
+2) "1629892800"
+
+# Use element 1 as PK and element 2 as SK to construct an ExclusiveStartKey 
+# for a DynamoDB query request. Convert element 2 back to a date string.
+{
+  "PK": "abc281",
+  "PK2": "DAFT_PUNK_TSHIRT",
+  "SK": "2021-08-25 13:00"
+}
+
+```
 
 Storing a large number of sorted sets with millions of members can add up due to how a sorted set is implemented by Redis, a map and a skip list. It is also quite annoying to have to pay for a lot of RAM for items that won't be frequently accessed. Large partitions can only be as big as a Redis node, they cannot be distributed.
 
