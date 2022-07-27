@@ -42,7 +42,7 @@ Before deploying, we want to preview the change running locally by having it app
 ## A solution with Consul and Envoy
 One way to do this is with a service mesh. This is a way of connecting services together to build a secure, observable and malleable system. [HashiCorp introduces the concepts more fully in this video](https://www.consul.io/docs/connect). Consul and Envoy Proxy are used to form this example service mesh.
 
-The test environment is running within a cloud provider. My local development machine, `whitby`, is on the same network, thanks to a [Tailscale](https://tailscale.net). Other VPNs are available!
+The test environment is running within a cloud provider. My local development machine, `whitby` joins the same network, thanks to [Tailscale](https://tailscale.net).
 
 ![Tailscale machine list](tailscale-machines.png)
 

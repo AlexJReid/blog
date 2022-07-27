@@ -37,7 +37,7 @@ Our example scenario is an e-commerce site that has product pages where users ca
 
 The following approaches assume `comments` DynamoDB table has the string keys `PK, SK, PK2`, where `PK` is a randomly generated comment ID, `SK` is a datetime of when the comment was posted, and `PK2` is a grouping key, the SKU of a product the comment relates to. 
 
-A global secondary index on `PK2, SK` is used by the application to show sets of comments, in reverse order.
+A global secondary index on `PK2, SK` is used by the application to show sets of comments, in reverse order. Having a GSI gives us multiple ways of partitioning and sorting the data.
 
 | PK     | SK               | PK2 (GSI PK)     | other attributes |
 |--------|------------------|------------------| ---------------- |
@@ -78,6 +78,7 @@ Here is an example session.
 
 # Use element 1 as PK and element 2 as SK to construct an ExclusiveStartKey 
 # for a DynamoDB query request. Convert element 2 back to a date string.
+# Query the GSI with this map as the ExclusiveStartKey.
 {
   "PK": "abc281",
   "PK2": "DAFT_PUNK_TSHIRT",
