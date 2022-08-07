@@ -90,6 +90,6 @@ But just how flexible do you _really_ need to be?
 
 Maybe you don't need this. You can certainly aggregate in simpler technologies than Druid! If may be acceptable to simply accumulate the values in a Lambda function and keep them in DynamoDB.
 
-It depends on what you need. If it feels like you are starting to write your own _poor man's Druid_ or already happen to have Druid available, then this approach may be worthy of your consideration, particularly if your use case has need to take advantage of the temporal capabilities shown.
+If it feels like you are starting to write your own _poor man's Druid_ or already happen to have Druid available, then this approach may be worthy of your consideration, particularly if your use case has need to take advantage of the temporal capabilities shown.
 
 Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
