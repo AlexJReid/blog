@@ -96,9 +96,9 @@ Sometimes a reduction will yield a `0` which is a noop.
 
  The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state once for each hour for each unique set of dimensions. If the query granularity was finer, this situation might be even worse. It is mostly harmless, but it is a waste of space. Good news though, Druid makes it trivial to filter out during (re)ingestion. Alternatively, the `state` dimension could be dropped but this would prevent filtering and grouping on a potentially useful dimension.
 
-Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. Monthly values might be sufficient.
+Subsequent batch jobs may also roll up older data further.
 
->As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier, for example `user_id` will defeat the purpose. Excluding high cardinality dimensions is a trade off as it prevents filtering and grouping on those dimensions but in return, storage and compute costs can decrease significantly.
+>As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier, for example `user_id` will prevent the rollup from happening.
 
 ## DynamoDB
 This approach can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
