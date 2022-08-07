@@ -91,11 +91,9 @@ Sometimes a reduction will yield a `0` which is a noop.
 (reduce + [1 -1 1 -1 1 -1]) => 0
 ```
 
- The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state. This is mostly harmless, but is a waste of space. Such occurences could easily be filtered out during (re)ingestion.
+ The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state. This is mostly harmless, but is a waste of space. Such occurences could easily be filtered out during (re)ingestion. Alternatively, the `state` dimension could be dropped but this would prevent filtering and grouping on a potentially useful dimension.
 
-
-
-Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. For instance, monthly values might be sufficient.
+Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. Monthly values might be sufficient.
 
 >As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier, for example `user_id` will defeat the purpose. Excluding high cardinality dimensions is a trade off as it prevents filtering and grouping on those dimensions but in return, storage and compute costs can decrease significantly.
 
