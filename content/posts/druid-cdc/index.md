@@ -112,4 +112,6 @@ If it feels like you are starting to write your own _poor man's Druid_ or alread
 Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
 ## Credit
-This is not that novel. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html).
+This is not that novel. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html#indelible).
+
+>Datomic is indelible and chronological. Information accumulates over time, and change is represented by accumulating the new, not by modifying or removing the old. For example, "removing" occurs not by taking something away, but by adding a retraction.
