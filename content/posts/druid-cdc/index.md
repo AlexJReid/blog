@@ -112,4 +112,4 @@ If it feels like you are starting to write your own _poor man's Druid_ or alread
 Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
 ## Credit
-This is not that novel. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Accumulations](https://docs.datomic.com/cloud/tutorial/accumulate.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html).
+This is not that novel. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html).
