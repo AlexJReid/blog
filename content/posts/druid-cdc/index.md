@@ -93,7 +93,7 @@ Sometimes a reduction will yield a `0` which is a noop.
 (reduce + [1 -1 1 -1 1 -1]) => 0
 ```
 
- The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state. This is mostly harmless, but is a waste of space. Such occurences could easily be filtered out during (re)ingestion. Alternatively, the `state` dimension could be dropped but this would prevent filtering and grouping on a potentially useful dimension.
+ The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state once for each hour for each unique set of dimensions. If the query granularity was finer, this situation might be even worse. It is mostly harmless, but it is a waste of space. Good news though, Druid makes it trivial to filter out during (re)ingestion. Alternatively, the `state` dimension could be dropped but this would prevent filtering and grouping on a potentially useful dimension.
 
 Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. Monthly values might be sufficient.
 
