@@ -85,6 +85,16 @@ Storage and query time can be reduced by _rolling up_ when the events are ingest
 
 Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time. For rollup to work, all dimensions should be low cardinality. 
 
+Sometimes a reduction will yield a `0` which is a noop.
+
+```clojure
+(reduce + [1 -1 1 -1 1 -1]) => 0
+```
+
+ The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state. This is mostly harmless, but is a waste of space. Such occurences could easily be filtered out during (re)ingestion.
+
+
+
 Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. For instance, monthly values might be sufficient.
 
 >As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier, for example `user_id` will defeat the purpose. Excluding high cardinality dimensions is a trade off as it prevents filtering and grouping on those dimensions but in return, storage and compute costs can decrease significantly.
