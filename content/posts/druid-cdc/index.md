@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-[Apache Druid](https://druid.apache.org) stores potentially huge volumes of events for interactive analysis. Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. Events are stored with the time they occured, along with other dimensions, making it possible to filter and split aggregations.
+[Apache Druid](https://druid.apache.org) stores potentially huge volumes of events for interactive analysis. Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible datasources provides engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_.
 
 Unfortunately getting a stream of events from existing systems can be a challenge, particularly those whose changes are persisted by mutating an existing record in an operational store.
 
