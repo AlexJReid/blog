@@ -47,6 +47,16 @@ If a new value needs to be stored, it is an **addition** so `retraction: false`.
 
 If the record is being **modified** this is both a retraction of previously asserted values as well as an assertion of the new, replacement values from that point onwards. Two events would be stored in Druid: one with the old values with `retraction: true` and one with the new values and `retraction: false`.
 
+It is possible to tell if a record has been modified by comparing a list of dimension names in both the old and new images. In JavaScript this might look like this:
+
+```javascript
+const dims = ['location', 'language', 'customer_id'];
+if (dims.some(dim => changeEvent.dynamodb.OldImage[dim] != changeEvent.dynamodb.NewImage[dim])) {
+    // Emit retraction
+    // Emit addition
+}
+```
+
 If the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`.
 
 Storing events in this way allows Druid to give answers _as of_ a certain date interval.
