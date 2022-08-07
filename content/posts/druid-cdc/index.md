@@ -14,23 +14,29 @@ series = []
 
 [Apache Druid](https://druid.apache.org) can ingest and store huge volumes of events for interactive analysis. 
 
-Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible datasources provides engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
+Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible data sources provide engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
 
 Unfortunately getting a stream of events from systems that aren't event driven can be a challenge. Changes are persisted by mutating an existing record in an operational store.
 
-**When a single record is mutated over time, I found it challenging to reflect this in Druid.** This is because Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely when it happened. The only way to change or remove a single event is to rebuild the segment without it, perhaps by reingesting the entire time interval. If the workload is not time sensitive and the data set is not huge, then it might be feasible to simply _drop and reload_ the current year on a nightly basis. It then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? **It just doesn't feel right.**
+**When a single record is mutated over time, I found it challenging to reflect this in Druid.** This is because Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely when it happened. The only way to change or remove a single event is to rebuild the segment without it, perhaps by reingesting the entire time interval. If the workload is not time sensitive and volume manageable, then it can be feasible to simply _drop and reload_ the current year on a nightly basis. But it then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? **It just doesn't feel right.** 
 
 ## Change data capture to the rescue
-Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. This gives us some low level events to work with. They're not descriptive business events like _user changed surname_. They instead convey the change made to the record, for instance _user id 5 updated, here's the old version and here's the new version_.
+Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. 
+
+This gives us some events to work with whenever changes occur in the database. They're not descriptive business events like _user changed surname_. 
+
+They instead convey the change made to the record, for instance _user id 5 updated, here's the old version and here's the new version_.
 
 ## Magic Druid events
 With a little bit of processing, we can transform these CDC events into a stream of events that are tailored for Druid.
 
-Assuming our operational database makes available changes to a table on a stream containing: the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
+DynamoDB can publish the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
 
 Two additional fields are computed:
 - **retraction?** A boolean set to true if the event type is a `delete` OR a `modify` AND at least one of the dimension values has changed
 - **count** an integer set to `-1` if retraction is true, otherwise `1`
+
+These are explained further in the following sections.
 
 ### Assert and retract
 If a new value needs to be stored, it is an **addition** so `retraction: false`.
@@ -68,7 +74,7 @@ The first element in the vector below is an opening balance of `292`. Subsequent
 ```
 
 ### Rollup
-Storage and query time can be reduced by _rolling up_ when the events are ingested. If the workload can tolerate granuarity of a day, Druid can simply store the reduced value for a given set of dimensions. Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time.
+Storage and query time can be reduced by _rolling up_ when the events are ingested. If the workload can tolerate granularity of a day, Druid can simply store the reduced value for a given set of dimensions. Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time.
 
 ## DynamoDB
 This pattern can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
@@ -86,8 +92,8 @@ As a test, around **twelve million** events were ingested into a single data nod
 
 But just how flexible do you _really_ need to be?
 
-Maybe you don't need this. You can certainly aggregate in simpler technologies than Druid! If may be acceptable to simply accumulate the values in a Lambda function and keep them in DynamoDB.
+Maybe you don't need this. You can certainly aggregate in simpler technologies than Druid! It may be acceptable to simply accumulate the values in a Lambda function and keep them in DynamoDB.
 
-If it feels like you are starting to write your own _poor man's Druid_ or already happen to have Druid available, then this approach may be worthy of your consideration, particularly if your use case has need to take advantage of the temporal capabilities shown.
+If it feels like you are starting to write your own _poor man's Druid_ or already happen to have Druid available, then this approach may be worthy of your consideration, particularly if your use case can benefit from the temporal capabilities shown.
 
 Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
