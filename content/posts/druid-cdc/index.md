@@ -18,7 +18,7 @@ Events are things that have happened at an exact point in time: a user buys some
 
 Harvesting events from systems that do not already emit events can be something of a challenge. **Updating a single record does not easily align with how Druid works.** Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely by _when_ the event happened. The only way to change or remove a single event is to rebuild the segment without it.
 
-If _daily_ aggregations are acceptable and the is volume manageable, then it can sometimes be feasible to simply _drop and reload_ large time intervals on nightly basis. But it then becomes a challenge knowing where to place the records, as pseudo events, in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? If it doesn't, that implies we will have to reingest the last seven years' worth of data. **This just doesn't feel right.** 
+If the use case can tolerate data only updating once a day, it can drop and reload large time intervals as a daily batch job. However, it then becomes a challenge knowing where to place the records, as pseudo events, in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to a 2022 segment? If it doesn't, that implies we will have to reingest the last seven years' worth of data. **This just doesn't feel right.** 
 
 ## Change data capture to the rescue
 Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. This provides transactional events whenever changes are written to a database table. Rather than conveying a business fact, they simply state that a change has occurred within the table. For instance: 
@@ -26,17 +26,17 @@ Luckily, many operational databases support [change data capture](https://en.wik
 > _user with key 42 updated! here's the old version and here's the new version_.
 
 ## Magic Druid events
-A CDC event contains the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
-With a little bit of processing, these events can be transformed into form that is tailored for Druid. 
+A change event contains the time, type of database operation (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
+With a little bit of processing, these events can tailored for Druid. 
 
 Two additional fields need to be computed, **retraction** and **count**.
 
 ### Retraction
 A new record is an **addition** so `retraction: false`.
 
-A modification to an existing record is both a retraction of previously asserted record as well as an assertion of the new, replacement record from that point in time onwards. Two events would be stored in Druid: one with the old values with `retraction: true` and one with the new values and `retraction: false`. Both events would take their event time from the change event.
+A modification to an existing record is both a **retraction** of previously asserted record as well as an **addition** of the new, replacement record from that point in time onwards. Two events would be stored in Druid: one with the **old** values with `retraction: true` and one with the **new** values and `retraction: false`. Both events would take their event time from the change event.
 
-A retraction only needs to be emitted if a known dimension has changed. This can be deduced by comparing the dimension values in both the old and new images. In JavaScript this might look like this:
+A retraction only needs to be emitted if a known dimension has changed. Other changes can be disregarded. This can be deduced by comparing the dimension values in both the old and new images. In JavaScript this might look like this:
 
 ```javascript
 // Names of the dimensions to look up
@@ -50,7 +50,7 @@ if (dims.some(dim => changeEvent.dynamodb.OldImage[dim]
 }
 ```
 
-Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`.
+Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. Historical values are not deleted: the record will be counted until the time of the retraction.
 
 Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying intervals in a native Druid query. This allows the data source to answer questions like _what was the count for this customer during July 2022?_ and _what is our all time most active customer?_
 
@@ -99,7 +99,7 @@ The operational store is configured with a DynamoDB stream that triggers a Lambd
 The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day. 
 
 ## Conclusion
-The approach was proven by ingesting around **twelve million** events with a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
+The approach was tested by ingesting around **twelve million** synthetic events with a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
 
 **This very simple pattern provides a flexible, high performance data source that allows counts to be split and filtered by the included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
 
@@ -107,9 +107,9 @@ But just how flexible do you _really_ need to be? The data source is immensely f
 
 If it feels like you are starting to write your own _poor man's Druid_ or already happen to have a Druid cluster available, then this approach may be worthy of consideration, particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
 
-Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
+Let me know what you think! Comments and corrections are most welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
 ## Credit
-This is not that novel. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html#indelible).
+Of course this is not that novel or clever. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html#indelible).
 
 >Datomic is indelible and chronological. Information accumulates over time, and change is represented by accumulating the new, not by modifying or removing the old. For example, "removing" occurs not by taking something away, but by adding a retraction.
