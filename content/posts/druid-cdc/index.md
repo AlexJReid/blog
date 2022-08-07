@@ -2,7 +2,7 @@
 draft = false
 date = 2022-08-07
 title = "Using change data capture to perform flexible aggregations with Druid and DynamoDB"
-description = "Druid is built to store events, not entity records that get updated over time. This post explores how to build a Druid data source from a DynamoDB table to provide flexible aggregations."
+description = "Druid is built to store immutable events, not records that can get updated at any time. This post explores how to build a Druid data source from a DynamoDB table to provide flexible aggregations."
 slug = "druid-cdc"
 tags = ["druid", "dynamodb", "cdc", "dynamodb-streams", "olap", "elasticsearch", "opensearch", "counting", "change data capture"]
 categories = []
@@ -10,11 +10,13 @@ externalLink = ""
 series = []
 +++
 
-[Apache Druid](https://druid.apache.org) stores potentially huge volumes of events for interactive analysis. Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible datasources provides engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_.
+[Apache Druid](https://druid.apache.org) can ingest and store huge volumes of events for interactive analysis. 
 
-Unfortunately getting a stream of events from existing systems can be a challenge, particularly those whose changes are persisted by mutating an existing record in an operational store.
+Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible datasources provides engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
 
-**When a single record is mutated over time, it is challenging to reflect this in Druid.** This is because Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely when it happened. The only way to change or remove a single event is to rebuild the segment without it, perhaps by reingesting the entire time interval. If the workload is not time sensitive and the data set is not huge, then it might be feasible to simply _drop and reload_ the current year on a nightly basis. It then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? **It just doesn't feel right.**
+Unfortunately getting a stream of events from systems that aren't event driven can be a challenge. Changes are persisted by mutating an existing record in an operational store.
+
+**When a single record is mutated over time, I found it challenging to reflect this in Druid.** This is because Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely when it happened. The only way to change or remove a single event is to rebuild the segment without it, perhaps by reingesting the entire time interval. If the workload is not time sensitive and the data set is not huge, then it might be feasible to simply _drop and reload_ the current year on a nightly basis. It then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? **It just doesn't feel right.**
 
 ## Change data capture to the rescue
 Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. This gives us some low level events to work with. They're not descriptive business events like _user changed surname_. They instead convey the change made to the record, for instance _user id 5 updated, here's the old version and here's the new version_.
