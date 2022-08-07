@@ -38,18 +38,16 @@ A new record is an **addition** so `retraction: false`.
 
 A modification to an existing record is both a **retraction** of previously asserted record as well as an **addition** of the new, replacement record from that point in time onwards. Two events would be stored in Druid: one with the **old** values with `retraction: true` and one with the **new** values and `retraction: false`. Both events would take their event time from the change event.
 
-A retraction only needs to be emitted if a known dimension has changed. Other changes can be disregarded. This can be deduced by comparing the dimension values in both the old and new images. In JavaScript this might look like this:
+A retraction only needs to be emitted if a known dimension has changed. Other changes can be disregarded. This can be deduced by comparing the dimension values in both the old and new images.
 
-```javascript
-// Names of the dimensions to look up
-const dims = ['location', 'language', 'customer_id'];
-if (dims.some(dim => changeEvent.dynamodb.OldImage[dim] 
-                    !== changeEvent.dynamodb.NewImage[dim])) {
-    // NB: No sanity checking of OldImage and NewImage having _dim_ defined!
-
-    // Emit retraction of old image at time of change
-    // Emit addition of new image at time of change
-}
+```clojure
+;; Emit a retraction and an assertion if dims have different values
+(let [dims [:location :language :customer_id]
+      oldImage {:location "UK" :language "en" :customer_id "42"}
+      newImage {:location "US" :language "en" :customer_id "42"}]
+  (if (some #(not= (% oldImage) (% newImage)) dims)
+    (emit! oldImage {:timestamp t retraction? true})
+    (emit! newImage {:timestamp t retraction? false})))
 ```
 
 Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. Historical values are not deleted: the record will be counted until the time of the retraction.
