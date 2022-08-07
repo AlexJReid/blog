@@ -54,18 +54,18 @@ Storing events in this way allows Druid to give answers _as of_ a certain date i
 ### Count
 Conceptually similar to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
 
-The below vector represents give additions, each set to 5.
+The below vector represents five additions.
 
 ```clojure
 (reduce + [1 1 1 1 1]) => 5
 ```
 
-If a retraction happens, this is appended. The same reduction will see the count will decrease.
+If a retraction happens, this is appended to the additions. The same reduction will see the count will decrease.
 ```clojure
 (reduce + [1 1 1 1 1 -1]) => 4
 ```
 
-In a Druid data source, a `SELECT SUM("count") FROM datasource` query can be used to find this count. A `WHERE` clause can be added to filter by any defined dimension. This could be used to only show the count relating to a given customer, as well as the collective value. Other Druid queries are of course possible, for instance splitting by dimensions such as `country` and only showing the `topN` dimensions.
+The equivalent Druid SQL is `SELECT SUM("count") FROM datasource`. A `WHERE` clause could be added to filter by any defined dimension. This could be used to only show the count relating to a given customer, as well as the collective value. Other Druid queries are of course possible, for instance splitting by dimensions such as `country` and only showing the `topN` dimensions.
 
 As noted previously, adding a `__time` interval allows for temporal queries, enabling Druid to answer questions like _what was the count for this customer during July 2022?_
 
