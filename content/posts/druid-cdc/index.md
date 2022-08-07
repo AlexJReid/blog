@@ -16,19 +16,23 @@ series = []
 
 Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible data sources provide engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
 
-Unfortunately getting a stream of events from systems that aren't event driven can be a challenge. Changes are persisted by mutating an existing record in an operational store.
+Unfortunately getting a stream of events from systems that do not emit events can be a challenge. Often changes are persisted by mutating an existing record in an operational store.
 
-**When a single record is mutated over time, I found it challenging to reflect this in Druid.** This is because Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely when it happened. The only way to change or remove a single event is to rebuild the segment without it, perhaps by reingesting the entire time interval. If the workload is not time sensitive and volume manageable, then it can be feasible to simply _drop and reload_ the current year on a nightly basis. But it then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? **It just doesn't feel right.** 
+**When a single record is mutated over time, this does not fit naturally into Druid.** This is because Druid stores data in segments which are immutable. The segment in which an event is stored is determined largely when it happened. The only way to change or remove a single event is to rebuild the segment without it, perhaps by reingesting the entire time interval in which it fals. 
+
+If the workload is not time sensitive and volume manageable, then it can sometimes be feasible to simply _drop and reload_ the current year on a nightly basis. But it then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? **It just doesn't feel right.** 
 
 ## Change data capture to the rescue
 Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. 
 
-This gives us some events to work with whenever changes occur in the database. They're not descriptive business events like _user changed surname_. 
+This gives us events to work with whenever changes occur in the database. CDC events are not descriptive business events such as:
+>_user changed surname_. 
 
-They instead convey the change made to the record, for instance _user id 5 updated, here's the old version and here's the new version_.
+They instead convey the change made to the record, for instance: 
+> _user id 5 updated, here's the old version and here's the new version_.
 
 ## Magic Druid events
-With a little bit of processing, we can transform these CDC events into a stream of events that are tailored for Druid.
+With a little bit of processing, these CDC events can be transformed into a stream of events that are tailored for Druid.
 
 DynamoDB can publish the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
 
