@@ -107,7 +107,7 @@ The approach was proven by ingesting around **twelve million** events with a sin
 
 But just how flexible do you _really_ need to be? The data source is immensely flexible but maybe you don't need it. You can certainly aggregate in simpler technologies than Druid! It may be acceptable to simply accumulate the values in a Lambda function and [store the values in DynamoDB](https://alexjreid.dev/posts/dynamodb-efficient-filtering-4/).
 
-If it feels like you are starting to write your own _poor man's Druid_ or already happen to have a Druid cluster already available, then this approach may be worthy of your consideration, particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
+If it feels like you are starting to write your own _poor man's Druid_ or already happen to have a Druid cluster available, then this approach may be worthy of consideration, particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
 
 Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
