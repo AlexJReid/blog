@@ -87,7 +87,7 @@ Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only
 
 Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. For instance, monthly values might be sufficient.
 
->Including a dimension such as a unique identifier will hinder rollup. This is a trade off as it prevents filtering and grouping by high cardinality dimensions. In return, storage and compute costs decrease.
+>As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier, for example `user_id` will defeat the purpose. Excluding high cardinality dimensions is a trade off as it prevents filtering and grouping on those dimensions but in return, storage and compute costs can decrease significantly.
 
 ## DynamoDB
 This approach can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
