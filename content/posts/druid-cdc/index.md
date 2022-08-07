@@ -91,6 +91,8 @@ The first element in the vector below is an opening balance of `292`. Subsequent
 ### Rollup
 Storage and query time can be reduced by _rolling up_ when the events are ingested. If the workload can tolerate granularity of a day, Druid can simply store the reduced value for a given set of dimensions. Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time.
 
+Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. Perhaps monthly values are sufficient.
+
 ## DynamoDB
 This pattern can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
 
@@ -98,7 +100,7 @@ This pattern can be used with DynamoDB as shown in the simple architecture below
 
 The operational store is configured with a DynamoDB stream that triggers a Lambda function when items are added, modified or deleted. The Lambda function transforms the CDC events into the Druid events described previously. 
 
-The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day. Subsequent jobs may also roll up older data further, depending on how much query granularity is needed.
+The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day. 
 
 ## Conclusion
 A brief proof of concept was performed. Around **twelve million** events were ingested into a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
