@@ -49,8 +49,12 @@ A retraction only needs to be emitted if a known dimension has changed. Other ch
       newImage {:location "US" :language "en" :customer_id "42"}]
 
   (if (some #(not= (% oldImage) (% newImage)) dims)
-    (emit! oldImage {:timestamp t :retraction true})
-    (emit! newImage {:timestamp t :retraction false})))
+    (do
+      (emit! oldImage {:timestamp t :retraction true})
+      (emit! newImage {:timestamp t :retraction false}))))
+
+; => {:location UK, :language en, :customer_id 42, :count -1, :retraction true}
+; => {:location US, :language en, :customer_id 42, :count 1, :retraction false}
 ```
 
 Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. Historical values are not deleted: the record will be counted until the time of the retraction.
