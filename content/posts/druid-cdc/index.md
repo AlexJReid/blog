@@ -85,14 +85,14 @@ This pattern can be used with DynamoDB as shown in the simple architecture below
 
 ![Architecture diagram showing DynamoDB feeding into Druid via a Lambda function](ddb-druid-cdc.png)
 
-The operational store is configured with a DynamoDB stream that triggers a Lambda function whether the table items are modified. The Lambda function transforms the CDC events into the Druid events described previously. 
+The operational store is configured with a DynamoDB stream that triggers a Lambda function when items are added, modified or deleted. The Lambda function transforms the CDC events into the Druid events described previously. 
 
-The events are written to a Kinesis stream which is then ingested by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day.
+The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day. Subsequent jobs may also roll up older data further, depending on how much query granularity is needed.
 
 ## Conclusion
-As a test, around **twelve million** events were ingested into a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds.
+A brief proof of concept was performed. Around **twelve million** events were ingested into a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
 
-**In summary, this pattern gives us a flexible, high performance data source allowing counts to be split and filtered by our included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
+**In summary, this pattern gives us a flexible, high performance data source that allows counts to be split and filtered by the included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
 
 But just how flexible do you _really_ need to be?
 
