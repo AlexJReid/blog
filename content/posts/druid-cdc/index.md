@@ -51,8 +51,8 @@ if (dims.some(dim => changeEvent.dynamodb.OldImage[dim]
                     !== changeEvent.dynamodb.NewImage[dim])) {
     // NB: No sanity checking of OldImage and NewImage having _dim_ defined!
 
-    // Emit retraction at time of change
-    // Emit addition at time of change
+    // Emit retraction of old image at time of change
+    // Emit addition of new image at time of change
 }
 ```
 
