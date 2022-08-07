@@ -18,7 +18,7 @@ Events are things that have happened at an exact point in time: a user buys some
 
 Harvesting events from systems that do not already emit events can be something of a challenge. **Updating a single record does not easily align with how Druid works.** Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely by _when_ the event happened. The only way to change or remove a single event is to rebuild the segment without it.
 
-If the use case can tolerate data only updating once a day, a daily batch job could drop and replace large time intervals. By casting the net wide, we will hopefully reflect any updates from the operational store, albeit in the most inefficient way possible. 
+If we can tolerate data only updating once a day, a batch job could drop and replace large time intervals. By casting the net wide, we will hopefully reflect any updates from the operational store, albeit in the most inefficient way possible. 
 
 It also becomes a challenge knowing where to place the records, as pseudo events, in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to a 2022 segment? If it doesn't, that implies we will have to reingest the last seven years' worth of data. **This just doesn't feel right.** 
 
