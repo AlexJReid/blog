@@ -105,7 +105,7 @@ The Druid events are written to a Kinesis stream which is consumed by Druid. Cha
 ## Conclusion
 A brief proof of concept was performed. Around **twelve million** events were ingested into a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
 
-**This pattern provides a flexible, high performance data source that allows counts to be split and filtered by the included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
+**This very simple pattern provides a flexible, high performance data source that allows counts to be split and filtered by the included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
 
 But just how flexible do you _really_ need to be?
 
