@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2022-08-07
-title = "Using change data capture to perform flexible aggregations with Druid and DynamoDB"
+title = "Using change data capture to perform flexible aggregations with DynamoDB and Druid"
 description = "Druid stores immutable events, not records that can get updated at any time. This post explores building a Druid data source from a DynamoDB table stream to provide flexible aggregations."
 slug = "druid-cdc"
 tags = ["druid", "dynamodb", "cdc", "change data capture", "dynamodb-streams", "olap", "elasticsearch", "opensearch", "counts"]
