@@ -42,6 +42,7 @@ A retraction only needs to be emitted if a known dimension has changed. Other ch
 
 ```clojure
 ;; Emit a retraction and an assertion if dims have different values
+;; oldImage and newImage will have come from the change stream!
 (let [dims [:location :language :customer_id]
       oldImage {:location "UK" :language "en" :customer_id "42"}
       newImage {:location "US" :language "en" :customer_id "42"}]
