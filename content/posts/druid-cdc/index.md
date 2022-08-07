@@ -32,24 +32,20 @@ They instead convey the change made to the record, for instance:
 > _user id 5 updated, here's the old version and here's the new version_.
 
 ## Magic Druid events
-With a little bit of processing, these CDC events can be transformed into a stream of events that are tailored for Druid.
+A CDC event contains the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
+With a little bit of processing, these events can be transformed into form that is tailored for Druid. 
 
-DynamoDB can publish the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
+Two additional fields need to be computed, **retraction** and **count**.
 
-Two additional fields are computed:
-- **retraction?** A boolean set to true if the event type is a `delete` OR a `modify` AND at least one of the dimension values has changed
-- **count** an integer set to `-1` if retraction is true, otherwise `1`
+### Retraction
+If a new record from either an insert or a modify needs to be stored, it is an **addition** so `retraction: false`.
 
-These are explained further in the following sections.
+If the record is being **modified** this is both a retraction of previously asserted record as well as an assertion of the new, replacement record from that point onwards. Two events would be stored in Druid: one with the old values with `retraction: true` and one with the new values and `retraction: false`.
 
-### Assert and retract
-If a new value needs to be stored, it is an **addition** so `retraction: false`.
-
-If the record is being **modified** this is both a retraction of previously asserted values as well as an assertion of the new, replacement values from that point onwards. Two events would be stored in Druid: one with the old values with `retraction: true` and one with the new values and `retraction: false`.
-
-A retraction only needs to be emitted if a known dimension has changed. This can be deduced by comparing a list of dimension names in both the old and new images. In JavaScript this might look like this:
+A retraction only needs to be emitted if a known dimension has changed. This can be deduced by comparing the dimension values in both the old and new images. In JavaScript this might look like this:
 
 ```javascript
+// Names of the dimensions to look up
 const dims = ['location', 'language', 'customer_id'];
 if (dims.some(dim => changeEvent.dynamodb.OldImage[dim] 
                     !== changeEvent.dynamodb.NewImage[dim])) {
@@ -62,9 +58,11 @@ if (dims.some(dim => changeEvent.dynamodb.OldImage[dim]
 
 If the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`.
 
-Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding a `__time` interval to the `WHERE` clause. This provides answers to questions like _what was the count for this customer during July 2022?_
+Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying intervals in a native Druid query. This allows the data source to answer questions like _what was the count for this customer during July 2022?_ and _what is our all time most active customer?_
 
 ### Count
+A retraction event has a `count` value of `-1`, otherwise it has a value of `1`.
+
 Conceptually similar to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
 
 The below vector represents five additions.
@@ -73,14 +71,14 @@ The below vector represents five additions.
 (reduce + [1 1 1 1 1]) => 5
 ```
 
-If a retraction happens, this is appended to the additions. The same reduction will see the count will decrease.
+If a retraction happens later, this is appended to the additions. The same reduction will see the count will decrease.
 ```clojure
 (reduce + [1 1 1 1 1 -1]) => 4
 ```
 
 The equivalent Druid SQL is `SELECT SUM("count") FROM datasource`. A `WHERE` clause could be added to filter by any defined dimension. This could be used to only show the count relating to a given customer, as well as the collective value. Other Druid queries are of course possible, for instance splitting by dimensions such as `country` and only showing the `topN` dimensions.
 
-This approach will get slower with a large number of events. In the next section rollups are discussed. This is similar to using snapshots with event sourced systems: rather than replaying every event, start from an _opening balance_ as the initial value of the sum.
+Storage and compute costs will rise with a large number of events. In the next section _rollups_ are discussed. This is similar to snapshots sometimes found in event sourced systems: rather than replaying every event, the reduction starts with from an _opening balance_ as the initial value of the sum.
 
 The first element in the vector below is an opening balance of `292`. Subsequent values are applied to it.
 
@@ -89,12 +87,12 @@ The first element in the vector below is an opening balance of `292`. Subsequent
 ```
 
 ### Rollup
-Storage and query time can be reduced by _rolling up_ when the events are ingested. If the workload can tolerate granularity of a day, Druid can simply store the reduced value for a given set of dimensions. Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time.
+Storage and query time can be reduced by _rolling up_ when the events are ingested. If the use case can tolerate granularity of a day, Druid can be told simply store the reduced value for a given set of dimension values for a particular day. Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time. For rollup to work, all dimensions should be low cardinality. Including a dimension such as a unique identifier will hinder rollup. This is a trade off as it prevents filtering and grouping by high cardinality dimensions. In return, storage and compute costs decrease.
 
-Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. Perhaps monthly values are sufficient.
+Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. For instance, monthly values might be sufficient.
 
 ## DynamoDB
-This pattern can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
+This approach can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
 
 ![Architecture diagram showing DynamoDB feeding into Druid via a Lambda function](ddb-druid-cdc.png)
 
@@ -103,14 +101,15 @@ The operational store is configured with a DynamoDB stream that triggers a Lambd
 The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day. 
 
 ## Conclusion
-A small proof of concept was performed. Around **twelve million** events were ingested into a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
+The approach was proven by ingesting around **twelve million** events were ingested using a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
 
 **This very simple pattern provides a flexible, high performance data source that allows counts to be split and filtered by the included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
 
-But just how flexible do you _really_ need to be?
+But just how flexible do you _really_ need to be? The data source is immensely flexible but maybe you don't need it. You can certainly aggregate in simpler technologies than Druid! It may be acceptable to simply accumulate the values in a Lambda function and [store the values in DynamoDB](https://alexjreid.dev/posts/dynamodb-efficient-filtering-4/).
 
-Maybe you don't need this. You can certainly aggregate in simpler technologies than Druid! It may be acceptable to simply accumulate the values in a Lambda function and keep them in DynamoDB.
-
-If it feels like you are starting to write your own _poor man's Druid_ or already happen to have Druid available, then this approach may be worthy of your consideration, particularly if your use case can benefit from the temporal capabilities shown.
+If it feels like you are starting to write your own _poor man's Druid_ or already happen to have a Druid cluster already available, then this approach may be worthy of your consideration, particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
 
 Let me know what you think! I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
+
+## Credit
+This is not that novel. Many of the concepts are found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Accumulations](https://docs.datomic.com/cloud/tutorial/accumulate.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html).
