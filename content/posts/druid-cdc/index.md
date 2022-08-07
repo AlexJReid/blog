@@ -2,7 +2,7 @@
 draft = false
 date = 2022-08-07
 title = "Using change data capture to perform flexible aggregations with DynamoDB and Druid"
-description = "Druid stores immutable events, not records that can get updated at any time. This post explores building a Druid data source from a DynamoDB table stream to provide flexible aggregations."
+description = "Druid stores immutable events, not records that can be updated at any time. This post explores building a Druid data source from a DynamoDB table stream to provide flexible aggregations."
 slug = "druid-cdc"
 tags = ["druid", "dynamodb", "cdc", "change data capture", "dynamodb-streams", "olap", "elasticsearch", "opensearch", "counts"]
 categories = []
@@ -105,7 +105,7 @@ The approach was tested by ingesting around **twelve million** synthetic events 
 
 But just how flexible do you _really_ need to be? The data source is immensely flexible but maybe you don't need it. You can certainly aggregate in simpler technologies than Druid! It may be acceptable to simply accumulate the values in a Lambda function and [store the values in DynamoDB](https://alexjreid.dev/posts/dynamodb-efficient-filtering-4/).
 
-If it feels like you are starting to write your own _poor man's Druid_ or already happen to have a Druid cluster available, then this approach may be worthy of consideration, particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
+If it feels like you are starting to write your own _poor man's Druid_ or you already happen to have a Druid cluster available, then this approach may be worthy of consideration... particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
 
 Let me know what you think! Comments and corrections are most welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
