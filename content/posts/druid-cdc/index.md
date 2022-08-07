@@ -22,7 +22,7 @@ Unfortunately getting a stream of events from systems that aren't event driven c
 Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. This gives us some low level events to work with. They're not descriptive business events like _user changed surname_. They instead convey the change made to the record, for instance _user id 5 updated, here's the old version and here's the new version_.
 
 ## Magic Druid events
-With a little bit of processing, we can convert these CDC events into a stream of events that are tailored for Druid. They will allow us to easliy create a set of counts for items added to a DynamoDB table, with the ability to split and filter by dimensions (e.g. country, rating, language) and also time. 
+With a little bit of processing, we can transform these CDC events into a stream of events that are tailored for Druid.
 
 Assuming our operational database makes available changes to a table on a stream containing: the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
 
@@ -40,7 +40,7 @@ If the record is being **deleted** then previously asserted events need to be re
 Storing events in this way allows Druid to give answers _as of_ a certain date interval.
 
 ### Count
-In a similar way to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
+Conceptually similar to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
 
 The below vector represents give additions, each set to 5.
 
