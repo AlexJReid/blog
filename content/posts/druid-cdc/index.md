@@ -62,7 +62,7 @@ if (dims.some(dim => changeEvent.dynamodb.OldImage[dim]
 
 If the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`.
 
-Storing events in this way allows Druid to give answers _as of_ a certain date interval.
+Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding a `__time` interval to the `WHERE` clause. This provides answers to questions like _what was the count for this customer during July 2022?_
 
 ### Count
 Conceptually similar to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
@@ -79,8 +79,6 @@ If a retraction happens, this is appended to the additions. The same reduction w
 ```
 
 The equivalent Druid SQL is `SELECT SUM("count") FROM datasource`. A `WHERE` clause could be added to filter by any defined dimension. This could be used to only show the count relating to a given customer, as well as the collective value. Other Druid queries are of course possible, for instance splitting by dimensions such as `country` and only showing the `topN` dimensions.
-
-As noted previously, adding a `__time` interval allows for temporal queries, enabling Druid to answer questions like _what was the count for this customer during July 2022?_
 
 This approach will get slower with a large number of events. In the next section rollups are discussed. This is similar to using snapshots with event sourced systems: rather than replaying every event, start from an _opening balance_ as the initial value of the sum.
 
