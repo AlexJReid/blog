@@ -51,7 +51,8 @@ It is possible to tell if a record has been modified by comparing a list of dime
 
 ```javascript
 const dims = ['location', 'language', 'customer_id'];
-if (dims.some(dim => changeEvent.dynamodb.OldImage[dim] !== changeEvent.dynamodb.NewImage[dim])) {
+if (dims.some(dim => changeEvent.dynamodb.OldImage[dim] 
+                    !== changeEvent.dynamodb.NewImage[dim])) {
     // Emit retraction
     // Emit addition
 }
