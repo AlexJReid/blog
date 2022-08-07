@@ -84,8 +84,6 @@ As a test, around **twelve million** events were ingested into a single data nod
 
 **In summary, this pattern gives us a flexible, high performance data source allowing counts to be split and filtered by our included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
 
-This flexibility has the potential to make Druid a more flexible option than Elastic/Opensearch for this particular scenario, depending on the number of events your workload generates. 
-
 But just how flexible do you _really_ need to be?
 
 Maybe you don't need this. You can certainly aggregate in simpler technologies than Druid! If may be acceptable to simply accumulate the values in a Lambda function and keep them in DynamoDB.
