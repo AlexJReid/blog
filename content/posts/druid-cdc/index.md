@@ -16,9 +16,7 @@ series = []
 
 Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible data sources provide engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
 
-Unfortunately getting a stream of events from systems that do not emit events can be a challenge. Often changes are persisted by mutating an existing record in an operational store.
-
-**Updating a single record does not easily align with how Druid works.** Druid stores data in segments which are immutable. The segment in which an event is stored is determined largely by _when_ the event happened. The only way to change or remove a single event is to rebuild the segment without it.
+Getting a stream of events from systems that do not emit events can be something of a challenge. **Updating a single record does not easily align with how Druid works.** Druid stores data in segments which are immutable. The segment in which an event is stored is determined largely by _when_ the event happened. The only way to change or remove a single event is to rebuild the segment without it.
 
 If the workload is not time sensitive and the volume manageable, then it can sometimes be feasible to simply _drop and reload_ large time intervals on nightly basis. But it then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? If it doesn't, that implies we will have to reingest the last seven years' worth of data. **This just doesn't feel right.** 
 
