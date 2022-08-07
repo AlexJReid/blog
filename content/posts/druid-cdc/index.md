@@ -21,13 +21,9 @@ Getting a stream of events from systems that do not emit events can be something
 If _daily_ aggregations are acceptable and the is volume manageable, then it can sometimes be feasible to simply _drop and reload_ large time intervals on nightly basis. But it then becomes a challenge knowing where to place the records, as pseudo events, in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? If it doesn't, that implies we will have to reingest the last seven years' worth of data. **This just doesn't feel right.** 
 
 ## Change data capture to the rescue
-Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. 
+Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. This provides transactional events whenever changes are written to a database table. Rather than conveying a business fact, they simply state that a change has occurred within the table. For instance: 
 
-This gives us events to work with whenever changes occur in the database. CDC events are not descriptive business events such as:
->_user changed surname_. 
-
-They instead convey the change made to the record, for instance: 
-> _user id 5 updated, here's the old version and here's the new version_.
+> _user with key 42 updated, here's the old version and here's the new version_.
 
 ## Magic Druid events
 A CDC event contains the time, type of event (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
