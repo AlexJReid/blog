@@ -14,7 +14,7 @@ series = []
 
 [Apache Druid](https://druid.apache.org) can ingest and store huge volumes of events for interactive analysis. 
 
-Events are things that have happened: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible data sources provide engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
+Events are things that have happened at an exact point in time: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible data sources provide engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
 
 Getting a stream of events from systems that do not emit events can be something of a challenge. **Updating a single record does not easily align with how Druid works.** Druid stores data in segments that are immutable. The segment in which an event is stored is determined largely by _when_ the event happened. The only way to change or remove a single event is to rebuild the segment without it.
 
