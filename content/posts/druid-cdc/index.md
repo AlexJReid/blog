@@ -55,7 +55,7 @@ Finally, if the record is being **deleted** then previously asserted events need
 Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying intervals in a native Druid query. This allows the data source to answer questions like _what was the count for this customer during July 2022?_ and _what is our all time most active customer?_
 
 ### Count
-A retraction event has a `count` value of `-1`, otherwise it has a value of `1`.
+A retracted event has a `count` value of `-1`. A non-retracted event has a `count` value of `1`.
 
 Conceptually similar to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
 
