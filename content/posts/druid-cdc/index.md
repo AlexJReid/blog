@@ -36,9 +36,9 @@ With a little bit of processing, these events can be transformed into form that 
 Two additional fields need to be computed, **retraction** and **count**.
 
 ### Retraction
-If a new record from either an insert or a modify needs to be stored, it is an **addition** so `retraction: false`.
+A new record is an **addition** so `retraction: false`.
 
-If the record is being **modified** this is both a retraction of previously asserted record as well as an assertion of the new, replacement record from that point onwards. Two events would be stored in Druid: one with the old values with `retraction: true` and one with the new values and `retraction: false`.
+A modification to an existing record is both a retraction of previously asserted record as well as an assertion of the new, replacement record from that point in time onwards. Two events would be stored in Druid: one with the old values with `retraction: true` and one with the new values and `retraction: false`. Both events would take their event time from the change event.
 
 A retraction only needs to be emitted if a known dimension has changed. This can be deduced by comparing the dimension values in both the old and new images. In JavaScript this might look like this:
 
@@ -54,7 +54,7 @@ if (dims.some(dim => changeEvent.dynamodb.OldImage[dim]
 }
 ```
 
-If the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`.
+Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`.
 
 Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying intervals in a native Druid query. This allows the data source to answer questions like _what was the count for this customer during July 2022?_ and _what is our all time most active customer?_
 
