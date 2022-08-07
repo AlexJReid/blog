@@ -81,9 +81,13 @@ The first element in the vector below is an opening balance of `292`. Subsequent
 ```
 
 ### Rollup
-Storage and query time can be reduced by _rolling up_ when the events are ingested. If the use case can tolerate granularity of a day, Druid can be told simply store the reduced value for a given set of dimension values for a particular day. Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time. For rollup to work, all dimensions should be low cardinality. Including a dimension such as a unique identifier will hinder rollup. This is a trade off as it prevents filtering and grouping by high cardinality dimensions. In return, storage and compute costs decrease.
+Storage and query time can be reduced by _rolling up_ when the events are ingested. If the use case can tolerate granularity of a day, Druid can be told simply store the reduced value for a given set of dimension values for a particular day. 
+
+Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time. For rollup to work, all dimensions should be low cardinality. 
 
 Subsequent jobs may also roll up older data further, depending on how much query granularity is needed. For instance, monthly values might be sufficient.
+
+>Including a dimension such as a unique identifier will hinder rollup. This is a trade off as it prevents filtering and grouping by high cardinality dimensions. In return, storage and compute costs decrease.
 
 ## DynamoDB
 This approach can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
