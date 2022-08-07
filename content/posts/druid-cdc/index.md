@@ -18,7 +18,7 @@ Events are things that have happened: a user buys something, a temperature readi
 
 Unfortunately getting a stream of events from systems that do not emit events can be a challenge. Often changes are persisted by mutating an existing record in an operational store.
 
-**When a single record is mutated over time, this does not fit naturally into Druid.** This is because Druid stores data in segments which are immutable. The segment in which an event is stored is determined largely by _when_ it happened. The only way to change or remove a single event is to rebuild the segment without it by reingesting the entire time interval in which it fals. 
+**When a single record is mutated over time, this does not fit naturally into Druid.** This is because Druid stores data in segments which are immutable. The segment in which an event is stored is determined largely by _when_ the event happened. The only way to change or remove a single event is to rebuild the segment without it.
 
 If the workload is not time sensitive and the volume manageable, then it can sometimes be feasible to simply _drop and reload_ large time intervals on nightly basis. But it then becomes a challenge knowing where to place the records in time. If a user signed up in 2015, does their record always live in the 2015 segment? Or does the user cease to exist in 2015, and jump forward to the 2022 segment? If it doesn't, that implies we will have to reingest the last seven years' worth of data. **This just doesn't feel right.** 
 
