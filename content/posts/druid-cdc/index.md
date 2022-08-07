@@ -4,7 +4,7 @@ date = 2022-08-07
 title = "Using change data capture to perform flexible aggregations with Druid and DynamoDB"
 description = "Druid is built to store immutable events, not records that can get updated at any time. This post explores how to build a Druid data source from a DynamoDB table to provide flexible aggregations."
 slug = "druid-cdc"
-tags = ["druid", "dynamodb", "cdc", "dynamodb-streams", "olap", "elasticsearch", "opensearch", "counting", "change data capture"]
+tags = ["druid", "dynamodb", "cdc", "change data capture", "dynamodb-streams", "olap", "elasticsearch", "opensearch", "counts"]
 categories = []
 externalLink = ""
 series = []
@@ -77,7 +77,7 @@ This pattern can be used with DynamoDB as shown in the simple architecture below
 
 The operational store is configured with a DynamoDB stream that triggers a Lambda function whether the table items are modified. The Lambda function transforms the CDC events into the Druid events described previously. 
 
-The events are written to a Kinesis stream which is then ingested by Druid in realtime. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day.
+The events are written to a Kinesis stream which is then ingested by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day.
 
 ## Conclusion
 As a test, around **twelve million** events were ingested into a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds.
