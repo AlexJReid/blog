@@ -134,7 +134,7 @@ The interesting part of an example Lambda handler is shown below. Complete code 
       "INSERT"
       [(druid-event newImage {:timestamp t :retraction false})]
       "MODIFY"
-      (when (some #(not= (% oldImage) (% newImage)) dims)
+      (when-not (= oldImage newImage)
       [(druid-event oldImage {:timestamp t :retraction true})
        (druid-event newImage {:timestamp t :retraction false})])
       "REMOVE"
