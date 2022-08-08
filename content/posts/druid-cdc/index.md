@@ -141,7 +141,7 @@ The interesting part of an example Lambda handler is shown below. Complete code 
       [(druid-event oldImage {:timestamp t :retraction true})])))
 
 (defn process-change-events
-  "Processes a sequence of change event records under :Records. This is the Lambda entrypoint."
+  "Processes a sequence of change event records. Lambda entrypoint."
   [events]
   (let [druid-events (mapcat process-change-event (:Records events))]
     ;; send druid-events to an output Kinesis stream, Kafka topic, etc.
