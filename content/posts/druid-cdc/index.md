@@ -59,7 +59,7 @@ When modifying a record, a retraction only needs to be emitted if a known dimens
 
 Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. 
 
-Historical values are not deleted. The record will be counted until the time of the retraction. Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying a specific in a native Druid query. 
+Historical values are not deleted. The record will be counted until the time of the retraction. Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time` to the `WHERE` clause in Druid SQL, or by specifying an narrower interval in a native Druid query. 
 
 This allows the data source to answer questions like _what was the count for this customer during July 2022?_
 
