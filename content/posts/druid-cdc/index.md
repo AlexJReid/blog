@@ -53,18 +53,20 @@ A retraction only needs to be emitted if a known dimension has changed. Other ch
       (emit! oldImage {:timestamp t :retraction true})
       (emit! newImage {:timestamp t :retraction false}))))
 
-; => {:location UK, :language en, :customer_id 42, :count -1, :retraction true}
-; => {:location US, :language en, :customer_id 42, :count 1, :retraction false}
+; => {:location UK, :language en, :customer_id 42, :count -1, :retraction true, :timestamp ...}
+; => {:location US, :language en, :customer_id 42, :count 1, :retraction false, :timestamp ...}
 ```
 
-Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. Historical values are not deleted: the record will be counted until the time of the retraction.
+Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. 
 
-Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying intervals in a native Druid query. This allows the data source to answer questions like _what was the count for this customer during July 2022?_ and _what is our all time most active customer?_
+Historical values are not deleted: the record will be counted until the time of the retraction. Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying a specific in a native Druid query. 
+
+This allows the data source to answer questions like _what was the count for this customer during July 2022?_
 
 ### Count
 A retracted event has a `count` value of `-1`. A non-retracted event has a `count` value of `1`.
 
-Conceptually similar to a bank account, _reducing_ the positive and negative `count` values will give us the current count _balance_. 
+Conceptually similar to a bank account, _reducing_ the positive and negative `count` values with an addition will give us the current count _balance_. 
 
 The below vector represents five additions.
 
@@ -79,9 +81,9 @@ If a retraction happens later, this is appended to the additions. The same reduc
 
 The equivalent Druid SQL is `SELECT SUM("count") FROM datasource`. A `WHERE` clause could be added to filter by any defined dimension. This could be used to only show the count relating to a given customer, as well as the collective value. Other Druid queries are of course possible, for instance splitting by dimensions such as `country` and only showing the `topN` dimensions.
 
-Storage and compute costs will rise with a large number of events. In the next section _rollups_ are discussed. This is similar to snapshots sometimes found in event sourced systems: rather than replaying every event, the reduction starts with from an _opening balance_ as the initial value of the sum.
+Storage and compute costs will rise with a large number of events. In the next section _rollups_ are discussed. This is similar to snapshots sometimes found in event sourced systems. Rather than replaying every event, the reduction starts with an _opening balance_ as the initial value of the sum.
 
-The first element in the vector below is an opening balance of `292`. Subsequent values are applied to it.
+The first element in the vector below is the opening balance of `292`. Subsequent values are applied to it.
 
 ```clojure
 (reduce + [292 1 1 1 1 -1]) => 295
