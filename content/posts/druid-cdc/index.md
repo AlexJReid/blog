@@ -113,9 +113,9 @@ This approach can be used with DynamoDB as shown in the simple architecture belo
 
 ![Architecture diagram showing DynamoDB feeding into Druid via a Lambda function](ddb-druid-cdc.png)
 
-The operational store is configured with a DynamoDB stream that triggers a Lambda function when items are added, modified or deleted. The Lambda function transforms the CDC events into the Druid events described previously. 
+The operational store is configured with a DynamoDB stream that triggers a Lambda function when items are added, modified or deleted. The Lambda function transforms the [change events](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_streams_Record.html) into the Druid events described previously.
 
-The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day.
+The Druid events can be written to a Kinesis stream or Kafka topic which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day.
 
 ## Change Lambda handler
 
