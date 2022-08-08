@@ -106,7 +106,7 @@ Sometimes a reduction will yield a `0` which is a noop.
 
 Subsequent batch jobs may also roll up older data further.
 
->As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier, for example `user_id` will prevent the rollup from happening.
+>As all dimension values need to be the same in order for a set of events to be rolled up, including a high cardinality dimension such as a unique identifier like `order_id` will hinder the effectiveness of this feature, perhaps even stopping it from having any effect whatsoever.
 
 ## DynamoDB
 This approach can be used with DynamoDB as shown in the simple architecture below. The requirement is to provide a **flexible** data source that can provide a count which can be split and filtered by a number of dimensions. For instance: _location with the most users_, _most active user today_ and so on.
