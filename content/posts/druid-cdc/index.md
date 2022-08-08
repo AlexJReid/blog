@@ -25,7 +25,7 @@ It also becomes a challenge knowing where to place the records, as pseudo events
 ## Change data capture to the rescue
 Luckily, many operational databases support [change data capture](https://en.wikipedia.org/wiki/Change_data_capture) streams. This provides transactional events whenever changes are written to a database table. Rather than conveying a business fact, they simply state that a change has occurred within the table. For instance: 
 
-> _user with key 42 updated! here's the old version and here's the new version_.
+> _record in user table with key 42 updated at 10:53AM! here's the old version and here's the new version_.
 
 ## Magic Druid events
 A change event contains the time, type of database operation (insert, modify, delete) and importantly both the old and new _images_ of the item being changed.
