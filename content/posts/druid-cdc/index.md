@@ -142,8 +142,8 @@ The interesting part of an example Lambda handler is shown below. Complete code 
 
 (defn process-change-events
   "Processes a sequence of change event records. Lambda entrypoint."
-  [events]
-  (let [druid-events (mapcat process-change-event (:Records events))]
+  [lambda-event]
+  (let [druid-events (mapcat process-change-event (:Records lambda-event))]
     ;; send druid-events to an output Kinesis stream, Kafka topic, etc.
     (clojure.pprint/pprint druid-events)))
 ```
