@@ -38,7 +38,7 @@ A new record is an **addition** so `retraction: false`.
 
 A modification to an existing record is both a **retraction** of previously asserted record as well as an **addition** of the new, replacement record from that point in time onwards. Two events would be stored in Druid: one with the **old** values with `retraction: true` and one with the **new** values and `retraction: false`. Both events would take their event time from the change event.
 
-A retraction only needs to be emitted if a known dimension has changed. Other changes can be disregarded. This can be deduced by comparing the dimension values in both the old and new images.
+When modifying a record, a retraction only needs to be emitted if a known dimension has changed. Other changes can be disregarded. This can be deduced by comparing the dimension values in both the old and new images.
 
 ```clojure
 ;; Emit a retraction and an assertion if dims have different values
@@ -59,7 +59,7 @@ A retraction only needs to be emitted if a known dimension has changed. Other ch
 
 Finally, if the record is being **deleted** then previously asserted events need to be retracted from that point onwards, so `retraction: true`. 
 
-Historical values are not deleted: the record will be counted until the time of the retraction. Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying a specific in a native Druid query. 
+Historical values are not deleted. The record will be counted until the time of the retraction. Storing events in this way allows Druid to run **temporal** queries, _as of_ a certain date interval. This is achieved by adding `__time >= ...` to the `WHERE` clause in Druid SQL, or by specifying a specific in a native Druid query. 
 
 This allows the data source to answer questions like _what was the count for this customer during July 2022?_
 
