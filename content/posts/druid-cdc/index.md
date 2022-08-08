@@ -115,7 +115,38 @@ This approach can be used with DynamoDB as shown in the simple architecture belo
 
 The operational store is configured with a DynamoDB stream that triggers a Lambda function when items are added, modified or deleted. The Lambda function transforms the CDC events into the Druid events described previously. 
 
-The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day. 
+The Druid events are written to a Kinesis stream which is consumed by Druid. Changes are reflected within a few seconds. The realtime ingestion rolls up the events by the hour and a later batch job rolls up to a day.
+
+## Change Lambda handler
+
+The interesting part of an example Lambda handler is shown below. Complete code including a set of test change records is [in this Gist](https://gist.github.com/AlexJReid/e724da4a876fa5f49aa24cc2a40d6438). You could write this in any language, of course.
+
+```clojure
+(defn process-change-event
+  "Processes a single change event record from DynamoDB"
+  [event]
+  (let [t (get-in event [:dynamodb :ApproximateCreationDateTime])
+        eventName (:eventName event)
+        dims     [:rating :country]
+        oldImage (select-keys-s (get-in event [:dynamodb :OldImage]) dims)
+        newImage (select-keys-s (get-in event [:dynamodb :NewImage]) dims)]
+    (case eventName
+      "INSERT"
+      [(druid-event newImage {:timestamp t :retraction false})]
+      "MODIFY"
+      (when (some #(not= (% oldImage) (% newImage)) dims)
+      [(druid-event oldImage {:timestamp t :retraction true})
+       (druid-event newImage {:timestamp t :retraction false})])
+      "REMOVE"
+      [(druid-event oldImage {:timestamp t :retraction true})])))
+
+(defn process-change-events
+  "Processes a sequence of change event records under :Records. This is the Lambda entrypoint."
+  [events]
+  (let [druid-events (mapcat process-change-event (:Records events))]
+    ;; send druid-events to an output Kinesis stream, Kafka topic, etc.
+    (clojure.pprint/pprint druid-events)))
+```
 
 ## Conclusion
 The approach was tested by ingesting around **twelve million** synthetic events with a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
