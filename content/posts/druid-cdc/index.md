@@ -45,13 +45,13 @@ When modifying a record, a retraction only needs to be emitted if a known dimens
 ;; oldImage and newImage will have come from the change stream!
 
 (let [dims [:location :language :customer_id]
-      oldImage {:location "UK" :language "en" :customer_id "42"}
-      newImage {:location "US" :language "en" :customer_id "42"}]
+      old-image {:location "UK" :language "en" :customer_id "42"}
+      new-image {:location "US" :language "en" :customer_id "42"}]
 
-  (if (some #(not= (% oldImage) (% newImage)) dims)
+  (when-not (= old-image new-image))
     (do
-      (emit! oldImage {:timestamp t :retraction true})
-      (emit! newImage {:timestamp t :retraction false}))))
+      (emit! old-image {:timestamp t :retraction true})
+      (emit! new-image {:timestamp t :retraction false}))))
 
 ; => {:location UK, :language en, :customer_id 42, :count -1, :retraction true, :timestamp ...}
 ; => {:location US, :language en, :customer_id 42, :count 1, :retraction false, :timestamp ...}
@@ -126,19 +126,19 @@ The interesting part of an example Lambda handler is shown below. Complete code 
   "Processes a single change event record from DynamoDB"
   [event]
   (let [t (get-in event [:dynamodb :ApproximateCreationDateTime])
-        eventName (:eventName event)
-        dims     [:rating :country]
-        oldImage (select-keys-s (get-in event [:dynamodb :OldImage]) dims)
-        newImage (select-keys-s (get-in event [:dynamodb :NewImage]) dims)]
-    (case eventName
+        event-name (:eventName event)
+        dims      [:rating :country]
+        old-image (select-keys-s (get-in event [:dynamodb :OldImage]) dims)
+        new-image (select-keys-s (get-in event [:dynamodb :NewImage]) dims)]
+    (case event-name
       "INSERT"
-      [(druid-event newImage {:timestamp t :retraction false})]
+      [(druid-event new-image {:timestamp t :retraction false})]
       "MODIFY"
-      (when-not (= oldImage newImage)
-      [(druid-event oldImage {:timestamp t :retraction true})
-       (druid-event newImage {:timestamp t :retraction false})])
+      (when-not (= old-image new-image)
+      [(druid-event old-image {:timestamp t :retraction true})
+       (druid-event new-image {:timestamp t :retraction false})])
       "REMOVE"
-      [(druid-event oldImage {:timestamp t :retraction true})])))
+      [(druid-event old-image {:timestamp t :retraction true})])))
 
 (defn process-change-events
   "Processes a sequence of change event records. Lambda entrypoint."
