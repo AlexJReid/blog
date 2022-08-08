@@ -119,7 +119,7 @@ The Druid events can be written to a Kinesis stream or Kafka topic which is cons
 
 ## Change Lambda handler
 
-The interesting part of an example Lambda handler is shown below. Complete code including a set of test change records is [in this Gist](https://gist.github.com/AlexJReid/e724da4a876fa5f49aa24cc2a40d6438). You could write this in any language, of course.
+The interesting part of an example Lambda handler is shown below. Complete code including a set of test change records is [in this Gist](https://gist.github.com/AlexJReid/e724da4a876fa5f49aa24cc2a40d6438). You could implement this in any language and run it outside of AWS Lambda if you prefer.
 
 ```clojure
 (defn process-change-event
