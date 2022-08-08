@@ -63,7 +63,7 @@ Historical values are not deleted. The record will be counted until the time of 
 
 This allows the data source to answer questions like _what was the count for this customer during July 2022?_
 
-Although it may be beneficial to include it into the event stream, that it is not necessary to ingest `retraction` into Druid. The delta change is conveyed using the `count` value, discussed in the next section.
+Although it may be beneficial to include this value in the event stream for debugging purposes, it is not always necessary to ingest it into Druid. The change is conveyed using the `count` value, discussed in the next section.
 
 ### Count
 A retracted event has a `count` value of `-1`. A non-retracted event has a `count` value of `1`.
