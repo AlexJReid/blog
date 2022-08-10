@@ -119,7 +119,7 @@ The Druid events can be written to a Kinesis stream or Kafka topic which is cons
 
 ## Change Lambda handler
 
-The interesting part of an example Lambda handler is shown below. 
+The interesting part of an example Lambda handler is shown below. The complete code is [available in this repo](https://github.com/AlexJReid/dynamodb-druid-cdc). You could implement this in any language and run it outside of AWS Lambda if you prefer.
 
 ```clojure
 (defn process-change-event
@@ -147,8 +147,6 @@ The interesting part of an example Lambda handler is shown below.
     ;; send druid-events to an output Kinesis stream, Kafka topic, etc.
     (clojure.pprint/pprint druid-events)))
 ```
-
-Complete code including a set of test change records is [available in this repo](https://github.com/AlexJReid/dynamodb-druid-cdc). You could implement this in any language and run it outside of AWS Lambda if you prefer.
 
 ## Conclusion
 The approach was tested by ingesting around **twelve million** synthetic events with a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
