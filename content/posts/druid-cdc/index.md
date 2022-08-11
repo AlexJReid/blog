@@ -102,7 +102,7 @@ Sometimes a reduction will yield a `0` which is a noop.
 (reduce + [1 -1 1 -1 1 -1]) => 0
 ```
 
- The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state once for each hour for each unique set of dimensions. If the query granularity was finer, this situation might be even worse. It is mostly harmless, but it is a waste of space. Good news though, Druid makes it trivial to filter out during (re)ingestion. Alternatively, the `state` dimension could be dropped but this would prevent filtering and grouping on a potentially useful dimension.
+The frequency at which this occurs depends on how the table is used. For instance if a record is consistently created with a `pending` state and soon after always transitions to an `active` state, a count of `0` will be stored for the `pending` state once for each hour for each unique set of dimensions. If the query granularity was finer, this situation might be even worse. It is mostly harmless, but it is a waste of space. Good news though, Druid makes it trivial to filter out during (re)ingestion. Alternatively, the `state` dimension could be dropped but this would prevent filtering and grouping on a potentially useful dimension.
 
 Subsequent batch jobs may also roll up older data further.
 
@@ -149,7 +149,8 @@ The interesting part of an example Lambda handler is shown below. The complete c
 ```
 
 ## Conclusion
-The approach was tested by ingesting around **twelve million** synthetic events with a single data node Druid cluster running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache.
+The approach was tested by ingesting around **twelve million** synthetic events with a single data node Druid cluster 
+running on an `r6gd.xlarge` instance. Storage footprint was around **350MB** including five string dimensions. Query performance is consistently in low double digit milliseconds without cache. Example code is [available in this repo](https://github.com/AlexJReid/dynamodb-druid-cdc).
 
 **This very simple pattern provides a flexible, high performance data source that allows counts to be split and filtered by the included dimensions. As Druid's segments are immutable and stored on S3, additional historical nodes can be added trivially in order to scale reads. The only code required is that of the Lambda function to convert CDC events into Druid events.**
 
@@ -160,7 +161,7 @@ If it feels like you are starting to write your own _poor man's Druid_ or you al
 Let me know what you think! Comments and corrections are most welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
 ## Credit
-Of course this is not that novel. Imply kindly sent me this [great post](https://imply.io/blog/upserts-and-data-deduplication-with-druid/) that overlaps with this one. I wish I had read it before writing this!
+Of course this is not that novel. Imply have recently published this [great post](https://imply.io/blog/upserts-and-data-deduplication-with-druid/) which overlaps with this one. I wish I had read it before writing this!
 
 Many of the concepts are also found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html#indelible).
 
