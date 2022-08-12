@@ -96,7 +96,7 @@ DynamoDB Streams and a Lambda function would be used to ensure the _statistics_ 
 
 If this feature was being added after the system originally went live, Step Functions or EMR could be used to parallel scan the table and retroactively populate the statistics.
 
-Alternatively, you could use another [store like Apache Druid](/posts/druid-cdc/) and periodically siphon the results back into DynamoDB. This would introduce some latency and the risk of many queries being run whose answers never get looked at. Instead, your API could route certain queries to Druid and certain queries to DynamoDB, possibly combining the results into a single response.
+Alternatively, you could send the events from DynamoDB Streams to [another store like Apache Druid](/posts/druid-cdc/) and periodically siphon the aggregated values back into DynamoDB. This would introduce some latency and the risk of many queries being run whose answers never get looked at. Instead, your API could route certain queries to Druid and certain queries to DynamoDB, possibly combining the results into a single response.
 
 ## Summary
 
