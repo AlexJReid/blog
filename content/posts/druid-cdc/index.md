@@ -12,7 +12,14 @@ series = []
 
 ![Architecture diagram showing DynamoDB feeding into Druid via a Lambda function](ddb-druid-cdc.png)
 
-[Apache Druid](https://druid.apache.org) can ingest and store huge volumes of events for interactive analysis. 
+DynamoDB is often a perfect fit as the primary, operational _system of record_ data store for many types of application. It is fast, maintenance free and (if you use it well) economical. However it cannot provide aggregations or analytics on the data it holds.
+
+Reflecting the same data in another store like Apache Druid is commonplace. The below video demonstrates this idea in operation. **The DynamoDB system of record is updated and Apache Druid is then used to perform aggregations with changes reflected more or less instantly.** This post will delve into some of the details about how it all works.
+
+{{< youtube oRaZN2QIVuA >}}
+
+## Events not mutations
+[Apache Druid](https://druid.apache.org) can ingest and store huge, huge volumes of **events** for interactive analysis. 
 
 Events are things that have happened at an exact point in time: a user buys something, a temperature reading changes, a delivery van moved and so on. It is useful to be able to aggregate these events interactively to spot trends and understand behaviour. Events can be filtered and split based on dimension values, allowing us to explore data. In addition, flexible data sources provide engineers with an easy way of gathering metrics to surface to end users. _You have tweeted in **93** times today!_
 
