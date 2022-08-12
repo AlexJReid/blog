@@ -168,7 +168,9 @@ If it feels like you are starting to write your own _poor man's Druid_ or you al
 Let me know what you think! Comments and corrections are most welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
 
 ## Credit
-Of course this is not that novel. Imply have recently published this [great post](https://imply.io/blog/upserts-and-data-deduplication-with-druid/) which overlaps with this one. I wish I had read it before writing this!
+Of course this is not that novel. Double entry book keeping has been around for ... a while?
+
+Imply have recently published this [great post](https://imply.io/blog/upserts-and-data-deduplication-with-druid/) which overlaps with this one. I wish I had read it before writing this!
 
 Many of the concepts are also found in [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). [Assertions](https://docs.datomic.com/cloud/tutorial/assertion.html) and [retractions](https://docs.datomic.com/cloud/tutorial/retract.html) are found in [Datomic](https://docs.datomic.com/cloud/whatis/data-model.html#indelible).
 
