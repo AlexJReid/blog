@@ -14,7 +14,7 @@ series = []
 
 DynamoDB is often a perfect fit as the primary, operational _system of record_ data store for many types of application. It is fast, maintenance free and (if you use it well) economical. However it cannot provide aggregations or analytics on the data it holds.
 
-Reflecting the same data in another store like Apache Druid is commonplace. The below video demonstrates this idea in operation. **The DynamoDB system of record is updated and Apache Druid is then used to perform aggregations with changes reflected more or less instantly.** This post will delve into some of the details about how it all works.
+Reflecting the same data in another store like Apache Druid is commonplace. The below video demonstrates this idea in operation. **The DynamoDB system of record is updated and Apache Druid is then used to perform aggregations on up to date values.** This post will delve into some of the details about how it all works.
 
 {{< youtube oRaZN2QIVuA >}}
 
