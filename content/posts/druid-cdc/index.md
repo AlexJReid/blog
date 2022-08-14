@@ -165,8 +165,6 @@ But just how flexible do you _really_ need to be? The data source is immensely f
 
 If it feels like you are starting to write your own _poor man's Druid_ or you already happen to have a Druid cluster available, then this approach may be worthy of consideration... particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
 
-Let me know what you think! Comments and corrections are most welcome. I'm [@alexjreid](https://twitter.com/AlexJReid) on Twitter.
-
 ## Credit
 Of course this is not that novel. Double entry book keeping has been around for ... a while?
 
