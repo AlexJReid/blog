@@ -12,7 +12,7 @@ series = []
 
 ![Architecture diagram showing DynamoDB feeding into Druid via a Lambda function](ddb-druid-cdc.png)
 
-DynamoDB is often a perfect fit as the primary, operational _system of record_ store for many types of application. It is fast, maintenance free and (if you use it well) economical. However it cannot provide aggregations or analytics on the data it holds.
+DynamoDB is often a perfect fit as the primary, operational _system of record_ store for many types of application. It is fast, maintenance free and (if you use it well) economical. However it cannot perform aggregations or provide analytics on the data it holds.
 
 Reflecting the same data in another store like Apache Druid is commonplace. The below video demonstrates this idea in operation. **The DynamoDB system of record is updated and Apache Druid is then used to perform aggregations on up to date values.** This post will delve into some of the details about how it all works. The code running is [available in this repo](https://github.com/AlexJReid/dynamodb-druid-cdc).
 
@@ -57,8 +57,10 @@ When modifying a record, a retraction only needs to be emitted if a known dimens
 
   (when-not (= old-image new-image))
     (do
-      (emit! old-image {:timestamp t :retraction true})
-      (emit! new-image {:timestamp t :retraction false}))))
+      ;; druid-event merges image with the second map, setting :count to 
+      ;; -1 if a retraction, otherwise 1
+      (druid-event old-image {:timestamp t :retraction true})
+      (druid-event new-image {:timestamp t :retraction false}))))
 
 ; => {:location UK, :language en, :customer_id 42, :count -1, :retraction true, :timestamp ...}
 ; => {:location US, :language en, :customer_id 42, :count 1, :retraction false, :timestamp ...}
@@ -166,7 +168,7 @@ But just how flexible do you _really_ need to be? The data source is immensely f
 If it feels like you are starting to write your own _poor man's Druid_ or you already happen to have a Druid cluster available, then this approach may be worthy of consideration... particularly if your use case can benefit from the temporal capabilities shown or you are planning on building a user-facing analytics application.
 
 ## Credit
-Of course this is not that novel. Double entry book keeping has been around for ... a while?
+Of course this is not that novel. **Double entry book keeping has been around for a while.**
 
 Imply have recently published this [great post](https://imply.io/blog/upserts-and-data-deduplication-with-druid/) which overlaps with this one. I wish I had read it before writing this!
 
