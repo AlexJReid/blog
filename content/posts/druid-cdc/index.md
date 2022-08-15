@@ -92,7 +92,8 @@ If a retraction happens later, this is appended to the additions. The same reduc
 
 The equivalent Druid SQL is `SELECT SUM("count") FROM datasource`. A `WHERE` clause could be added to filter by any defined dimension. This could be used to only show the count relating to a given customer, as well as the collective value. Other Druid queries are of course possible, for instance splitting by dimensions such as `country` and only showing the `topN` dimensions.
 
-Storage and compute costs will rise with a large number of events. In the next section _rollups_ are discussed. This is similar to snapshots sometimes found in event sourced systems. Rather than replaying every event, the reduction starts with an _opening balance_ as the initial value of the sum.
+### Rollup
+Storage and compute costs will rise with a large number of events. This is similar to snapshots sometimes found in event sourced systems. Rather than replaying every event, the reduction starts with an _opening balance_ as the initial value of the sum.
 
 The first element in the vector below is the opening balance of `292`. Subsequent values are applied to it.
 
@@ -100,8 +101,7 @@ The first element in the vector below is the opening balance of `292`. Subsequen
 (reduce + [292 1 1 1 1 -1]) => 295
 ```
 
-### Rollup
-Storage and query time can be reduced by _rolling up_ when the events are ingested. If the use case can tolerate granularity of a day, Druid can be told simply store the reduced value for a given set of dimension values for a particular day. 
+Storage and compute time can be reduced by _rolling up_ when the events are ingested. If the use case can tolerate granularity of a day, Druid can be told simply store the reduced value for a given set of dimension values for a particular day. 
 
 Assuming the six events from the previous section `[1 1 1 1 1 -1]` were the only events for that day, Druid would store a count of `4` in a single pre-aggregated event. It now has less work to do at query time. For rollup to work, all dimensions should be low cardinality. 
 
