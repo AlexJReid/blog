@@ -137,6 +137,8 @@ The interesting part of an example Lambda handler is shown below. The complete c
   (let [t (get-in event [:dynamodb :ApproximateCreationDateTime])
         event-name (:eventName event)
         dims      [:rating :country]
+        ;; select-keys-s is the same as select-keys just extracts the value from a
+        ;; DynamoDB string i.e. {:key {:S "value"}} => {:key "value"}
         old-image (select-keys-s (get-in event [:dynamodb :OldImage]) dims)
         new-image (select-keys-s (get-in event [:dynamodb :NewImage]) dims)]
     (case event-name
