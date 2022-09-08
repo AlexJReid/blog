@@ -2,7 +2,7 @@
 draft = false
 date = 2020-01-23T18:14:16Z
 title = "Squeezing ClickHouse into Cloud Run"
-description = "First in the series of bad idea posts, I tried to squeeze ClickHouse into Cloud Run."
+description = "I squeezed ClickHouse into Cloud Run."
 slug = "clickhouse-on-cloud-run" 
 tags = ['clickhouse','gcp','cloud run','olap','druid','greatest-hits']
 categories = []
@@ -10,19 +10,19 @@ externalLink = ""
 series = []
 +++
 
-Here is one of my bad ideas that was nevertheless fun to think through. I am __not__ suggesting you actually do this. Really, I'm not. Serverless data technologies already exist.
+Here is one of my bad ideas that was nevertheless fun to think through. I am __not__ suggesting you actually do this for anything serious. Really, I'm not. Serverless data technologies already exist.
 
 ## The idea
 
-I really like [ClickHouse](https://clickhouse.yandex). Compared with the expanse of complex software in the big data space, it's refreshing to run a single process. It's very fast and versatile.
+I really like [ClickHouse](https://clickhouse.yandex). Compared to the expanse of complex software in the big data space, it's refreshing to run a single process. Although not without its foibles, it's very fast and versatile.
 
-Running it on [Cloud Run](https://cloud.google.com/run/) is probably a bad idea. Cloud Run is for stateless things like APIs and tasks that pull in data from elsewhere. 
+Running it on [Cloud Run](https://cloud.google.com/run/) is likely a bad idea. Cloud Run is for stateless things like APIs and tasks that pull in data from elsewhere. 
 
-But... well... _what if_ the data being stored/queried is immutable? Then, arguably the state is fixed.
+But... well... _what if_ the data being stored/queried is immutable? Then, arguably the state is fixed...?
 
 ## How could that possibly be useful?
-- Maybe you have a comparatively small dataset (or your data has natural partitions of reasonable size, such as multi-tenant SaaS) that doesn't need to be updated frequently. For instance, the user might be happy to look at usage metrics for year, up to yesterday. Maybe the data is something historical such as oil production figures from 1983. These could be extracted to a snapshot by some other process.
-- You want to allow arbitrary queries on that snapshot: most likely slice and dice aggregations with small result sets.
+- Maybe you have a comparatively small dataset (or your data has natural partitions of reasonable size, such as a multi-tenant SaaS) that doesn't need to be updated frequently. For instance, the user might be happy to look at usage metrics for year, up to yesterday. Maybe the data is something historical such as oil production figures from 1983. These could be extracted to a snapshot by some other process. You could run multiple ClickHouse containers for each slice of the data.
+- You want to allow arbitrary queries on that snapshot, most likely slice and dice aggregations with small result sets.
 - Perhaps that small dataset is read heavy and might need to scale up and handle a lot of slice and dice queries. Cloud Run will in theory handle this by spinng up more _replica_ containers, each _containing_ the same fixed dataset.
 
 ## How I think it could work
@@ -31,7 +31,7 @@ But... well... _what if_ the data being stored/queried is immutable? Then, argua
 - Access ClickHouse through HTTP
 
 ## Did it work?
-Hilariously, it started up and answered _some_ queries. And then the wheel fell off and rolled away.
+Sort of. Hilariously, it started up and answered _some_ queries. And then the wheel fell off and rolled away.
 
 Firstly I prepared some data to stamp into the ClickHouse image. I used a single year (2019) of the ontime dataset and followed the instructions in [ontime](https://clickhouse.yandex/docs/en/getting_started/example_datasets/ontime/) example. In a local `yandex/clickhouse-server` container I opened a `bash` session and read the CSV into ClickHouse with
 ```
@@ -131,7 +131,7 @@ And...
 - It's very fast even with modest hardware and isn't a big install, it's a single binary. There's a ready made Docker image.
 - Given some tuning of the default configuration (especially around memory usage, caching and logging) it might work acceptably.
 - Dataset is immutable so no background processes (merging of data) to worry about.
-- UPDATE: It turns out this pattern has a name: [baked data](https://simonwillison.net/2020/Dec/13/datasette-io/). Nice!
+- UPDATE: It turns out this pattern has a name: [baked data](https://simonwillison.net/2020/Dec/13/datasette-io/). Nice! Definitely check out the Datasette project.
 
 ## Why Not
 - ~~Well, it doesn't work... right now.~~
@@ -140,9 +140,10 @@ And...
 - You would need to rebuild the image for new data (although you could pull it in from GCS/S3 on start.)
 - Data volume/image size might make the service take a long time to start on demand.
 - ClickHouse probably wasn't designed to be robbed of _all_ CPU when not serving an HTTP request (I believe this is what Cloud Run does. I don't know enough about ClickHouse's internals to comment on whether that'll break things.)
-- The API exposed over HTTP speaks SQL, some people get offended by that.
+- The API exposed over HTTP speaks SQL, some people get offended by that. Personally I think it's fine for certain types of API. SQL is great.
 - Probably a niche use case which could be better met in a more conventional way?
 - Serverless data tech already exists! (Athena, Aurora Serverless, BigQuery....)
 
 ## Conclusion
 It was good to learn more about gVisor and remember some C++ by reading through the ClickHouse code. Not a completely wasted hour or two ... and the ClickHouse and gVisor community took note and fixed the issue I ran into. It just goes to prove that a terrible idea can maybe have a positive effect, after all.
+
