@@ -14,7 +14,7 @@ So another year draws to a close!
 
 Towards the end of the year I left Trustpilot and started a new job at an early stage startup. It is very different. In this context, much of my _building for scale_ experience now feels like over engineering. _Maybe it always was... but that's another discussion._ 
 
-Unless it is the product, a startup probably doesn't need a service mesh or Kubernetes, nor is it dealing with huge traffic influxes early on. Things move quickly. Results matter and refinement can come when it is needed. It's a big adjustment for sure, but I remain confident that pitching _just enough_ architecture together with a simple technology foundation increases the ability to ship shiny new things quickly.
+Unless it is core to the product, a startup probably doesn't need a service mesh or Kubernetes, nor is it dealing with huge traffic influxes early on. Things move quickly. Results matter and refinement can come when it is needed. It's a big adjustment for sure, but I remain confident that pitching _just enough_ architecture together with a simple technology foundation increases the ability to ship shiny new things quickly.
 
 Of course, too much and you are left with over-the-top infrastructure to maintain whilst not delivering anything of visible value, whereas too little and you risk spending time reinventing the wheel by shunning solutions and services that increase agility on the quest for product market fit. It is a tricky balance. Regardless, it's a fun--and very different--challenge.
 
