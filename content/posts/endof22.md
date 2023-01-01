@@ -14,9 +14,18 @@ So another year draws to a close!
 
 Towards the end of the year I left Trustpilot and started a new job at an early stage startup. It is very different. In this context, much of my _building for scale_ experience now feels like over engineering. _Maybe it always was... but that's another discussion._ 
 
-Unless it is core to the product, a startup probably doesn't need a service mesh or Kubernetes, nor is it dealing with huge traffic influxes early on. Things move quickly. Results matter and refinement can come when it is needed. It's a big adjustment for sure, but I remain confident that pitching _just enough_ architecture together with a simple technology foundation increases the ability to ship shiny new things quickly.
+Unless it is core to the product, a startup probably doesn't need a 
+service mesh or Kubernetes, nor is it dealing with huge traffic influxes 
+early on. Things move quickly. Results matter and refinement can come when 
+it is needed. It's a big adjustment for sure, but I remain confident that 
+pitching _just enough_ architecture together with a simple technology 
+foundation increases the ability to ship new things quickly.
 
-Of course, too much and you are left with over-the-top infrastructure to maintain whilst not delivering anything of visible value, whereas too little and you risk spending time reinventing the wheel by shunning solutions and services that increase agility on the quest for product market fit. It is a tricky balance. Regardless, it's a fun--and very different--challenge.
+Of course, if you go too far, you are left with over-the-top 
+infrastructure to maintain whilst delivering less tangible value, whereas 
+too little and you risk spending time reinventing the wheel by shunning 
+solutions and services that might increase agility. Getting the right 
+balance by placing hopefully the right bets is a fun challenge.
 
 ### Some technologies I've enjoyed using this year
 
@@ -34,6 +43,6 @@ Of course, too much and you are left with over-the-top infrastructure to maintai
 - Writing and drawing boxes is a natural way for me to gather my thoughts and express ideas. I will aim to make every word count and write more one pagers than seven pagers.
 - Having resisted them for a long while, I've started to express ideas through SQL notebooks. To the right audience, they're more effective than a document. GitHub renders them nicely too.
 - See more of the big picture about how technical decisions affect the bottom line. Everything is a trade-off and what's technically right (or cool or cheapest to run) isn't always the way to go.
-- Strive to keep a proposed solution boring and simple but go deep on the problem. It's fun to zig zag technically as for me at least, it broadens my horizons and makes me appreciate the hard problems that I don't need to solve. Going relatively low level "how would I naively solve this problem myself and why would it be terrible?" is a good line of self questioning. Thinking about the problem in this way allows one to ask the right questions of a higher level technology, such as a cloud service or database. "Ah, so dictionary encoding, compression, vectorization and intelligent in-memory caching is a case of me pressing this button? Deal."
+- Strive to keep proposed solutions boring and simple, but to get there, go deep on the problem. It's useful to zig zag technically as for me at least, it broadens my horizons and makes me to identify the hard problems that I don't need to solve. Going relatively low level and asking "how would I naively solve this problem myself and why would it be foolish to do so?" is a good line of self questioning. Thinking about the problem in this way allows one to ask the right questions of a higher level technology, such as a cloud service or database. "Ah, so dictionary encoding, compression, vectorization and intelligent in-memory caching is a case of me pressing this button? Deal." We build on abstractions, but it really helps to understand what is going on underneath.
 
 I am very excited to see what 2023 brings. I wish you all the best for a productive, challenging and most of all fun time in the coming twelve months. `:)`
