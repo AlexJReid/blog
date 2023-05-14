@@ -9,7 +9,7 @@ externalLink = ""
 series = []
 +++
 
-I have used [NATS](https://nats.io) on various projects over the years. It provides a high performance transport layer, used to connect applications and services. As it is an extremely versatile technology, [this video](https://www.youtube.com/watch?v=hjXIUPZ7ArM) is a fantastic primer.
+I have used [NATS](https://nats.io) on various projects over the years. It provides a high performance transport layer, used to connect applications and services. As it is an extremely versatile technology, [this video](https://www.youtube.com/watch?v=hjXIUPZ7ArM) is a fantastic primer if you haven't already of heard of it.
 
 NATS can listen on websockets. [nats.ws](https://github.com/nats-io/nats.ws) runs in browsers. This means we can directly use NATS as the backend for web clients that need to display realtime streams of data.
 
