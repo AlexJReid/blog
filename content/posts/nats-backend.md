@@ -15,7 +15,7 @@ NATS can listen on websockets. [nats.ws](https://github.com/nats-io/nats.ws) run
 
 ## Why is this interesting?
 
-We can leverage the NATS server and protocol, saving us from having to implement an ad-hoc, informally specified protocol. We can multiplex the consumption of multiple data streams, issue requests and receive responses over a single websocket. A rich auth system is there to use. It gives us a robust implementation with a lot of the hard problems already solved.
+We can leverage the NATS server and protocol, saving us from having to implement our own janky protocol. We can multiplex the consumption of multiple data streams, issue requests and receive responses over a single websocket. A well designed auth system is there to use. It gives us a robust implementation with a lot of the hard problems already solved.
 
 ## How does it work?
 
