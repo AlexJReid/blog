@@ -15,7 +15,7 @@ NATS can listen on websockets. [nats.ws](https://github.com/nats-io/nats.ws) run
 
 ## Why is this interesting?
 
-We can leverage the NATS server and protocol, saving us from having to implement an ad-hoc, informally specified protocol. We can multiplex the consumption of multiple data streams, issue requests and receive responses over a single websocket. A rich auth system is there to use. It gives us a robust implementation with a lot of the hard work done for us.
+We can leverage the NATS server and protocol, saving us from having to implement an ad-hoc, informally specified protocol. We can multiplex the consumption of multiple data streams, issue requests and receive responses over a single websocket. A rich auth system is there to use. It gives us a robust implementation with a lot of the hard problems already solved.
 
 ## How does it work?
 
@@ -27,30 +27,34 @@ If you are using React, the NATS connection lifecycle can be managed through an 
 
 ## Example use case
 
-Perhaps you have a set of data streams that you want to visualise within your application. Showing a graph of values that occur after the has page loaded is perhaps not that useful. More context might be needed for the visualisation to be meaningful. Luckily, NATS has JetStream to provide stream persistence, allowing the application to start consuming from `-PT6H`. There is no need to query some separate store for history and then switch to the stream.
+Perhaps you have a set of data streams that you want to visualise within your application. Showing a graph of values that occur after the has page loaded is perhaps not that useful. More context might be needed for the visualisation to be meaningful. Luckily, NATS has JetStream to provide stream persistence, allowing the application to start consuming from some point in the past. There is no need to query some separate store for history and then switch to the stream.
 
-Maybe it is useful to show two series: the previous hour and current hour so far. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
+Maybe it is useful to show two series - the previous hour and current hour so far. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
 
-Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A service could be implemented to proxy queries to a database and write the results to an inbox subject. Large result sets can be chunked over multiple messages to request inbox.
+Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A backend service could be implemented to proxy queries to a database. Large result sets can be chunked over multiple messages to request inbox. (This is all supported by the NATS client, a zero byte payload is sent to denote the last chunk has been sent.)
 
-Like the streaming use case, we have not implemented anything special in the client.
+Like the streaming use case, we have not implemented anything special in the client to achieve this.
 
 ## I don't run NATS already
 
-It is available as a [managed service](https://www.synadia.com/ngs). Helm charts are also available. It can run anywhere, even on very constrained hardware.
+Running NATS on a small scale is quite simple, particularly if you are used to Kafka. Helm charts are also available if you are on Kubernetes. It can run anywhere, even on very constrained hardware.
 
-You could opt to run your own NATS [leaf nodes](https://docs.nats.io/running-a-nats-service/configuration/leafnodes) (or extensions) that your websocket clients connect to, within your network boundary, but farm out the work of running the main NATS cluster to the managed offering, [NGS](https://www.synadia.com/ngs). It's an incredibly flexible model. You can start small on a single node, then consider clustering and leaf nodes later.
+NATS is available as a [managed service](https://www.synadia.com/ngs).
+
+A hybrid approach is also possible. You could opt to run your own NATS [leaf nodes](https://docs.nats.io/running-a-nats-service/configuration/leafnodes) (or extensions) that your websocket clients connect to, within your network boundary, but farm out the work of running your main NATS cluster to the managed offering, [NGS](https://www.synadia.com/ngs). It's an incredibly flexible model.
+
+You can start small on a single node, then consider clustering and leaf nodes later.
 
 ## So why not?
 
-There is, of course, absolutely nothing wrong with HTTP. It has a huge ecosystem around it. If you're happy to construct an API with websocket/SSE resources as a bespoke backend for your application, this is clearly the tried and tested way forward. It is the well-trodden path.
+There is, of course, absolutely nothing wrong with HTTP. It has a huge ecosystem around it. If you're happy to construct an API with websocket/SSE resources as a bespoke backend for your application, this is clearly the well-trodden path.
 
-If you are not already using NATS, you will need to set this up in order to attempt this approach. This is quite simple, particularly if you are used to Kafka.
+As already established, if you are not already using NATS, you will need to set this up in order to attempt this approach.
 
 In addition, you will need to learn about NATS security and write services slightly differently to how you might have done in the past.
 
 ## It's still cool
 
-I would contend that although this approach might seem an elaborate and somewhat exotic detour on the first glance, we are building on a proven foundation. I am certain that the NATS websocket implementation and clients are superior to something that I might cobble together with _some code off the Internet_. I haven't needed to invent some protocol. I can leverage what already works and, as requirements dictate, take advantage of more advanced NATS features to make my life even easier.
+I would contend that although this approach might seem an elaborate and somewhat exotic detour on the first glance, we are building on a proven foundation. I am certain that the NATS websocket implementation and clients are superior to something that I might cobble together with _some code off the Internet_. I haven't needed to invent some protocol. I can leverage what already works and, as requirements dictate, take advantage of more advanced NATS features which would be challenging to implement from scratch.
 
-This approach will produce results quickly whilst remaining operationally simple. It is particularly compelling if you already have a lot of data flowing through NATS. But even if you don't, you won't need to [build your own bridge](https://github.com/nats-io/nats-kafka).
+This approach will produce results quickly whilst remaining operationally simple. It is particularly compelling if you already have a lot of data flowing through NATS. Even if you don't, you won't need to [build your own bridge](https://github.com/nats-io/nats-kafka).
