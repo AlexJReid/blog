@@ -41,11 +41,13 @@ Like the streaming use case, we have not implemented anything special in the cli
 
 Running NATS on a small scale is quite simple, particularly if you are used to Kafka. Helm charts are also available if you are on Kubernetes. It can run anywhere, even on very constrained hardware.
 
+Getting it running locally for experimentation is a case of downloading the `nats-server` binary and running it.
+
 NATS is available as a [managed service](https://www.synadia.com/ngs).
 
 A hybrid approach is also possible. You could opt to run your own NATS [leaf nodes](https://docs.nats.io/running-a-nats-service/configuration/leafnodes) (or extensions) that your websocket clients connect to, within your network boundary, but farm out the work of running your main NATS cluster to the managed offering, [NGS](https://www.synadia.com/ngs). It's an incredibly flexible model.
 
-You can start small on a single node, then consider clustering and leaf nodes later.
+You can start small on a single tiny EC2 instance (or even Fargate), and then consider clustering and leaf nodes later on.
 
 ## So why not?
 
