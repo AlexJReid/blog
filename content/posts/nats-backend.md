@@ -25,7 +25,7 @@ This signed JWT can be programatically generated and set by a token vending serv
 
 Once connected, the client is then free to do anything that their token permits them to do within the account boundary. This could include querying values from a JetStream key-value store, subscribing to subjects, grabbing the last six hours data from a stream, and issuing requests.
 
-If you are using React, the NATS connection lifecycle can be managed through an application-wide context. This makes it possible for a component to easily grab a NATS connection or get informed about connection status. As front end applications are asynchronous and event driven, events coming off the websocket are reacted to by the application. This might fit well with any state management libraries you're using, such as Redux. Subscriptions can also be abstracted into reusable stateful components, for example `<AwesomeRealtimeLineChart stream="data" lookBack="PT5M" />`.
+If you are using React, the NATS connection lifecycle can be managed through an application-wide context. This makes it possible for a component to easily grab a NATS connection or stay informed about connection status. As front end applications are asynchronous and event driven, events coming off the websocket are reacted to by the application. This might fit well with any state management libraries you're using, such as Redux. Subscriptions can also be abstracted into reusable stateful components, for example `<AwesomeRealtimeLineChart stream="data" lookBack="PT5M" />`.
 
 ## Example use case
 
