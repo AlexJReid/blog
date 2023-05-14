@@ -33,7 +33,7 @@ Perhaps you have a set of data streams that you want to visualise within your ap
 
 Maybe it is useful to visualise multiple series, for example, the previous hour and current hour so far. Or perhaps the same metric with different dimensions. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
 
-Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A backend service could be implemented to proxy queries to a database. Large result sets can be chunked over multiple messages to the request inbox. This is all supported by the NATS client, a zero byte payload is used to denote that there are no more chunks.
+Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A backend service could be implemented to proxy queries to a database. Large result sets can be chunked over multiple messages to the request inbox. A zero byte payload signals that there are no more chunks.
 
 As a nice side effect, user experience is improved as the application can show a meaningful progress bar as chunks are received, rather than showing an indeterminate "please wait" spinner.
 
