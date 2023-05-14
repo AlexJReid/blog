@@ -19,7 +19,9 @@ We can leverage the NATS server and protocol, saving us from having to implement
 
 ## How does it work?
 
-Security first. We do not want to expose an open NATS server and beyond that we also want to provide a boundary around what websocket clients can do. The [NATS security model](https://docs.nats.io/nats-concepts/security) is comprehensive. In short, the NATS server can read a cookie sent by the browser. This cookie contains a NATS-specific JWT that dictates what the bearer of the token can and can't do within the NATS environment it is connecting to. This signed JWT can be programatically generated and set by a token vending service, perhaps in response to a user sign-in through an IdP. NATS provides segregation of resources through [accounts](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/accounts). In this model, websocket clients would connect to a dedicated account for the application. Data streams will be _exported_ from other accounts and _imported_ into the websocket account. This provides an important level of isolation.
+Security first. We do not want to expose an open NATS server and beyond that we also want to provide a boundary around what websocket clients can do. The [NATS security model](https://docs.nats.io/nats-concepts/security) is comprehensive. In short, the NATS server can read a cookie sent by the browser. This cookie contains a NATS-specific JWT that dictates what the bearer of the token can and can't do within the NATS environment it is connecting to.
+
+This signed JWT can be programatically generated and set by a token vending service, perhaps in response to a user sign-in through an IdP. NATS provides segregation of resources through [accounts](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/accounts). In this model, websocket clients would connect to a dedicated _application account._ Data streams will be _exported_ from other accounts and _imported_ into the application account. This provides an important level of isolation.
 
 Once connected, the client is then free to do anything that their token permits them to do within the account boundary. This could include querying values from a JetStream key-value store, subscribing to subjects, grabbing the last six hours data from a stream, and issuing requests.
 
@@ -53,8 +55,8 @@ As already established, if you are not already using NATS, you will need to set 
 
 In addition, you will need to learn about NATS security and write services slightly differently to how you might have done in the past.
 
-## It's still cool
+## It's still worth consideration
 
-I would contend that although this approach might seem an elaborate and somewhat exotic detour on the first glance, we are building upon a proven foundation. I am certain that the NATS websocket implementation and clients are superior to something that I might cobble together with _some code off the Internet_. I haven't needed to invent some protocol. I can leverage what already works and, as requirements dictate, take advantage of more advanced NATS features which would be very challenging to implement well from scratch.
+I would contend that although this approach might seem like an elaborate and somewhat exotic detour at first glance, we are building upon a proven foundation. I am certain that the NATS websocket implementation and clients are superior to something that I might cobble together with _some code off the Internet_. I haven't needed to invent some protocol. I can leverage what already works and, as requirements dictate, take advantage of more advanced NATS features which would be very challenging to implement well from scratch.
 
-This approach will produce results quickly whilst remaining operationally simple. It is particularly compelling if you already have a lot of data flowing through NATS. Even if you don't, you won't need to [build your own bridge](https://github.com/nats-io/nats-kafka).
+Long term, this approach will produce results quickly whilst remaining operationally simple. It is particularly compelling if you already have a lot of data flowing through NATS. Even if you don't, you won't need to [build your own bridge](https://github.com/nats-io/nats-kafka).
