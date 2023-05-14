@@ -27,7 +27,7 @@ If you are using React, the NATS connection lifecycle can be managed through an 
 
 ## Example use case
 
-Perhaps you have a set of data streams that you want to visualise within your application. Showing a graph of values that occur after the has page loaded is perhaps not that useful. More context might be needed for the visualisation to be meaningful. Luckily, NATS has JetStream to provide stream persistence, allowing the application to start consuming from some point in the past. There is no need to query some separate store for history and then switch to the stream.
+Perhaps you have a set of data streams that you want to visualise within your application. Showing a graph of values that occur after the page has loaded is perhaps not that useful. More context might be needed for the visualisation to be meaningful. Luckily, NATS has JetStream to provide stream persistence, allowing the application to start consuming from some point in the past. There is no need to query some separate store for history and then switch to the stream.
 
 Maybe it is useful to show two series - the previous hour and current hour so far. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
 
