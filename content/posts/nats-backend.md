@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2023-05-14T10:00:00Z
-title = "NATS as a backend"
+title = "NATS as a web application backend"
 slug = "nats-as-a-backend"
 tags = ['nats', 'websocket', 'backend']
 categories = []
@@ -11,7 +11,7 @@ series = []
 
 I have used [NATS](https://nats.io) on various projects over the years. It provides a high performance transport layer than can be used to connect applications and services. If you haven't already heard of it, [this video](https://www.youtube.com/watch?v=hjXIUPZ7ArM) is a fantastic primer.
 
-NATS supports websocket connections. [nats.ws](https://github.com/nats-io/nats.ws) runs in browsers. This means we can directly use NATS as the backend for web clients that need to display realtime streams of data.
+NATS supports websocket connections. [nats.ws](https://github.com/nats-io/nats.ws) runs in browsers. This means we can directly use NATS as the backend for browser-based applications that need to display realtime streams of data.
 
 ## Why is this interesting?
 
@@ -58,6 +58,10 @@ There is, of course, absolutely nothing wrong with HTTP. It has a huge ecosystem
 As already established, if you are not already using NATS, you will need to set this up in order to attempt this approach.
 
 In addition, you will need to learn about NATS security and write services slightly differently to how you might have done in the past.
+
+You will need to learn the JavaScript NATS library. As alluded to above, it makes sense to contain this by embedding calls to the NATS and JetStream clients into reusable components. If you are a front end novice, you're on your own on figuring out how to integrate the NATS client with your front end library of choice.
+
+> Some RAD tools like [Streamlit](https://streamlit.io/) and [Shiny](https://shiny.posit.co/) can work with NATS as a backend, however they implement their own websocket transport to update their own client running in the browser. For instance, your Streamlit application sits in the middle between the browser and NATS. You would interface with NATS on the server side with the [nats.py](https://github.com/nats-io/nats.py) library. This is a valid, but quite different approach to what has been proposed so far. By their nature, these tools do not produce applications that are designed to scale, but in exchange offer an extremely low-effort development environment in a single language, often with beautiful looking results. Their wire format is far more verbose than a NATS connection. However, for internal apps with a handful of users, high server side resource consumption and network traffic might be a worthy trade-off. Many of the benefits of using NATS as a backend still apply.
 
 ## It works incredibly well
 
