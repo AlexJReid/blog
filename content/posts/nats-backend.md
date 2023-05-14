@@ -11,7 +11,7 @@ series = []
 
 I have used [NATS](https://nats.io) on various projects over the years. It provides a high performance transport layer than can be used to connect applications and services. If you haven't already heard of it, [this video](https://www.youtube.com/watch?v=hjXIUPZ7ArM) is a fantastic primer.
 
-NATS can listen on websockets. [nats.ws](https://github.com/nats-io/nats.ws) runs in browsers. This means we can directly use NATS as the backend for web clients that need to display realtime streams of data.
+NATS supports websocket connections. [nats.ws](https://github.com/nats-io/nats.ws) runs in browsers. This means we can directly use NATS as the backend for web clients that need to display realtime streams of data.
 
 ## Why is this interesting?
 
