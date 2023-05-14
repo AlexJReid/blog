@@ -53,4 +53,4 @@ In addition, you will need to learn about NATS security and write services sligh
 
 I would contend that although this approach might seem an elaborate and somewhat exotic detour on the first glance, we are building on a proven foundation. I am certain that the NATS websocket implementation and clients are superior to something that I might cobble together with _some code off the Internet_. I haven't needed to invent some protocol. I can leverage what already works and, as requirements dictate, take advantage of more advanced NATS features to make my life even easier.
 
-By building on a solid foundation, this approach will produce results quickly whilst remaining operationally simple. It is particularly compelling if you already have a lot of data flowing through NATS. But even if you don't, you won't need to [build your own bridge](https://github.com/nats-io/nats-kafka).
+This approach will produce results quickly whilst remaining operationally simple. It is particularly compelling if you already have a lot of data flowing through NATS. But even if you don't, you won't need to [build your own bridge](https://github.com/nats-io/nats-kafka).
