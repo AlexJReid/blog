@@ -63,7 +63,7 @@ You will need to learn the JavaScript NATS library. As alluded to above, it make
 
 > RAD tools like [Streamlit](https://streamlit.io/) and [Shiny](https://shiny.posit.co/) can work with NATS as a backend, however they implement their own websocket transport to update their own client running in the browser.
 > For instance, your Streamlit application sits in the middle between the browser and NATS. You would interface with NATS on the server side with the [nats.py](https://github.com/nats-io/nats.py) library. This is a valid, but quite different approach to what has been proposed so far. By their nature, these tools do not produce applications that are designed to scale, but in exchange offer an extremely low-effort development experience in a single language (Python or R), often with beautiful looking results. Their wire format is far more verbose than a NATS connection.
-> For internal apps with a handful of users, high server side resource consumption and network traffic might be a worthy trade-off. Many of the benefits of using NATS as a backend still apply.
+> For internal apps with a handful of users, high server side resource consumption and significantly higher network usage might be a worthy trade-off. Many of the benefits of using NATS as a backend still apply.
 
 ## It works incredibly well
 
