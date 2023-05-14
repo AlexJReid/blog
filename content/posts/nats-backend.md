@@ -59,7 +59,7 @@ As already established, if you are not already using NATS, you will need to set 
 
 In addition, you will need to learn about NATS security and write services slightly differently to how you might have done in the past.
 
-## It's still worth consideration
+## It works incredibly well
 
 I would contend that although this approach might seem like an elaborate and somewhat exotic detour at first glance, we are building upon a proven foundation. I am certain that the NATS websocket implementation and clients are superior to something that I might cobble together with _some code off the Internet_. I haven't needed to invent some protocol. I can leverage what already works and, as requirements dictate, take advantage of more advanced NATS features that would be very challenging to implement well from scratch.
 
