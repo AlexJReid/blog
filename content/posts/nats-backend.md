@@ -31,7 +31,7 @@ Perhaps you have a set of data streams that you want to visualise within your ap
 
 Maybe it is useful to show two series - the previous hour and current hour so far. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
 
-Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A backend service could be implemented to proxy queries to a database. Large result sets can be chunked over multiple messages to request inbox. (This is all supported by the NATS client, a zero byte payload is sent to denote the last chunk has been sent.)
+Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A backend service could be implemented to proxy queries to a database. Large result sets can be chunked over multiple messages to request inbox. This is all supported by the NATS client, a zero byte payload is used to denote that there are no more chunks. As a nice side effect, our application and show a meaningful progress bar as chunks are received!
 
 Like the streaming use case, we have not implemented anything special in the client to achieve this.
 
