@@ -39,7 +39,7 @@ As a nice side effect, user experience is improved as the application can show a
 
 Like the streaming use case, we have not implemented anything special in the client to achieve this.
 
-The example given is a data analytics application. This is not the only place where consuming a stream of events would be useful. Another example is an application that executes relatively long-running workflows on the server, but needs to provide a high degree of feedback to the user during an execution. In this scenario, the client could subscribe to a subject of messages published by the various components of the workflow and display these to the user. A real world example might be a GitHub Actions workflow run. Of course, as the messages are in NATS, they could be used by other components on the server side as well as being tapped into by the front end.
+The example given is a data analytics application. This is not the only place where consuming a stream of events might be useful. Another example is an application that executes relatively long-running workflows on the server, but needs to provide a high degree of feedback to the user during an execution. In this scenario, the client could subscribe to a subject of messages published by the various components of the workflow and display these to the user. A real world example might be a GitHub Actions workflow run. Of course, as the messages are in NATS, they could be used by other components on the server side as well as being tapped into by the front end.
 
 ## I don't run NATS already
 
