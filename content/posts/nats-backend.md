@@ -31,7 +31,7 @@ If you are using React, the NATS connection lifecycle can be managed through an 
 
 Perhaps you have a set of data streams that you want to visualise within your application. Showing a graph of values that occur after the page has loaded is perhaps not that useful. More context might be needed for the visualisation to be meaningful. Luckily, NATS has JetStream to provide stream persistence, allowing the application to start consuming from some point in the past. There is no need to query some separate store for history and then switch to the stream.
 
-Maybe it is useful to show two series - the previous hour and current hour so far. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
+Maybe it is useful to visualise multiple series, for example, the previous hour and current hour so far. Or perhaps the same metric with different dimensions. This is all easy to do and no custom backend is needed. **We're just using the NATS API through a client library.**
 
 Bringing in some even older, historic data might also be useful. NATS provides the ability for clients to make _requests_ to a subject that a service is listening on. The service sends a _response_ to a temporary inbox subject that the client is listening on. A backend service could be implemented to proxy queries to a database. Large result sets can be chunked over multiple messages to the request inbox. This is all supported by the NATS client, a zero byte payload is used to denote that there are no more chunks.
 
