@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2023-05-14T10:00:00Z
+date = 2023-05-14T23:15:00Z
 title = "NATS as a web application backend"
 slug = "nats-as-a-backend"
 tags = ['nats', 'websocket', 'backend']
