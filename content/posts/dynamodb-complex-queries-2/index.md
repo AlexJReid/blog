@@ -4,7 +4,7 @@ date = 2020-11-21T19:00:00Z
 title = "Filtering with GSIs and parallel queries in DynamoDB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB. In this post, we improve upon our original design with more GSIs and parallel queries implemented in a Go client."
 slug = "dynamodb-efficient-filtering-2"
-tags = ['nosql-series','dynamodb','aws','go','single-table-design','greatest-hits']
+tags = ['nosql-series','dynamodb','aws','go','single-table-design']
 categories = []
 externalLink = ""
 series = []
@@ -20,9 +20,9 @@ Part 3: [How to make pagination work when the output of multiple queries have be
 
 Part 4: [Storage and retrieval of comment statistics using index overloading and sparse indexes](/posts/dynamodb-efficient-filtering-4/)
 
------
+---
 
-The approach taken in [previous post](/posts/dynamodb-efficient-filtering/) was not a perfect solution as a large number of redundant items were created by code that we would have to maintain. 
+The approach taken in [previous post](/posts/dynamodb-efficient-filtering/) was not a perfect solution as a large number of redundant items were created by code that we would have to maintain.
 
 **In this post, we will improve upon our original model with more GSIs and parallel queries.**
 
@@ -36,8 +36,8 @@ Let's apply both approaches and see what happens.
 
 Firstly let's recap on the model we are building.
 
- >We are tasked with producing a data model to store and retrieve the comments shown on each product page within an e-commerce site.
- >A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
+> We are tasked with producing a data model to store and retrieve the comments shown on each product page within an e-commerce site.
+> A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
 
 This can be broken down into the following access patterns.
 
@@ -50,7 +50,7 @@ This can be broken down into the following access patterns.
 
 ## Table design
 
->To save space in the diagrams below, not all non-indexed item attributes such as the comment title, text and username are shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
+> To save space in the diagrams below, not all non-indexed item attributes such as the comment title, text and username are shown on the below diagrams. `language` and `rating` are shown to demonstrate non-key attributes being projected into GSIs.
 
 ### Table
 
@@ -63,9 +63,11 @@ That's a lot more than key attributes than last time! This is because items need
 **DynamoDB handles the projection of necessary keys and attributes into four other indexes on our behalf.** Only a subset of attributes from the table are projected to save space and reduce query costs. This is shown in the following diagrams.
 
 We form the partition key with this pattern:
+
 ```
 PRODUCT#<identifier>[/<projected filter 1>/<projected filter 2>]
-``` 
+```
+
 We populate the sort key with a sortable date string to ensure ordering. As seen above, we need to use slightly different partition keys to support a range of queries. Discussion around the keys used in each GSI is explained in the following sections.
 
 ### GSI: byLangAndRating
@@ -106,56 +108,56 @@ All queries should have `ScanIndexForward` set to `false` in order to retrieve t
 ### AP1: Show all comments for a product, most recent first
 
 - Query on `all`
-    - GSI4PK = `PRODUCT#42`
+  - GSI4PK = `PRODUCT#42`
 
 ### AP2: filter by a single language
 
 - Query on `byLang`
-    - GSI2PK = `PRODUCT#42/en`
+  - GSI2PK = `PRODUCT#42/en`
 
 ### AP3: Filter by any combination of ratings from 1-5
 
 #### a. Single language
 
 - Rating `2, 3 or 5` in language `en`
-    - In parallel:
-        - Query on `byLangAndRating`
-            - GSIPK = `PRODUCT#42/en/2`
-            - Limit = `20`
-        - Query on `byLangAndRating`
-            - GSIPK = `PRODUCT#42/en/3`
-            - Limit = `20`
-        - Query on `byLangAndRating`
-            - GSIPK = `PRODUCT#42/en/5`
-            - Limit = `20`
-    - Gather results into single collection, reverse sort on `GSISK` and return top N
+  - In parallel:
+    - Query on `byLangAndRating`
+      - GSIPK = `PRODUCT#42/en/2`
+      - Limit = `20`
+    - Query on `byLangAndRating`
+      - GSIPK = `PRODUCT#42/en/3`
+      - Limit = `20`
+    - Query on `byLangAndRating`
+      - GSIPK = `PRODUCT#42/en/5`
+      - Limit = `20`
+  - Gather results into single collection, reverse sort on `GSISK` and return top N
 
 #### b. Any language, single rating
 
 - Rating `2`
-    - Query on `byRating`
-        - GSI3PK = `PRODUCT#42/2`
+  - Query on `byRating`
+    - GSI3PK = `PRODUCT#42/2`
 
 #### c. Any language, multiple ratings
 
 - Rating `3 or 5`
-    - In parallel:
-        - Query on `byRating`
-            - GSI3PK = `PRODUCT#42/2`
-        - Query on `byRating`
-            - GSI3PK = `PRODUCT#42/5`
+  - In parallel:
+    - Query on `byRating`
+      - GSI3PK = `PRODUCT#42/2`
+    - Query on `byRating`
+      - GSI3PK = `PRODUCT#42/5`
 
 ### AP4: Show a comment directly through its identifier
 
 - `GetItem` on table
-    - PK = `COMMENT#100001`
-    - SK = `COMMENT#100001`
+  - PK = `COMMENT#100001`
+  - SK = `COMMENT#100001`
 
 ### AP5: Delete
 
 - `DeleteItem` on table
-    - PK = `COMMENT#100001`
-    - SK = `COMMENT#100001`
+  - PK = `COMMENT#100001`
+  - SK = `COMMENT#100001`
 
 ### AP6: Paginate through comments
 
@@ -196,9 +198,9 @@ case langSingleRating:
 }
 ```
 
-Databases have query planners. If you've ever prefixed a SQL query with `EXPLAIN` and tried to make sense of the output, you have just asked the database how it will satisfy your query. This is the work the database will do if it were to execute the query. Although the example above is a crude switch statement, it is performing the same role. 
+Databases have query planners. If you've ever prefixed a SQL query with `EXPLAIN` and tried to make sense of the output, you have just asked the database how it will satisfy your query. This is the work the database will do if it were to execute the query. Although the example above is a crude switch statement, it is performing the same role.
 
->Given `input` use `index` with `key(s)`.
+> Given `input` use `index` with `key(s)`.
 
 This logic, along with any parallel query coordination (discussed in the next section), should be written once and provided to consumers either as a library or an API. This abstraction provides a high level interface to the model. We can also make improvements without needing consumers to change their code.
 

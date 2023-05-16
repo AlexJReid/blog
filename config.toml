@@ -24,7 +24,7 @@ googleAnalytics = "UA-156939108-1"
     defaultTheme = "light"
     info = "Thoughts on cloud software engineering"
     description = "Alex Reid - thoughts on software engineering"
-    keywords = ["aws", "software", "cloud", "dyanmodb", "envoy", "consul", "Alex Reid", "porsche", "porsche 996"]
+    keywords = ["aws", "software", "cloud", "Alex Reid"]
     mainSections = ["posts", "car"]
     useHugoToc = true
     comments = false
@@ -36,6 +36,10 @@ googleAnalytics = "UA-156939108-1"
 [[params.socialIcons]]
 name = "twitter"
 url = "https://twitter.com/alexjreid"
+
+[[params.socialIcons]]
+name = "mastodon"
+url = "https://hachyderm.io/@alexjreid"
 
 [[params.socialIcons]]
 name = "instagram"
@@ -53,11 +57,11 @@ imageUrl = "me.jpg"
 imageTitle = "alexjreid avatar"
 
 [[params.profileMode.buttons]]
-name = "Tech"
+name = "Tech ramblings"
 url = "/posts"
 
 [[params.profileMode.buttons]]
-name = "Porsche 996"
+name = "Porsche 996 diary"
 url = "/car"
 
 [[params.profileMode.buttons]]
@@ -65,5 +69,5 @@ name = "Most read"
 url = "/tags/greatest-hits"
 
 [[params.profileMode.buttons]]
-name = "Tags"
+name = "Posts by category"
 url = "/tags"

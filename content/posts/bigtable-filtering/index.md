@@ -4,7 +4,7 @@ date = 2020-12-02T00:00:00Z
 title = "Filtering and pagination with Cloud Bigtable"
 description = "Building a paginated and filterable comments data model with Cloud Bigtable."
 slug = "cloud-bigtable-paginated-comments"
-tags = ["data","gcp","bigtable","dynamodb","pagination","greatest-hits"]
+tags = ["data","gcp","bigtable","dynamodb","pagination"]
 categories = []
 externalLink = ""
 series = []
@@ -24,7 +24,7 @@ For the product comments domain, first consider using DynamoDB, [Firestore](http
 
 Cloud Bigtable is a managed NoSQL database from Google Cloud, similar to the internal Bigtable service that powers some huge Google properties, including search and GMail.
 
->Cloud Bigtable stores data in massively scalable tables, each of which is a sorted key/value map. The table is composed of rows, each of which typically describes a single entity, and columns, which contain individual values for each row. Each row is indexed by a single row key, and columns that are related to one another are typically grouped together into a column family. Each column is identified by a combination of the column family and a column qualifier, which is a unique name within the column family. [More..](https://cloud.google.com/bigtable/docs/overview#storage-model)
+> Cloud Bigtable stores data in massively scalable tables, each of which is a sorted key/value map. The table is composed of rows, each of which typically describes a single entity, and columns, which contain individual values for each row. Each row is indexed by a single row key, and columns that are related to one another are typically grouped together into a column family. Each column is identified by a combination of the column family and a column qualifier, which is a unique name within the column family. [More..](https://cloud.google.com/bigtable/docs/overview#storage-model)
 
 Despite this simple interface, Bigtable is an abstraction on top of a host of storage, infrastructure and workload orchestration genius.
 
@@ -66,8 +66,8 @@ If a product has uniform distribution of ratings and languages, this approach wi
 
 Once again, let's recap on the model we are building.
 
- >We are tasked with producing a data model to store and retrieve the comments shown on each product page within an e-commerce site.
- >A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
+> We are tasked with producing a data model to store and retrieve the comments shown on each product page within an e-commerce site.
+> A product has a unique identifier which is used to partition the comments. Each product has a set of comments. The most recent `20` comments are shown beneath a product. Users can click a next button to paginate through older comments. As the front end system might be crawled by search engines, we do not want performance to degrade when older comments are requested.
 
 This can be broken down into the following access patterns.
 
@@ -86,7 +86,7 @@ Bigtable rows have no dedicated sort key, so comment creation time needs to be e
 
 Bigtable does not support reverse scans and we need to show the most recent comments first. A trick to achieve this is to subtract the actual timestamp from a timestamp 100 years (or more) into the future.
 
-``` python
+```python
 LONG_TIME_FUTURE = 4102444800 # 1st Jan 2100 ...
 created_ts = 1605387738 # 14th Nov 2020 ...
 reversed_timestamp_key = str(LONG_TIME_FUTURE - created_ts)
