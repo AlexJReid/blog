@@ -19,6 +19,10 @@ http {
       return 301 https://alexjreid.dev/posts/dynamodb-page-numbers/;
     }
 
+    location /lion {
+      return 301 https://web.dojo.app/create_booking/vendor/Hh3D5vAU7wM_pjsKSY-aju3szmnDvOkA0_2bwc284bM_restaurant;
+    }
+
     error_page 404 /404.html;
     
     location / {
