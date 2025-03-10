@@ -4,7 +4,7 @@ theme = "PaperMod"
 languagecode = "en"
 defaultcontentlanguage = "en"
 
-paginate = 20
+paginate = 50
 canonifyurls = true
 
 pygmentsstyle = "bw"
@@ -22,32 +22,16 @@ googleAnalytics = "UA-156939108-1"
     env = "production"
     title = "Alex Reid"
     defaultTheme = "light"
-    info = "Thoughts on cloud software engineering"
+    info = "Thoughts on software engineering"
     description = "Alex Reid - thoughts on software engineering"
     keywords = ["aws", "software", "cloud", "Alex Reid"]
-    mainSections = ["posts", "car"]
+    mainSections = ["posts"]
     useHugoToc = true
     comments = false
     showPostNavLinks = false
     showtopc = true
     showBreadCrumbs = true
     pluralizelisttitles = false
-
-[[params.socialIcons]]
-name = "twitter"
-url = "https://twitter.com/alexjreid"
-
-[[params.socialIcons]]
-name = "mastodon"
-url = "https://hachyderm.io/@alexjreid"
-
-[[params.socialIcons]]
-name = "instagram"
-url = "https://instagram.com/alexjreid"
-
-[[params.socialIcons]]
-name = "email"
-url = "mailto:alexjreid@me.com"
 
 [params.profileMode]
 enabled = true
@@ -61,8 +45,8 @@ name = "Tech ramblings"
 url = "/posts"
 
 [[params.profileMode.buttons]]
-name = "Porsche 996 diary"
-url = "/car"
+name = "Hire me"
+url = "https://acornsoft.uk/"
 
 [[params.profileMode.buttons]]
 name = "Most read"
