@@ -50,7 +50,7 @@ It is also simple to integrate with external vendors. For example, I wrote a plu
 
 ### Commercial
 
-Still working this out, but an indie dev needs to eat, so the plan is to [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There will be a small per-seat monthly subscription.
+This is under consideration, but an indie dev needs to eat. The current plan is to [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There may be a small per-seat monthly subscription.
 
 An ecosystem is important, so the following will be permissively open-sourced:
 
