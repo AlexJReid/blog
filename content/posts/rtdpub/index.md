@@ -18,11 +18,11 @@ I appreciate this is all quite niche, but if it saves time and makes lives easie
 
 ### Excel dev: there may be dragons
 
-Over the years, there have been many ways of extending Excel. The original C API (ancient, fast, hard to use - if you look closely you can see evidence in the rings of the tree-of-Excel that from back when Excel was written in Pascal), COM, VBA, C# ... all on Windows, of course.
+Over the years, there have been many ways of extending Excel. The original C API (ancient, fast, hard to use - if you look closely you can see evidence that Excel was originally written in Pascal), COM, C++, VBA, C# ... all on Windows, of course.
 
-Later versions added a browser engine to Excel (Edge/Chromium on Windows, Safari on Mac) and exposed rich a JavaScript SDK. This is technically very cool and has a lot of use cases, but unfortunately is quite slow for fast moving data.
+Current versions contain a browser engine (Edge/Chromium on Windows, Safari on Mac) and exposed rich a JavaScript SDK to it. This is technically very cool and has a lot of use cases, but unfortunately is quite slow for very fast moving data.
 
-Anyway, it's a bewildering array of choices and unfamiliar territory for many developers who simply want to use their language of choice, particularly those from a non-Windows background. To the uninitiated, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. How hard can it be?
+Needless to say, it's a bewildering array of choices in unfamiliar territory for many developers who simply want to use their language of choice, particularly those from a non Windows background. To the uninitiated, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. Just how hard can it be?
 
 In simple scenarios, not very hard, but to do it well, you need to figure out which approach fits best for a particular use case. This is a steep learning curve.
 
