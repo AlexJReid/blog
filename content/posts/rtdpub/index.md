@@ -58,6 +58,6 @@ An ecosystem is important, so the following will be permissively open-sourced:
 - All docs SDKs and tooling
 - Core plugins, such as messaging integrations such as `nats` and `kafka`, plus well-known data vendors - these can be sponsored!
 
-### Check it out
+### GA soon
 
-It is not generally available yet. I'm currently building up a large suite of automated load/performance tests, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo or simply want to ask questions.
+It is not generally available yet. I'm currently building up a large suite of automated load/performance tests, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
