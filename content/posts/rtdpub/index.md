@@ -10,9 +10,9 @@ externalLink = ""
 series = []
 +++
 
-This post introduces [rtd.pub](https://rtd.pub) - a design, approach and now implementation I've been mulling over for a while. **rtd.pub is a platform for easily connecting any realtime data source to Microsoft Excel.**
+This post introduces [rtd.pub](https://rtd.pub) - a design and approach I've been mulling over for a while. I have now implemented it. **rtd.pub is a platform for easily connecting any realtime data source to Microsoft Excel.**
 
-This, and of course spreadsheets in general, are very boring. But they're the original low code/RAD tool: in terms of bang for buck and the power they put into the hands of domain experts, nothing comes close. (No, not some even sketchy code regurgitated by a large language model.)
+This, and of course spreadsheets in general, are somewhat boring. However, they're the original low code/RAD tool: in terms of bang for buck and the power they put into the hands of domain experts, nothing comes close. (No, not some even sketchy code regurgitated by a large language model.)
 
 I appreciate this is all quite niche, but if it saves time and makes lives easier, why not?
 
