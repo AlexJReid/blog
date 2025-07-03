@@ -16,7 +16,7 @@ This, and of course spreadsheets in general, are very boring. But they're the or
 
 I appreciate this is all quite niche, but if it saves time and makes lives easier, why not?
 
-### Excel dev: here be dragons
+### Excel dev: there may be dragons
 
 Over the years, there have been many ways of extending Excel. The original C API (ancient, fast, hard to use - if you look closely you can see evidence in the rings of the tree-of-Excel that from back when Excel was written in Pascal), COM, VBA, C# ... all on Windows, of course.
 
@@ -50,7 +50,7 @@ It is also simple to integrate with external vendors. For example, I wrote a plu
 
 ### Commercial
 
-The commercial model will be to [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There will be a small per-seat monthly subscription.
+Still working this out, but an indie dev needs to eat, so the plan is to [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There will be a small per-seat monthly subscription.
 
 An ecosystem is important, so the following will be permissively open-sourced:
 
@@ -60,4 +60,4 @@ An ecosystem is important, so the following will be permissively open-sourced:
 
 ### Check it out
 
-It's not quite ready yet, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo or simply want to ask questions.
+It is not generally available yet. I'm currently building up a large suite of automated load/performance tests, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo or simply want to ask questions.
