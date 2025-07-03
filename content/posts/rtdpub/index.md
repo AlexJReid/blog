@@ -32,7 +32,7 @@ As we have established, for very high velocity data, the JavaScript _bridge_ is 
 
 ### How does rtd.pub help?
 
-It shields developers from the above. They can write code in any language, to stream values into Excel. They can reuse code they already have. They can run complex calculations remotely on a powerful server. It is entirely open ended. All rtd.pub really does is define a protocol and provide a pipe into Excel.
+It shields developers from the above. They can write code in any language to stream values into Excel. They can reuse code they already have. They can run complex calculations remotely on a powerful server. It is entirely open ended. All rtd.pub really does is define a protocol and provide a pipe into Excel.
 
 ### How?
 
@@ -40,7 +40,7 @@ So this is a design I've been thinking about for a month or two. An RTD server (
 
 ### Plugins plugins plugins
 
-As plugins are so easy to write (usually in fewer than 100 lines of code, depending on language) it is easy to get results quickly. To move even more quickly, there is an SDK for Go (Python coming soon) that makes it very easy indeed. Finally, to move _even_ more quickly than that, NATS is supported out of the box. If you use [NATS](https://nats.io) already, you can hook your subjects up to Excel. Additional messaging systems will be added soon.
+As plugins are so easy to write (usually in fewer than 100 lines of code, depending on language) it is easy to get results quickly. To move even more quickly, there is an SDK for Go (Python coming soon) that makes it very easy indeed. Finally, to move _even_ more quickly than that, NATS is supported out of the box. If you use [NATS](https://nats.io) already, you can hook your subjects up to Excel with a few lines of configuration. Support for additional messaging systems will be added soon.
 
 It is also simple to integrate with external vendors. For example, I wrote a plugin to the [Polygon.io stocks websocket API](https://polygon.io/docs/websocket/stocks/overview) with their [official Go client](https://github.com/polygon-io/client-go).
 
