@@ -2,7 +2,7 @@
 draft = false
 date = 2025-07-03
 title = "Taming real-time data in Excel with rtd.pub"
-description = "A surprising amount of the world rests on spreadsheets, yet integrating real-time data can be challenging. This post introduces rtd.pub, a platform for easily connecting any real-time data source to Microsoft Excel."
+description = "A surprising amount of the world rests on spreadsheets, yet integrating real-time data with them can be challenging. This post introduces rtd.pub, a platform for easily connecting any real-time data source to Microsoft Excel."
 slug = "rtdpub-hello"
 tags = ["data","excel","realtime","acornsoft"]
 categories = []
@@ -10,9 +10,9 @@ externalLink = ""
 series = []
 +++
 
-This post introduces [rtd.pub](https://rtd.pub) - a design and approach I've been mulling over for a while. I have now implemented it. **rtd.pub is a platform for easily connecting any real-time data source to Microsoft Excel.**
+[rtd.pub](https://rtd.pub) is a design and approach I've been mulling over for a while. I have now implemented it! **rtd.pub is a platform for easily connecting any real-time data source to Microsoft Excel.**
 
-This, and of course spreadsheets in general, are somewhat boring. However, they're the original low code/RAD tool: in terms of bang for buck and the power they put into the hands of domain experts, nothing comes close. (No, not even some sketchy code regurgitated by a large language model.)
+This, and of course spreadsheets in general, are somewhat boring. However, they're the original low code/RAD tool: in terms of bang for buck and the control they put into the hands of domain experts, nothing comes close. (No, not even some sketchy code regurgitated by a large language model - yet anyway.)
 
 I appreciate this is all quite niche, but if it saves time and makes lives easier, why not?
 
