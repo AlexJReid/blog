@@ -2,7 +2,7 @@
 draft = false
 date = 2025-07-03
 title = "Taming real-time data in Excel with rtd.pub"
-description = "A surprising amount of the world rests on spreadsheets, yet integrating real-time data can be challenging. This post introduces rtd.pub, a platform for easily connecting any realtime data source to Microsoft Excel."
+description = "A surprising amount of the world rests on spreadsheets, yet integrating real-time data can be challenging. This post introduces rtd.pub, a platform for easily connecting any real-time data source to Microsoft Excel."
 slug = "rtdpub-hello"
 tags = ["data","excel","realtime","acornsoft"]
 categories = []
@@ -10,9 +10,9 @@ externalLink = ""
 series = []
 +++
 
-This post introduces [rtd.pub](https://rtd.pub) - a design and approach I've been mulling over for a while. I have now implemented it. **rtd.pub is a platform for easily connecting any realtime data source to Microsoft Excel.**
+This post introduces [rtd.pub](https://rtd.pub) - a design and approach I've been mulling over for a while. I have now implemented it. **rtd.pub is a platform for easily connecting any real-time data source to Microsoft Excel.**
 
-This, and of course spreadsheets in general, are somewhat boring. However, they're the original low code/RAD tool: in terms of bang for buck and the power they put into the hands of domain experts, nothing comes close. (No, not some even sketchy code regurgitated by a large language model.)
+This, and of course spreadsheets in general, are somewhat boring. However, they're the original low code/RAD tool: in terms of bang for buck and the power they put into the hands of domain experts, nothing comes close. (No, not even some sketchy code regurgitated by a large language model.)
 
 I appreciate this is all quite niche, but if it saves time and makes lives easier, why not?
 
@@ -20,7 +20,7 @@ I appreciate this is all quite niche, but if it saves time and makes lives easie
 
 Over the years, there have been many ways of extending Excel. The original C API (ancient, fast, hard to use - if you look closely you can see evidence that Excel was originally written in Pascal), COM, C++, VBA, C# ... all on Windows, of course.
 
-Current versions contain a browser engine (Edge/Chromium on Windows, Safari on Mac) and exposed rich a JavaScript SDK to it. This is technically very cool and has a lot of use cases, but unfortunately is quite slow for very fast moving data.
+Current versions contain a browser engine (Edge/Chromium on Windows, Safari on Mac) and exposed rich a JavaScript SDK through it. This is technically very cool and has a lot of use cases, but unfortunately is quite slow for very fast moving data.
 
 Needless to say, it's a bewildering array of choices in unfamiliar territory for many developers who simply want to use their language of choice, particularly those from a non Windows background. To the uninitiated, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. Just how hard can it be?
 
