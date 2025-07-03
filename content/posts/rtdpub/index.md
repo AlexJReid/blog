@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2025-07-03
-title = "Realtime data in Excel with rtd.pub"
+title = "Taming real-time data in Excel with rtd.pub"
 description = "A surprising amount of the world rests on spreadsheets, yet integrating real-time data can be challenging. This post introduces rtd.pub, a platform for easily connecting any realtime data source to Microsoft Excel."
 slug = "rtdpub-hello"
 tags = ["data","excel","realtime","acornsoft"]
