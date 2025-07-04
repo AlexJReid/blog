@@ -48,7 +48,7 @@ It is also simple to integrate with external vendors. For example, I wrote a plu
 
 <div style="padding:56.25% 0 0 0;position:relative;margin-top:1em;"><iframe src="https://player.vimeo.com/video/1095719570?h=8f8664b780&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="rtd.pub websocket plugin"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>{{< /rawhtml >}}
 
-### Commercial
+### Commercials
 
 This is under consideration, but an indie dev needs to eat. The current plan is to [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There may be a small per-seat monthly subscription.
 
@@ -60,4 +60,4 @@ An ecosystem is important, so the following will be permissively open-sourced:
 
 ### GA soon
 
-It is not generally available yet. I'm currently building up a large suite of automated load/performance tests, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
+It is not generally available yet, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
