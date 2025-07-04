@@ -22,9 +22,9 @@ Over the years, there have been many ways of extending Excel. The original C API
 
 Current versions contain a browser engine (Edge/Chromium on Windows, Safari on Mac) and expose a JavaScript SDK through it. This is technically very cool and has a lot of use cases, but unfortunately is quite slow for very fast moving data.
 
-Needless to say, it's a bewildering array of choices in unfamiliar territory for many developers who simply want to use their language of choice, particularly those from a non Windows background. To the uninitiated, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. Just how hard can it be?
+Needless to say, it's a bewildering array of choices in unfamiliar territory for many developers who simply want to use their language of choice, particularly those not from a Windows background. To management, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. Just how hard can it be?
 
-In simple scenarios, not very hard, but to do it well, you need to figure out which approach fits best for a particular use case. This is a steep learning curve.
+In simple scenarios, not very hard, but to do it well, you need to figure out which approach fits best for a particular use case, which is a steep learning curve.
 
 As we have established, for very high velocity data, the JavaScript _bridge_ is a poor choice. The trusty old `=RTD()` function that leverages COM automation is still the best choice. But then you need to understand COM, threading and ... what language to even write your COM server in. "Hey Google, what even _is_ a COM server?"
 
@@ -32,11 +32,17 @@ As we have established, for very high velocity data, the JavaScript _bridge_ is 
 
 ### How does rtd.pub help?
 
-It shields developers from the above. They can write code in any language to stream values into Excel. They can reuse code they already have. They can run complex calculations remotely on a powerful server. It is entirely open ended. All rtd.pub really does is define a protocol and provide a pipe into Excel.
+It shields developers from the above by building in the know-how. Developers can write code in any language to stream values into Excel. They can reuse code they already have. They can run complex calculations remotely on a powerful server. It is entirely open ended.
 
 ### How?
 
-So this is a design I've been thinking about for a month or two. An RTD server (written in C++) communicates with tiny processes called _plugins_ over UNIX sockets. This lightweight component runs within Excel, but by design, delegates the interesting _work to be done_ to plugins. A plugin process implements a gRPC service definition and streams protobuf messages. Plugins are started by the plugin host which supervises the process, multiplexing streams from all other plugins to efficiently pass over to Excel.
+rtd.pub boils down to three things:
+
+- a gRPC protocol
+- plugins that implement said protocol
+- a pipe (via named pipes, UNIX sockets, H2) into Excel
+
+This is a design I've been thinking about for a month or two. An RTD server (written in C++) communicates with tiny processes called _plugins_ over UNIX sockets. This lightweight component runs within Excel, but by design, delegates the interesting _work to be done_ to plugins. A plugin process implements a gRPC service definition and streams protobuf messages. Plugins are started by the plugin host which supervises the process, multiplexing streams from all other plugins to efficiently pass over to Excel.
 
 ### Plugins plugins plugins
 
