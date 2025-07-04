@@ -22,7 +22,7 @@ Over the years, there have been many ways of extending Excel. The original C API
 
 Current versions contain a browser engine (Edge/Chromium on Windows, Safari on Mac) and expose a JavaScript SDK through it. This is technically very cool and has a lot of use cases, but unfortunately is quite slow for very fast moving data.
 
-Needless to say, it's a bewildering array of choices in unfamiliar territory for many developers who simply want to use their language of choice, particularly those not from a Windows background. To management, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. Exactly how hard can it be?
+Needless to say, it's a bewildering array of choices in unfamiliar territory for many developers who simply want to use their language of choice, particularly for those not from a Windows background. To management, it might appear that developers are making heavy weather of _just_ displaying some numbers on a screen. Exactly how hard can it be?
 
 In simple scenarios, not very, but to do it well, you will need to understand each approach, and which fits best for a particular use case. This is time-consuming.
 
