@@ -39,8 +39,8 @@ It shields developers from the above by building in the know-how. Developers can
 rtd.pub boils down to three things:
 
 - a gRPC protocol
-- plugins that implement said protocol
-- a pipe (via named pipes, UNIX sockets, H2) into Excel
+- a unified pipe of data (UNIX sockets, H2) into Excel, via _conduit_ RTD server
+- plugins that implement said protocol, bringing in any data from anywhere
 
 This is a design I've been thinking about for a month or two. An RTD server (written in C++) communicates with tiny processes called _plugins_ over UNIX sockets. This lightweight component runs within Excel, but by design, delegates the interesting _work to be done_ to plugins. A plugin process implements a gRPC service definition and streams protobuf messages. Plugins are started by the plugin host which supervises the process, multiplexing streams from all other plugins to efficiently pass over to Excel.
 
