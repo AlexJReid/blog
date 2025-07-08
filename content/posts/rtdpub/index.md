@@ -85,4 +85,6 @@ An ecosystem is important, so the following will be available under a permissive
 
 ### GA soon
 
-Pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
+Pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html).
+
+Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
