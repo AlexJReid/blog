@@ -75,14 +75,14 @@ It is also simple to integrate with external vendors. For example, I wrote a plu
 
 ### Commercials
 
-This is under consideration, but an indie dev needs to eat. The current plan is to [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There will also be a small per-seat monthly/yearly subscription.
+I will [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There will also be a small per-seat monthly/yearly subscription for the downloadable Excel add-in for Windows. Mac support will follow.
 
-An ecosystem is important, so the following will be permissively open-sourced:
+An ecosystem is important, so the following will be available under a permissive open source licence.
 
 - The protocol / gRPC contract
-- All docs SDKs and tooling
-- Core plugins, such as messaging integrations such as `nats` and `kafka`, plus well-known data vendors - these can be sponsored!
+- All docs, SDKs and tooling
+- Core plugins, such as messaging integrations such as `nats` and `kafka`, plus well-known data vendors - which can also be sponsored by said well-known data vendors ✨
 
 ### GA soon
 
-It is not generally available yet, but pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
+Pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html). Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
