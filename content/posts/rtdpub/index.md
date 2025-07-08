@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-> **[rtd.pub](https://rtd.pub) is a platform for easily connecting any real-time data source to Microsoft Excel.** You can write code in Go and Python to do this.
+> **[rtd.pub](https://rtd.pub) is a platform for easily connecting any real-time data source to Microsoft Excel.** You can write code in Go and Python, or simply configure pre-built open source connectors.
 
 This is a design and approach I've been [mulling over](https://learning-notes.mistermicheels.com/mindset/hammock-driven-development/) for the past couple of months. I have now implemented it.
 
