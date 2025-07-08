@@ -55,3 +55,6 @@ url = "/tags/greatest-hits"
 [[params.profileMode.buttons]]
 name = "Posts by category"
 url = "/tags"
+
+[markup.goldmark.renderer]
+unsafe = true
