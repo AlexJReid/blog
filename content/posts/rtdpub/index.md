@@ -55,13 +55,16 @@ It shields developers from the above by building in know-how, workarounds and pa
 
 ### How?
 
-rtd.pub boils down to three things:
+The solution boils down to these things:
 
 - a gRPC protocol
 - a unified pipe of data (UNIX sockets, H2) into Excel, via a _conduit_ RTD server
 - plugins that implement said protocol, bringing in any data from anywhere
+- a plugin _host_ that supervises plugin processes
 
-An RTD server (written in C++) communicates with tiny processes called _plugins_ over UNIX sockets. This lightweight component runs within Excel, but by design, delegates the interesting _work to be done_ to plugins. A plugin process implements a gRPC service definition and streams protobuf messages. Plugins are started by the plugin host which supervises the process, multiplexing streams from all other plugins to efficiently pass over to Excel.
+An RTD server communicates with tiny processes called _plugins_ over UNIX sockets. The RTD server is a lightweight component that runs within Excel. By design, it delegates the interesting work to plugins. A plugin process implements a gRPC service definition and streams protobuf messages.
+
+Plugins are started by the plugin host which supervises the process, multiplexing streams from all other plugins to efficiently pass over to Excel.
 
 ### Plugins
 
@@ -73,18 +76,8 @@ It is also simple to integrate with external vendors. For example, I wrote a plu
 
 <div style="padding:56.25% 0 0 0;position:relative;margin-top:1em;"><iframe src="https://player.vimeo.com/video/1095719570?h=8f8664b780&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="rtd.pub websocket plugin"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>{{< /rawhtml >}}
 
-### Commercials
-
-I will [provide support, custom integrations and white label solutions for data vendors, built on rtd.pub](https://acornsoft.uk). There will also be a small per-seat monthly/yearly subscription for the downloadable Excel add-in for Windows. Mac support will follow.
-
-An ecosystem is important, so the following will be available under a permissive open source licence.
-
-- The protocol / gRPC contract
-- All docs, SDKs and tooling
-- Core plugins, such as messaging integrations such as `nats` and `kafka`, plus well-known data vendors - which can also be sponsored by said well-known data vendors ✨
-
 ### GA soon
 
 Pop over to [rtd.pub](https://rtd.pub) to see it in action, and [register your interest via your GitHub account](https://rtd.pub/register.html).
 
-Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious about the whole thing.
+Give me a shout in the usual places or [email](mailto:cells@rtd.pub) if you want to arrange a demo, ask questions or are just plain curious.
