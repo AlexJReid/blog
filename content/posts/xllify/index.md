@@ -70,7 +70,7 @@ jobs:
 
 The developer's build is using an Ubuntu runner. The Lua code is compiled into bytecode using this runner. Any errors will be reported should this fail.
 
-If the bytecode compilation succeeds, it is submitted to the xllify API which will remotely build and sign the XLL on Windows with the necessary MSVC toolchain. The developer does not incur Windows runner costs. The action will download the built result in about 10-15 seconds.
+If the bytecode compilation succeeds, it is submitted to the xllify API which will remotely build and sign the XLL on Windows with the necessary MSVC toolchain. The developer does not incur Windows runner costs. The action will download the built assembly in about 10-15 seconds.
 
 From there, the developer can add further steps in their action to publish or deploy the resulting XLL.
 
