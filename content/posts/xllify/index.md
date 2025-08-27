@@ -26,7 +26,7 @@ What if there was an easy way of leveraging the speed of the C API, [safely expo
 
 ### Hello, xllify
 
-**xllify is an API that takes your Lua functions and emits a signed, ready to go XLL to load into Excel.** Developers download a simple interpreter for their Mac, Linux and Windows (or CI environment) to develop and test their functions locally, ahead of submitting them to be converted into an XLL.
+**xllify is remote build API that takes provided Lua functions and emits a signed, ready to go XLL to load into Excel.** Developers download a simple interpreter for their Mac, Linux and Windows (or CI environment) to develop and test their functions locally, ahead of submitting them to be converted into an XLL.
 
 A trivial example would be:
 
