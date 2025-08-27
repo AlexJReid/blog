@@ -20,7 +20,7 @@ There are many ways to skin a cat, so **check them out first to see if they fit 
 
 An XLL is a DLL that exports functions enabling its code to be loaded, unsafely, into Excel. As a result, the C API brings exciting features such as dumping garbage into cells, crashing Excel and generally causing chaos. When being used directly, one must use plenty of caution.
 
-Lack of safety and pre-historic development approaches aside, we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance. JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably non issue), C# development chops and Visual Studio for Windows.
+Lack of safety and pre-historic development approaches aside, we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance. JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably a non issue if you target 2.0), C# development chops and Visual Studio for Windows.
 
 What if there was an easy way of leveraging the speed of the C API, [safely exposed](https://luau.org/sandbox) through a fast, yet simple scripting language, with no dependency hell or complicated development setup?
 
