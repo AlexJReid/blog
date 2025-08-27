@@ -1,7 +1,7 @@
 +++ 
 draft = false
 date = 2025-08-27
-title = "Fast and easy Excel custom functions with xllify"
+title = "Fast and easy Excel custom functions with xllify and Lua"
 description = "When extending Excel with custom functions, the ancient Excel C SDK is notoriously hard to use and should be generally avoided. There are modern alternatives that use .NET and JavaScript, but they too bring drawbacks and challenges."
 slug = "xllify-hello"
 tags = ["data","excel","lua","acornsoft"]
