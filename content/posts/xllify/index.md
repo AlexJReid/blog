@@ -114,7 +114,7 @@ Not much to see here. An XLL build is orchestrated with CMake; Luau and XLCALL32
 
 The submitted Luau bytecode is packed into the assembly as a resource, which is loaded into the Lua environment when the add-in is loaded. _Customer_ builds run on segregated GitHub Actions Windows runners.
 
-Customer code is somewhat obsfucated through its compilation to bytecode, but an self-run solution to this is in the works, should privacy be a concern to some organisations.
+Customer code is somewhat obsfucated through its compilation to bytecode, but a self-run solution to this is in the works, should privacy be a concern to some organisations.
 
 ### Availability
 
