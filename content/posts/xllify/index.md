@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-**Excel is the original rapid application development tool.** You can do unholy things to get a job done without code. Long term, these solutions can end up brittle and hard to extend.
+**Excel is the original rapid application development tool.** Developers can do unholy things to get a job done without code. Long term, these solutions can end up brittle and hard to extend.
 
 Over the years there have been many approaches for extending Excel beyond formula soup and VBA. There is the excellent [Excel-DNA](https://excel-dna.net/), [PyXLL](https://www.pyxll.com/), Microsoft's own [Office.js](https://learn.microsoft.com/en-us/office/dev/add-ins/reference/overview/excel-add-ins-reference-overview) and [Python](https://support.microsoft.com/en-gb/office/introduction-to-python-in-excel-55643c2e-ff56-4168-b1ce-9428c8308545) support, among others. These technologies are far simpler and feature rich than the [Excel C Development Kit](https://docs.microsoft.com/en-us/office/client-developer/excel/welcome-to-the-excel-software-development-kit) and are well documented and supported.
 
@@ -20,13 +20,13 @@ There are many ways to skin a cat, so **check them out first to see if they fit 
 
 An XLL is a DLL that exports functions enabling its code to be loaded, unsafely, into Excel. A degree in technical archeology is recommended, or failing that an appreciation of all things 1990s. Pop some Nirvana (or Spice Girls) onto your MiniDisc player and delve in. The C API brings with it exciting features such as dumping garbage into cells, crashing Excel and generally causing chaos. When used directly, one must exercise plenty of caution.
 
-Lack of safety and ancient history complaints aside, **we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance.** JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably a non issue if you target 2.0), C# development chops and Visual Studio for Windows.
+Lack of safety and ancient history complaints aside, **we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance.** JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably a non issue if 2.0 is targetted), C# development chops and Visual Studio for Windows.
 
 What if there was an easy way of leveraging the speed of the C API, [safely exposed](https://luau.org/sandbox) through a fast, yet simple scripting language, with no dependency hell or complicated development setup?
 
 ### Hello, xllify
 
-**xllify is an API that takes your Lua functions and emits you a signed, ready to go XLL to load into Excel.** Developers download a simple interpreter for their Mac, Linux and Windows (or CI environment) to develop and test their functions locally, ahead of submitting them to be converted into an XLL.
+**xllify is an API that takes your Lua functions and emits a signed, ready to go XLL to load into Excel.** Developers download a simple interpreter for their Mac, Linux and Windows (or CI environment) to develop and test their functions locally, ahead of submitting them to be converted into an XLL.
 
 A trivial example would be:
 
@@ -63,7 +63,7 @@ Developers can test their Lua implemented functions on any platform. No Windows 
 
 xllify embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It is compatible with Lua 5.1.
 
-Luau was used for sandboxing reasons. Potentially harmful Lua code cannot be run. It also has a gradual typing system to provide useful type hints to the conversion process and help developers catch bugs early on.
+Luau was used for sandboxing reasons. Potentially harmful Lua code cannot be run. It also has a gradual typing system to provide useful type hints to the conversion process, and also help developers catch bugs early on.
 
 As part of a build, developers offer up their Lua code to xllify through the provided GitHub Action.
 
