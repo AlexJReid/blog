@@ -18,7 +18,7 @@ There are many ways to skin a cat, so **check them out first to see if they fit 
 
 ### C, C, C don't prove them right 🎵
 
-An XLL is a DLL that exports functions enabling its code to be loaded, unsafely, into Excel. A degree in technical archeology is recommended, or failing that an appreciation of all things 1990s. Pop some Nirvana onto your MiniDisc player and delve in. As a result, the C API brings exciting features such as dumping garbage into cells, crashing Excel and generally causing chaos. When being used directly, one must use plenty of caution.
+An XLL is a DLL that exports functions enabling its code to be loaded, unsafely, into Excel. A degree in technical archeology is recommended, or failing that an appreciation of all things 1990s. Pop some Nirvana onto your MiniDisc player and delve in. As a result, the C API brings exciting features such as dumping garbage into cells, crashing Excel and generally causing chaos. When used directly, one must exercise plenty of caution.
 
 Lack of safety and ancient history complaints aside, **we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance.** JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably a non issue if you target 2.0), C# development chops and Visual Studio for Windows.
 
