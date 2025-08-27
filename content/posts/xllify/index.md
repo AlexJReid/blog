@@ -41,9 +41,11 @@ xllify.ExcelFunction(
 
 This exposes `=acme.SIMPLE_ADD(1, 2)` to be used from your sheets, complete with documentation. Parameters are inferred from the function signature.
 
-You can develop and destruction test your Lua implemented functions on any platform. You do not need a Windows machine, Office installed or anything. Plain old Lua.
+You can develop and destruction test your Lua implemented functions on any platform. You do not need a Windows machine, Office installed or anything like that. Just plain old Lua.
 
-Well, to be precise, xllify embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It's compatible with Lua 5.1. Luau was used for sandboxing reasons, so potentially harmful Lua code cannot be run. It also has a gradual typing system to catch bugs early on.
+A CLI is provided to run your scripts through to validate their behaviour.
+
+To be precise, xllify embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It's compatible with Lua 5.1. Luau was used for sandboxing reasons, so potentially harmful Lua code cannot be run. It also has a gradual typing system to catch bugs early on.
 
 Developers can perform xllify builds with the provided GitHub Action.
 
