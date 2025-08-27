@@ -12,7 +12,7 @@ series = []
 
 **Excel is the original rapid application development tool.** You can do unholy things to get the job done without code. These solutions end up brittle and hard to change.
 
-Over the years there have been many approaches for extending Excel beyond formula soup and VBA. There is the excellent [Excel-DNA](https://excel-dna.net/), [PyXLL](https://www.pyxll.com/), Microsoft's own [Office.js](https://learn.microsoft.com/en-us/office/dev/add-ins/reference/overview/excel-add-ins-reference-overview) and [Python](https://support.microsoft.com/en-gb/office/introduction-to-python-in-excel-55643c2e-ff56-4168-b1ce-9428c8308545) support, among others. These technologies are far simpler than the [Excel C Development Kit](https://docs.microsoft.com/en-us/office/client-developer/excel/welcome-to-the-excel-software-development-kit) and are well documented and supported.
+Over the years there have been many approaches for extending Excel beyond formula soup and VBA. There is the excellent [Excel-DNA](https://excel-dna.net/), [PyXLL](https://www.pyxll.com/), Microsoft's own [Office.js](https://learn.microsoft.com/en-us/office/dev/add-ins/reference/overview/excel-add-ins-reference-overview) and [Python](https://support.microsoft.com/en-gb/office/introduction-to-python-in-excel-55643c2e-ff56-4168-b1ce-9428c8308545) support, among others. These technologies are far simpler and feature rich than the [Excel C Development Kit](https://docs.microsoft.com/en-us/office/client-developer/excel/welcome-to-the-excel-software-development-kit) and are well documented and supported.
 
 There are many ways to skin a cat, so **check them out first to see if they fit your problem space.**
 
@@ -20,7 +20,7 @@ There are many ways to skin a cat, so **check them out first to see if they fit 
 
 An XLL is a DLL that exports functions enabling its code to be loaded, unsafely, into Excel. As a result, the C API brings exciting features such as dumping garbage into cells, crashing Excel and generally causing chaos. When being used directly, one must use plenty of caution.
 
-Lack of safety and pre-historic development approaches aside, we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance. JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably a non issue if you target 2.0), C# development chops and Visual Studio for Windows.
+Lack of safety and pre-historic development approaches aside, **we cannot escape the fact that in certain scenarios, the C API still takes the crown for absolute efficiency and performance.** JavaScript interop performance (not the language itself) can be poor, and Microsoft's own Python support involves a network call: enough said. Excel-DNA performance is great, but requires .NET installing (probably a non issue if you target 2.0), C# development chops and Visual Studio for Windows.
 
 What if there was an easy way of leveraging the speed of the C API, [safely exposed](https://luau.org/sandbox) through a fast, yet simple scripting language, with no dependency hell or complicated development setup?
 
