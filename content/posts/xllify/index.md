@@ -14,7 +14,7 @@ series = []
 
 Over the years there have been many approaches for extending Excel beyond formula soup and VBA. There is the excellent [Excel-DNA](https://excel-dna.net/), [PyXLL](https://www.pyxll.com/), Microsoft's own [Office.js](https://learn.microsoft.com/en-us/office/dev/add-ins/reference/overview/excel-add-ins-reference-overview) and [Python](https://support.microsoft.com/en-gb/office/introduction-to-python-in-excel-55643c2e-ff56-4168-b1ce-9428c8308545) support, among others. These technologies are far simpler and feature rich than the [Excel C Development Kit](https://docs.microsoft.com/en-us/office/client-developer/excel/welcome-to-the-excel-software-development-kit) and are well documented and supported.
 
-There are many ways to skin a cat, so **check them out first to see if they fit your problem space.**
+There are many ways to skin a cat, so it is wise to **check them out first to see which one fits a problem space best.**
 
 ### C, C, C don't prove them right 🎵
 
