@@ -90,7 +90,7 @@ From there, the developer can add further steps in their action to publish or de
 
 ### Why this is good
 
-Developer quality of life almost always trumps raw performance. There is a certain irony in extolling the virtues of the speed of C and then diminishing that coupling it to a scripting language. However, initial tests show that a careful and efficient stitching together of the two worlds can yield a happy balance between performance, safety and productivity.
+Developer quality of life almost always trumps raw performance. There is a certain contradiction in extolling the virtues of the speed of C and then diminishing that by coupling it to a scripting language. However, initial tests show that a careful and efficient stitching together of the two worlds can yield a happy balance between performance, safety and productivity.
 
 <style>
  .image-float-left {
