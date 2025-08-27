@@ -104,7 +104,7 @@ Developer quality of life almost always trumps raw performance, but initial test
 <li>Develop, unit test and profile outside of Excel
 <li>Developers do not need Windows
 <li>Leverage existing Lua and C code
-<li>Luau sandbox for security and stability
+<li>Luau's sandbox for security and stability
 </ul>
 </div>
 
