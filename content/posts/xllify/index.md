@@ -59,7 +59,7 @@ This exposes `acme.ADD` and `acme.RANDO` to Excel, complete with inline document
 
 Users can call them as they would any Excel function: `=acme.ADD(3,2)`. `acme.RANDO` is volatile so will rerun on every calculation. Parameters are inferred from the function signature.
 
-Developers can test their Lua implemented functions on any platform. No Windows machine, IDE, Office installation or anything like that is required - just the `xllify` CLI to validate. This is effectively a Lua interpreter preloaded with some libraries.
+Developers can test their Lua implemented functions on any platform. No Windows machine, IDE, Office installation or anything like that is required - just the `xllify` CLI to run and validate their work locally. This is effectively a Lua interpreter preloaded with some libraries.
 
 xllify embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It is compatible with Lua 5.1.
 
