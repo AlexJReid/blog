@@ -16,7 +16,7 @@ Over the years there have been many approaches for extending Excel beyond formul
 
 There are many ways to skin a cat, so it is wise to **check them out first to see which one fits a problem space best.**
 
-### C, C, C don't prove them right 🎵
+### X(he)LL
 
 An XLL is a DLL that exports functions enabling its code to be loaded, unsafely, into Excel. A degree in technical archeology is recommended, or failing that an appreciation of all things 1990s. Pop some Nirvana (or Spice Girls) onto your MiniDisc player and delve in. The C API brings with it exciting features such as dumping garbage into cells, crashing Excel and generally causing chaos. When used directly, one must exercise plenty of caution.
 
