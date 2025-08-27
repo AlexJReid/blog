@@ -99,7 +99,7 @@ From there, the developer can deploy the resulting XLL on Windows Excel in whate
 </ul>
 </div>
 
-### How does it work
+### How does it work?
 
 Not much to see here. An XLL build is orchestrated with CMake; Luau and XLCALL32 are linked to form an XLL. There's standard C++ glue to expose relevant aspects of the Excel SDK and marshal between `LPXLOPER12` and friends, carefully managing memory and abstracting quirks. Injected Luau code is compiled to bytecode and packed into the assembly as a resource, which is loaded into the Lua environment when the add-in is loaded. _Customer_ builds run on segregated GitHub Actions Windows runners.
 
