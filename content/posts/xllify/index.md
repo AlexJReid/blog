@@ -63,9 +63,9 @@ Developers can test their Lua implemented functions on any platform. No Windows 
 
 xllify embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It is compatible with Lua 5.1.
 
-Luau was used for sandboxing reasons, so harmful Lua code cannot be run. It also has a gradual typing system, to catch bugs early on and provide useful type hints to the conversion process.
+Luau was used for sandboxing reasons. Potentially harmful Lua code cannot be run. It also has a gradual typing system to provide useful type hints to the conversion process and help developers catch bugs early on.
 
-As part of an XLL build, developers offer up their Lua code to xllify with the provided GitHub Action.
+As part of a build, developers offer up their Lua code to xllify through the provided GitHub Action.
 
 ```yaml
 jobs:
@@ -84,13 +84,13 @@ jobs:
 
 The developer's build is using an Ubuntu runner. The Lua code is compiled into bytecode using this runner. Any errors will be reported should this fail.
 
-If the bytecode compilation succeeds, it is submitted to the xllify API which will remotely build and sign the XLL on Windows with the necessary MSVC toolchain. The developer does not incur Windows runner costs. The action will download the built assembly in about 10-15 seconds.
+If the bytecode compilation succeeds, it is then submitted to the xllify API which will remotely build and sign the XLL on Windows with the necessary MSVC toolchain. The developer does not incur Windows runner costs. The action will download the built assembly within about 10-15 seconds.
 
 From there, the developer can add further steps in their action to publish or deploy the resulting XLL.
 
 ### Why this is good
 
-Developer quality of life almost always trumps raw performance, but initial tests shown this approach to be a great balance between performance and productivity.
+Developer quality of life almost always trumps raw performance. There is a certain irony in extolling the virtues of the speed of C and then diminishing that coupling it to a scripting language. However, initial tests show that a careful and efficient stitching together of the two worlds can yield a happy balance between performance, safety and productivity.
 
 <style>
  .image-float-left {
