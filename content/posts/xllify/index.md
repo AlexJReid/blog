@@ -26,14 +26,14 @@ What if there was an easy way of leveraging the speed of the C API, [safely expo
 
 ### Hello, xllify
 
-**xllify is an API that takes your Lua functions and emits you a signed, ready to go XLL to load into Excel.** Developers download a simple interpreter for Mac, Linux and Windows to develop and test their functions locally ahead of submitting them to be converted into an XLL.
+**xllify is an API that takes your Lua functions and emits you a signed, ready to go XLL to load into Excel.** Developers download a simple interpreter for their Mac, Linux and Windows (or CI environment) to develop and test their functions locally, ahead of submitting them to be converted into an XLL.
 
 A trivial example would be:
 
 ```lua
 xllify.ExcelFunction(
     {
-        name = "acme.SIMPLE_ADD",
+        name = "acme.ADD",
         description = "Adds two numbers",
         category = "Math",
     },
@@ -41,17 +41,31 @@ xllify.ExcelFunction(
         return a + b
     end
 )
+
+xllify.ExcelFunction(
+    {
+        name = "acme.RANDO",
+        description = "Gives you a random number, you rando",
+        category = "Math",
+        volatile = true,
+    },
+    function(): number
+        return math.random()
+    end
+)
 ```
 
-This exposes `=acme.SIMPLE_ADD(1, 2)` to be used from your sheets, complete with documentation. Parameters are inferred from the function signature.
+This exposes `acme.ADD` and `acme.RANDO` to Excel, complete with inline documentation.
 
-You can develop and destruction test your Lua implemented functions on any platform. You do not need a Windows machine, Office installed or anything like that. Just plain old Lua.
+Users can call them as they would any Excel function: `=acme.ADD(3,2)`. `acme.RANDO` is volatile so will rerun on every calculation. Parameters are inferred from the function signature.
 
-A CLI/REPL is provided so that developers can validate their functions' behaviour.
+Developers can test their Lua implemented functions on any platform. No Windows machine, IDE, Office installation or anything like that is required - just the `xllify` CLI to validate. This is effectively a Lua interpreter preloaded with some libraries.
 
-xllify actually embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It is compatible with Lua 5.1. Luau was used for sandboxing reasons, so potentially harmful Lua code cannot be run. It also has a gradual typing system, to catch bugs early on and provide useful type hints to the conversion process.
+xllify embeds the Roblox implementation of Lua called [Luau](https://luau.org/library). It is compatible with Lua 5.1.
 
-Developers can easily offer up their Lua code to xllify with the provided GitHub Action.
+Luau was used for sandboxing reasons, so harmful Lua code cannot be run. It also has a gradual typing system, to catch bugs early on and provide useful type hints to the conversion process.
+
+As part of an XLL build, developers offer up their Lua code to xllify with the provided GitHub Action.
 
 ```yaml
 jobs:
