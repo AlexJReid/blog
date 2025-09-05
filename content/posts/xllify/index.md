@@ -28,7 +28,7 @@ What if there was an easy way of leveraging the speed of the C API, safely expos
 
 ### Hello, xllify
 
-> xllify is remote build API that takes provided Lua functions and emits a signed, ready to go XLL to load into Excel.
+> [xllify](https://xllify.com) is remote build API that takes provided Lua functions and emits a signed, ready to go XLL to load into Excel.
 
 Developers download a simple interpreter (for Mac, Windows, Linux) to develop and test their functions locally, ahead of submitting them to be compiled into an XLL.
 
@@ -136,4 +136,4 @@ Macros are a far more complex area but are also on the roadmap. There are also A
 
 ### Availability
 
-xllify will be available in September 2025, for free. If you've any questions or comments, drop me a line via [email](mailto:alex@acornsoft.uk) or on [LinkedIn](https://www.linkedin.com/in/alexjreid/).
+[xllify](https://xllify.com) will be available in September 2025, for free. You can register to be notified of general availability using your GitHub account. If you've any questions or comments, drop me a line via [email](mailto:alex@acornsoft.uk) or on [LinkedIn](https://www.linkedin.com/in/alexjreid/).
