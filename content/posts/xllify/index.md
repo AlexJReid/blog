@@ -136,4 +136,4 @@ Macros are a far more complex area but are also on the roadmap. There are also A
 
 ### Availability
 
-[xllify](https://xllify.com) will be available in September 2025, for free. You can register to be notified of general availability using your GitHub account. If you've any questions or comments, drop me a line via [email](mailto:alex@acornsoft.uk) or on [LinkedIn](https://www.linkedin.com/in/alexjreid/).
+[xllify](https://xllify.com) will be available in September 2025, for free. You can register to be notified of general availability using your GitHub account. If you've any questions or comments, drop me a line via [email](mailto:alex@xllify.com) or on [LinkedIn](https://www.linkedin.com/in/alexjreid/).

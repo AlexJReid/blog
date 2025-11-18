@@ -44,7 +44,7 @@ In no particular order, here's what changed:
 
 - xllify-lua was implemented as a test harness and runner to exercise Luau scripts.
 
-- Support for streaming data, the idea behind [../rtdpub](rtd.pub) lives on and will be implemented next probably
+- Support for streaming data, the idea behind [rtd.pub](../rtdpub-hello) lives on and will be implemented next probably
 
 - Mac support was considered and is in theory achieveable, but is on hold.
 
