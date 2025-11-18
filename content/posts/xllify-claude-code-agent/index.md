@@ -14,7 +14,7 @@ series = []
 
 In a bizarre collision of 1990s style development (the Excel C SDK) and 2025 era AI, I've been experimenting with having a Claude agent write Excel custom functions for xllify!
 
-As Excel itself is now fat and 40 years old, it could be donning ill-fitting running gear and developing an irrational interest in coffee beans. Or, rather Microsoft seem to be shoehorning in AI features to stay relevant? It is no doubt the future.
+As Excel itself is now fat and 40 years old, it could be donning ill-fitting running gear and developing an irrational interest in coffee beans. Or, rather is Microsoft shoehorning in Clippy-esque AI features to stay relevant? I don't think so. Spreadsheets aren't going anywhere, but nor is AI (or whatever we end up calling it.)
 
 Anyway. The UNIX philosophy of Claude Code means that existing command line tools from xllify can be called to exercise the code that Claude has dreamed up, and even build a ready-to-go .xll as the final step.
 
@@ -43,6 +43,12 @@ Which works!
 ![enter prompt](./6.png)
 
 An Excel custom function from scratch with no code in 30 seconds. This was fun segue for an otherwise rainy and cold Tuesday morning!
+
+OK, yes - this was very frivlous example. We're in an age where a bit of duct tape programming can do something that was unfathomable not so long ago.
+
+Take a step back and think about how this single prompt has enhanced existing incumbent software, conceived long before Claude was born (BC). Integration of tools (pipes - the UNIX philosophy) and eliminating technical barriers so more people can get stuff done absolutely is progress. Old and new worlds collide, again.
+
+Perhaps due to what is possible with low effort, we are absolutely in an era where random stuff gets thrown out, because AI. Most of it won't stick. We ought to question this "just because we can..." mentality but I suppose that's how we learn. Maturity will come with time. Meanwhile, it is fun to play.
 
 Check out some [other posts on xllify](/tags/xllify/) or the [thing itself](https://xllify.com).
 
