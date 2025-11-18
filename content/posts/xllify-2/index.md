@@ -36,13 +36,15 @@ In no particular order, here's what changed:
 
 - For both Luau async and external processes, an RTD server is used to manage the completion of an async operation. The pattern is: new function generates a new topic (cache miss), RTD server awaits feedback from the process to say it is complete. Before signalling completion, the process writes to a cache within the Excel process. When the RTD server notifies Excel it has new data, this triggers a recalculation causing a cache hit. The cell becomes a plain, old "value" cell and not an RTD function call. This has the happy side effect of cleaning up the RTD topic.
 
-- An RTD server was implemented in C++ to achieve the above! This was **tricky** and I probably should have just used Excel-DNA.
+- An RTD server was implemented in C++ to achieve the above! This was **tricky**.
 
 - A Python SDK was implemented to converse with the XLL and RTD server. This paves the way for other SDKs to be written easily such as C++, Go and Rust.
 
 - Python add-ins extract their embedded code and have their processes started by Excel. On first run, a virtual environment is created and any dependencies installed, if a requirements.txt was included in the build.
 
 - xllify-lua was implemented as a test harness and runner to exercise Luau scripts.
+
+- Support for streaming data, the idea behind [../rtdpub](rtd.pub) lives on and will be implemented next probably
 
 - Mac support was considered and is in theory achieveable, but is on hold.
 
