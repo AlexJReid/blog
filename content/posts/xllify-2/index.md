@@ -16,6 +16,8 @@ I've since distilled my definition of xllify to:
 
 > [xllify](https://xllify.com) is a packaging tool and runtime that allows functions written in Luau and Python to be used as high-performance custom functions in your Microsoft Excel workbooks.
 
+[Go have a look!](https://xllify.com)
+
 Things have _evolved_. As with all projects, I try to ruthlessly simplify and make things faster.
 
 In no particular order, here's what changed:
