@@ -54,4 +54,4 @@ Perhaps due to what is possible with low effort, we are absolutely in an era whe
 
 Check out some [other posts on xllify](/tags/xllify/) or the [thing itself](https://xllify.com).
 
-If you've any questions about xllify [give me a shout](mailto:alex@xllify.com) or on [X](https://x.com/xllify).
+If you've any questions about xllify [give me a shout](mailto:alex@xllify.com) or find me on [X](https://x.com/xllify).
