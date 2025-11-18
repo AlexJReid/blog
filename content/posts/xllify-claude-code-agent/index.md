@@ -24,23 +24,23 @@ We start with a frivolous prompt which gets picked up by the xllify agent.
 
 After burning some tokens, some [code](./victorian_compliment.luau) pops out.
 
-![enter prompt](./2.png)
+![some code](./2.png)
 
 Accept. #yolo. Now the agent uses existing tooling to check its work.
 
-![enter prompt](./3.png)
+![testing](./3.png)
 
 As a final step, the agent will ask whether to build it for Excel. Go!
 
-![enter prompt](./4.png)
+![build xll](./4.png)
 
 Loading the .xll into Excel, sure enough, I have a custom function. =VictorianCompliment
 
-![enter prompt](./5.png)
+![function appears in excel](./5.png)
 
 Which works!
 
-![enter prompt](./6.png)
+![function in use](./6.png)
 
 An Excel custom function from scratch with no code in 30 seconds. This was fun segue for an otherwise rainy and cold Tuesday morning!
 
