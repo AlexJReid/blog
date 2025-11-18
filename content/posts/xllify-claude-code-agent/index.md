@@ -44,9 +44,11 @@ Which works!
 
 An Excel custom function from scratch with no code in 30 seconds. This was fun segue for an otherwise rainy and cold Tuesday morning!
 
-OK, yes - this was very frivlous example. We're in an age where a bit of duct tape programming can do something that was unfathomable not so long ago.
+This is all very frivlous.
 
-Take a step back and think about how this single prompt has enhanced existing incumbent software, conceived long before Claude was born (BC). Integration of tools (pipes - the UNIX philosophy) and eliminating technical barriers so more people can get stuff done absolutely is progress. Old and new worlds collide, again.
+> We're in an age where a bit of duct tape programming can do something that was unfathomable not so long ago. Take a step back and think about how this single prompt has enhanced existing incumbent software, conceived long before Claude was born (BC).
+
+Integration of tools (pipes - the UNIX philosophy) and eliminating technical barriers so more people can get stuff done absolutely is progress. Old and new worlds collide, again.
 
 Perhaps due to what is possible with low effort, we are absolutely in an era where random stuff gets thrown out, because AI. Most of it won't stick. We ought to question this "just because we can..." mentality but I suppose that's how we learn. Maturity will come with time. Meanwhile, it is fun to play.
 
