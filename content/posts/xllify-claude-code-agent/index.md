@@ -14,7 +14,7 @@ series = []
 
 The resulting functions get packaged into a ready-to-deploy Office Add-in for all versions of Excel, as well as an optional-extra [native XLL build for Windows](https://xllify.com/xll-need-to-know).
 
-Right now you can write your prompt for your functions ia [browser](https://xllify.com/web?web=1) or Excel add-in to iterate, debug and even manually code. A local dev experience seemed a good idea, so I experimented.
+Right now you can write your prompt for your functions in a [browser](https://xllify.com/web?web=1) or Excel add-in to iterate, debug and even manually code. A local dev experience seemed a good idea, so I experimented.
 
 Anyway. The UNIX philosophy of Claude Code means that existing command line tools from xllify can be called to exercise the code that Claude has dreamed up, and even build a ready-to-go .xll as the final step.
 
