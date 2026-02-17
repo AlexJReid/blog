@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2025-08-27
+date = 2027-08-27
 title = "Fast and easy Excel custom functions with xllify and Lua"
 description = "When extending Excel with custom functions, the ancient Excel C SDK is notoriously hard to use and should be generally avoided. However..."
 slug = "xllify-hello"

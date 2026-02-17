@@ -1,20 +1,20 @@
 +++ 
 draft = false
-date = 2025-11-18
+date = 2026-02-17
 title = "From prompt to Excel custom function in 30 seconds"
 description = "Thanks to xllify + Claude Code agent"
 slug = "xllify-claude-code-agent"
-tags = ["data","excel","lua","python","greatest-hits","xll","excel add-in","luau","python","xllify","claude","ai"]
+tags = ["data","excel","lua","greatest-hits","xll","excel add-in","luau","python","xllify","claude","ai"]
 categories = []
 externalLink = ""
 series = []
 +++
 
-> [xllify](https://xllify.com) is a packaging tool and runtime that allows functions written in Luau and Python to be used as high-performance custom functions in your Microsoft Excel workbooks.
+> [xllify](https://xllify.com) is a platform I've released for creating custom Excel functions by describing what you need or pasting some existing formulas or VBA. 
 
-In a bizarre collision of 1990s style development (the Excel C SDK) and 2025 era AI, I've been experimenting with having a Claude agent write Excel custom functions for xllify!
+The resulting functions get packaged into a ready-to-deploy Office Add-in for all versions of Excel, as well as an optional-extra [native XLL build for Windows](https://xllify.com/xll-need-to-know).
 
-As Excel itself is now fat and 40 years old, it could be donning ill-fitting running gear and developing an irrational interest in coffee beans. Or, rather is Microsoft shoehorning in Clippy-esque AI features to stay relevant? I don't think so. Spreadsheets aren't going anywhere, but nor is AI (or whatever we end up calling it.)
+Right now you can write your prompt for your functions ia [browser](https://xllify.com/web?web=1) or Excel add-in to iterate, debug and even manually code. A local dev experience seemed a good idea, so I experimented.
 
 Anyway. The UNIX philosophy of Claude Code means that existing command line tools from xllify can be called to exercise the code that Claude has dreamed up, and even build a ready-to-go .xll as the final step.
 
@@ -48,10 +48,10 @@ This is all very frivlous.
 
 > We're in an age where a bit of duct tape programming can do something that was unfathomable not so long ago. Take a step back and think about how this single prompt has enhanced existing incumbent software, conceived long before Claude was born (BC).
 
-Integration of existing tools (pipes - the UNIX philosophy) and eliminating technical barriers so more people can get stuff done absolutely is progress.
+Integration of existing tools (pipes, again, the UNIX philosophy) and eliminating technical barriers so more people can get stuff done absolutely is progress.
 
 But perhaps due to what is possible with low effort, we are in an era where random stuff gets thrown out, because AI. Most of it won't stick. We ought to question this "just because we can..." mentality but I suppose that's how we learn. Maturity will come with time. Meanwhile, it is fun to play.
 
-Check out some [other posts on xllify](/tags/xllify/) or the [thing itself](https://xllify.com).
+Right now you can write your prompt for your functions ia [browser](https://xllify.com/web?web=1) or Excel add-in to iterate, debug and even manually code. A local dev experience using some of the ideas discussed in this post are coming soon.
 
-If you've any questions about xllify [give me a shout](mailto:alex@xllify.com) or find me on [X](https://x.com/xllify).
+If you've any questions about xllify [give me a shout](mailto:alex@xllify.com) or find me on [X](https://x.com/xllify) or Linked In.

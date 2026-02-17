@@ -1,6 +1,6 @@
 +++ 
 draft = false
-date = 2025-11-18
+date = 2027-11-18
 title = "xllify is out"
 description = "... with a few pivots along the way"
 slug = "xllify-released"
