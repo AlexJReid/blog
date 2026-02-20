@@ -43,9 +43,10 @@ Your functions execute in a sandboxed VM with no access to the network or file s
 - Sell it, share it, or deploy it internally
 
 Now, all you need to do is describe what you want and xllify gives you a super-fast native XLL without ever touching the SDK.
+
 ### Pricing
 
-There are no distribution costs, so once you have built your add-in, you are free to do what you like with it. We're still working on pricing — watch this space. There will always be a free tier.
+We're still working on pricing — watch this space. There will always be a free tier.
 
 ### Give it a go
 
