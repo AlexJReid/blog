@@ -1,7 +1,7 @@
 +++
 draft = false
 date = 2026-02-20
-title = "xllify"
+title = "xllify is here!"
 description = "xllify builds custom function add-ins for Microsoft Excel from prompts or code."
 slug = "xllify-hello"
 tags = ["xllify","data","excel","lua","acornsoft","greatest-hits","xll","excel add-in","luau"]
@@ -18,6 +18,8 @@ Over the years there have been many approaches for extending Excel beyond formul
 > [xllify](https://xllify.com) lets you build custom function add-ins for Microsoft Excel from natural language prompts or code. Describe what you need in plain English, paste in an existing formula or some VBA, and xllify handles the rest.
 
 You describe your functions, xllify compiles and packages them remotely, and you get a ready-to-use add-in (web or XLL) back in seconds.
+
+> You can work on the web, an Excel add-in, or (soon) with an agent via MCP.
 
 xllify leans on a verified standard library of native C++ components for performance-critical operations, and the code assistant will only generate new code when it needs to. This means your functions get the benefit of battle-tested implementations wherever possible.
 
@@ -46,8 +48,8 @@ Now, all you need to do is describe what you want and xllify gives you a super-f
 
 ### Pricing
 
-We're still working on pricing — watch this space. There will always be a free tier.
+We're still working on pricing, watch this space. There will always be a free tier.
 
 ### Give it a go
 
-[xllify](https://xllify.com) is available now. If you have any questions or comments, drop me a line via [email](mailto:alex@xllify.com) or on [LinkedIn](https://www.linkedin.com/in/alexjreid/).
+[xllify](https://xllify.com) is available now! If you have any questions or comments, drop me a line via [email](mailto:alex@xllify.com) or on [LinkedIn](https://www.linkedin.com/in/alexjreid/).
