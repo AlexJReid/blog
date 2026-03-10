@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2025-07-03
 title = "Taming real-time data in Excel with rtd.pub"
 description = "A surprising amount of the world rests on spreadsheets, yet integrating real-time data with them can be challenging. This post introduces rtd.pub, a platform for easily connecting any real-time data source to Microsoft Excel."
