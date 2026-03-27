@@ -29,7 +29,7 @@ The catch (and we'll come back to it) is that Excel was obviously not designed f
 
 To prove this isn't a party trick, we'll simulate a realistic-ish FX monitoring setup:
 
-- A Python script publishes tick data for three currency pairs to NATS: `fx.raw.EURUSD`, `fx.raw.GBPUSD`, `fx.raw.USDJPY`
+- A Python script publishes tick data for three currency pairs to NATS: bid, ask, and mid on `fx.raw.{PAIR}.{bid|ask|mid}`
 - Excel subscribes to all three, derives the EURGBP cross-rate, computes a 60-tick rolling mean and standard deviation on EURUSD, and classifies the current price regime as trending or ranging
 - When a breakout is detected, Excel publishes to `fx.derived.alerts` via `NATS.PUB`
 - The NATS CLI subscribed to `fx.derived.>` shows whatever arrives, standing in for any downstream consumer
@@ -39,9 +39,9 @@ The Python scripts are deliberately boring drivers. The interesting logic lives 
 
 ## The publisher
 
-Save this as `publish_fx.py`. It needs `nats-py` (`pip install nats-py`).
+Save this as `driver.py`. It needs `nats-py` (`pip install nats-py`).
 
-The subject hierarchy carries all the context. Payloads are naked numbers: no JSON, no parsing, nothing to go wrong.
+The subject hierarchy carries all the context. Payloads are naked numbers: no JSON, no parsing, nothing to go wrong. Each tick publishes bid, ask, and mid for all three pairs.
 
 ```python
 import asyncio
@@ -75,6 +75,7 @@ async def main():
 
             await nc.publish(f"fx.raw.{pair}.bid", str(bid).encode())
             await nc.publish(f"fx.raw.{pair}.ask", str(ask).encode())
+            await nc.publish(f"fx.raw.{pair}.mid", str(round(mid, 5)).encode())
 
         await asyncio.sleep(0.2)  # five ticks per second
 
@@ -87,7 +88,7 @@ To see what Excel publishes, subscribe with the NATS CLI:
 nats sub "fx.derived.>"
 ```
 
-Start your NATS server (`nats-server`), run `publish_fx.py`, and prices will be flowing.
+Start your NATS server (`nats-server`), run `driver.py`, and prices will be flowing.
 
 ---
 
@@ -126,14 +127,7 @@ EURGBP doesn't have its own feed. It falls out of dividing EURUSD by GBPUSD. Thi
 
 This is where `NATS.SUBWIN` comes in. Rather than showing the latest value, it accumulates the last N ticks in a ring buffer and spills them as a column.
 
-Rather than subscribing to the raw bid or ask, we point `SUBWIN` at the mid-price by computing it in a helper cell and publishing it back out, or more simply, subscribe to the bid as a proxy (for a window of 60 ticks the difference is negligible). Alternatively, extend the publisher to also emit a mid:
-
-```python
-mid_rounded = round(mid, 5)
-await nc.publish(f"fx.raw.{pair}.mid", str(mid_rounded).encode())
-```
-
-Then in the sheet:
+The publisher emits a mid subject for each pair alongside bid and ask, so the sheet subscribes to that directly:
 
 ```
 A1: =NATS.SUBWIN("fx.raw.EURUSD.mid", 60)
