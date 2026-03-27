@@ -7,9 +7,13 @@ defaultcontentlanguage = "en"
 paginate = 50
 canonifyurls = true
 
-pygmentsstyle = "bw"
+pygmentsstyle = "monokai"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
+
+[markup.highlight]
+    style = "monokai"
+    guessSyntax = true
 
 enableInlineShortcodes = true
 

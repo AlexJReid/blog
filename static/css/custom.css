@@ -1,0 +1,7 @@
+.post-content code {
+    margin: auto 0;
+}
+
+.post-content .highlight:not(table) {
+    margin: 4px auto 12px;
+}
