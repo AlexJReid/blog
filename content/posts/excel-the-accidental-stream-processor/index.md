@@ -11,7 +11,9 @@ series = []
 +++
 
 
-Stream processing has a reputation for being the domain of serious engineers with serious infrastructure. [zigxll-connectors-nats](https://github.com/AlexJReid/zigxll-connectors-nats) is a native XLL add-in that gives Excel cells `=NATS.SUB("subject")` and `=NATS.PUB("subject", cell-ref)`. Wire a few of those up with ordinary formulas and you have a functioning stream processing topology: a spreadsheet that anyone can open, understand, and modify.
+Watching a feed, deriving a few values, and firing an alert when something looks off shouldn't require a Kafka cluster, a JVM, and three days of ceremony. For a lot of problems, it doesn't. NATS is a natural hub for streaming values: lightweight, subject-routed, no schema enforcement. The missing piece is somewhere to do the computation. It turns out Excel is a left-field but fairly compelling answer. It puts stream processing in the hands of analysts who already know how to use it, without asking them to learn a new framework or become developers overnight.
+
+[zigxll-connectors-nats](https://github.com/AlexJReid/zigxll-connectors-nats) is a native XLL add-in that gives Excel cells `=NATS.SUB("subject")` and `=NATS.PUB("subject", cell-ref)`. Wire a few of those up with ordinary formulas and you have a functioning stream processing topology: a spreadsheet that anyone can open, understand, and modify.
 
 This post walks through a foreign exchange monitor that consumes simulated market data from NATS, derives cross-rates and rolling statistics in Excel, and publishes alerts back to NATS. A downstream subscriber picks them up and has absolutely no idea it's talking to a spreadsheet. This is obviously not a replacement for a proper stream processing pipeline, and we'll cover the drawbacks at the end.
 
@@ -35,6 +37,8 @@ To prove this isn't a party trick, we'll simulate a realistic-ish FX monitoring 
 - The NATS CLI subscribed to `fx.derived.>` shows whatever arrives, standing in for any downstream consumer
 
 The Python scripts are deliberately boring drivers. The interesting logic lives in the workbook.
+
+{{< youtube MSW4McvuYB8 >}}
 
 
 ## The publisher
@@ -148,6 +152,8 @@ D4: =(D1-INDEX(NATS.SUBWIN.VALS(A1),60))/D2                z-score of drift
 The z-score in D4 measures how far the current mean has moved from the oldest value in the window, normalised by volatility. A large positive value suggests an upward trend. A large negative value suggests the reverse. Values close to zero suggest the pair is ranging.
 
 Select the `B1#` spill range as the data source for a sparkline and you get a live price chart with no VBA and no charting library. If you squint, it almost looks professional.
+
+One thing worth pointing out: this is all live. While the workbook is consuming ticks and publishing alerts, you can watch it happen. The cells flicker as new values arrive, the sparkline redraws in real time, and the regime classification in the Alerts sheet updates as the window rolls forward. You can open the workbook, subscribe to `fx.derived.>` in a terminal, and watch messages arrive in both places simultaneously. This makes it genuinely useful for debugging a pipeline too; you can see exactly what a formula produces against live data and trace the output downstream, all without leaving the spreadsheet.
 
 ### Sheet 4: Alerts and publish
 
