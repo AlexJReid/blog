@@ -1,1 +1,10 @@
 <link rel="stylesheet" href="/css/custom.css">
+{{ if not .Site.IsServer }}
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFH9KYGC4X"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LFH9KYGC4X');
+</script>
+{{ end }}
