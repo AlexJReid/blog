@@ -82,6 +82,55 @@ The same trick works for the alerts subject. A new on-call engineer joining mid-
 
 It's quite nice how the conditioning rules and the LVC compose naturally. Rule-generated publishes participate in caching just like any other publish. The `temp.3.kitchen.stable` subject has its own LVC entry, populated by the patchbay rule, available to any late-joining subscriber. You didn't have to think about it; it just works.
 
+## Another scenario: catching over-revs at Peter's Porsche Rentals
+
+The office-sensors example is tidy but synthetic. Here's one that isn't. Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and occasionally decide the Autobahn is a good place to see what 9000rpm feels like. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
+
+A £10 Bluetooth OBD2 dongle plugged into the diagnostic port exposes a firehose of PIDs: RPM, coolant temperature, throttle position, short and long-term fuel trims, O2 sensor voltages, intake manifold pressure, the lot. A small Python script on a Raspberry Pi tucked behind the glovebox polls the dongle over RFCOMM and publishes each reading to `car.<vin>.<pid>`.
+
+Because monoblok compiles for ARM, the broker itself runs on the same Pi. A 5G hat gives it an uplink, so conditioned streams go straight to Peter's backend without ever shipping raw PIDs over the cellular link. Conditioning at the edge, dashboards and storage in the cloud.
+
+What Peter wants:
+
+1. A clean per-car telemetry stream for the fleet dashboard. RPM, coolant, speed, the usual.
+2. An over-rev alert the moment a car holds the engine above 7500rpm for more than a couple of seconds. One brief blip past redline on a downshift is forgivable; ten seconds in the limiter is a phone call.
+3. When he opens the dashboard in the morning, the current state of every car on hire, immediately. No "waiting for first reading" spinner.
+
+The raw feed is exactly the sort of thing patchbay was built for. RPM updates many times a second and wobbles constantly at a steady throttle. Coolant barely moves once the engine is warm. Publishing all of this unconditioned over a metered 5G connection is wasteful and makes the dashboard feel like it's drinking from a firehose.
+
+```clojure
+;; RPM: quantize to 50rpm buckets, drop duplicates, republish
+(on "car.*.rpm"
+  (-> payload-float
+      (quantize 50)
+      (squelch)
+      (publish-to (subject-append "stable"))))
+
+;; Coolant temp: 1°C deadband is plenty
+(on "car.*.coolant"
+  (-> payload-float
+      (round 0)
+      (deadband 1.0)
+      (publish-to (subject-append "stable"))))
+
+;; Over-rev alert: sustained above 7500rpm across a 20-sample window
+(on "car.*.rpm"
+  (when (> (moving-avg 20 payload-float) 7500.0)
+    (publish (subject-append "alert") payload)))
+```
+
+The third rule is the one Peter cares about. A single sample over 7500 gets averaged with the surrounding values and ignored; twenty samples in a row up there, and an alert lands on `car.<vin>.rpm.alert`. State is per rule per subject, so each car has its own independent ring buffer.
+
+The interesting part is what crosses the 5G link. Raw PIDs at full rate would chew through a SIM's data allowance for no good reason; most of it is redundant. Conditioning at the edge means the uplink only carries RPM when it moves into a new 50rpm bucket, coolant when it shifts by a degree, and over-rev alerts only when a customer is actually abusing the car. Everything else stays on the Pi. Peter's backend subscribes to `car.>.stable` and `car.>.alert` and gets a tidy, low-volume feed it can log, graph or react to without having to do its own conditioning.
+
+The LVC earns its keep on the backend side. When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.>.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
+
+Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a seam for anything else you want to hang off it. A small service subscribed to `car.>.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded SMS reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
+
+The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: the moment you want captured is *now*, not thirty seconds later when the 5G link comes back after a tunnel or a patch of rural Wales with no signal. So that subscriber runs on the Pi itself, on the same broker, and pokes the dashcam over the local network the instant the alert lands on the subject. No uplink required. Because the alert payload carries the offending RPM reading, the subscriber can stamp it straight onto the image before saving: a JPEG with `8,420 RPM` burned into the corner is a lot harder to argue with at handover than a log line. The notification and SMS services live back at the office and pick up the same alert whenever the 5G link is healthy again, because the broker buffers anything that couldn't be delivered. Same subject, two very different latency and connectivity profiles, no extra plumbing.
+
+None of these subscribers know or care about OBD2; they're plain subscribers to a clean, meaningful stream. You can add or remove them without touching the car, the Pi or the patchbay rules.
+
 ## Benchmarks
 
 Because monoblok speaks the NATS wire protocol, it was nice to benchmark it using the existing `nats bench` commands.
