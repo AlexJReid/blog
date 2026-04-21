@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-I've recently _reified_ a pondering I've had for some time. It has come to live as [monoblok](https://github.com/lexvicacom/monoblok): a small partially NATS-compatible pub/sub daemon written in Zig. 
+I've recently _reified_ a pondering I've had for some time. It has come to life as [monoblok](https://github.com/lexvicacom/monoblok): a small partially NATS-compatible pub/sub daemon written in Zig. 
 
 There are two features that set it apart: a last-value cache on every subject, and a _signal conditioning_ DSL called **patchbay**, which lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
 
