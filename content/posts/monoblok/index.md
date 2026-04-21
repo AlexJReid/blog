@@ -14,13 +14,13 @@ I've been tinkering with [monoblok](https://github.com/lexvicacom/monoblok), a s
 
 ![monoblok](./monoblok.png)
 
-It is firmly an experimental toy at this point but the ideas are nice and the surface area is small enough to actually understand in an afternoon.
+It is firmly an experimental toy at this point but the ideas are quite nice, I think.
 
 ## What's in the box
 
 A single-threaded event loop sat on top of the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads, no locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that an off-the-shelf NATS client can connect, `SUB` and `PUB`, which is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first.
 
-The two features worth talking about:
+The two key features:
 
 **The last-value cache (LVC).** Every subject has an implicit cache of its most recent value. Subscribe to `$LVC.foo.bar` and you immediately receive the cached value (if any), then the live stream of subsequent publishes. Wildcards work too. It's on by default and costs a couple of percent overhead.
 
