@@ -5,16 +5,18 @@ title = "Monoblok: a tiny NATS-ish pub/sub server that conditions noisy feeds be
 description = "An experimental, partially NATS-compatible pub/sub daemon with last-value streams and an S-expression signal-routing and conditioning DSL, all in a single binary."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay"]
-categories = ["projects"]
+categories = ["projects","greatest-hits"]
 externalLink = ""
 series = []
 +++
 
-I've been tinkering with [monoblok](https://github.com/lexvicacom/monoblok), a small partially NATS-compatible pub/sub daemon written in Zig. Two things make it interesting: a last-value cache on every subject, and a routing DSL called **patchbay** that lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
+I've recently _reified_ a pondering I've had for some time. It has come to live as [monoblok](https://github.com/lexvicacom/monoblok): a small partially NATS-compatible pub/sub daemon written in Zig. 
+
+There are two features that set it apart: a last-value cache on every subject, and a _signal conditioning_ DSL called **patchbay**, which lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
 
 ![monoblok](./monoblok.png)
 
-It is firmly an experimental toy at this point but the ideas are quite nice, I think.
+It is an experimental toy at this point, but the ideas are quite nice.
 
 ## What's in the box
 
@@ -38,7 +40,7 @@ Here's the canonical example from the readme:
 
 Round to 1 decimal place, drop it if it hasn't changed, republish to `sensors.<whatever>.stable`. That's the lot.
 
-## A real-ish scenario
+## A cool scenario
 
 Let's wire something up that actually shows off both features together. Pretend we're running a small fleet of temperature sensors in an office building. Each sensor publishes a reading every few seconds on `temp.<floor>.<room>`. The raw stream is noisy: sensors jitter, the value wobbles by a tenth of a degree constantly, and most readings are functionally identical to the previous one. It turns out the facilities team has been buying their sensors from Temu.
 
@@ -82,7 +84,7 @@ The same trick works for the alerts subject. A new on-call engineer joining mid-
 
 It's quite nice how the conditioning rules and the LVC compose naturally. Rule-generated publishes participate in caching just like any other publish. The `temp.3.kitchen.stable` subject has its own LVC entry, populated by the patchbay rule, available to any late-joining subscriber. You didn't have to think about it; it just works.
 
-## Another scenario: catching over-revs at Peter's Porsche Rentals
+## Another scenario: catching over-revs at Peter's Porsche (and Lada) Rentals
 
 The office-sensors example is tidy but synthetic. Here's one that isn't. Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and occasionally decide the Autobahn is a good place to see what 9000rpm feels like. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
 
@@ -133,17 +135,19 @@ None of these subscribers know or care about OBD2; they're plain subscribers to 
 
 ## Benchmarks
 
-Because monoblok speaks the NATS wire protocol, it was nice to benchmark it using the existing `nats bench` commands.
+Because monoblok speaks enough of the NATS wire protocol, it was nice to benchmark it using the existing `nats bench` commands. 
 
-Obvious caveat: `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so they measure raw broker work only. With that out of the way, on an M2 Air monoblok keeps up on single-publisher throughput (6.12M vs 6.18M msg/s for 64B payloads) and pulls ahead on fan-out as subscriber count grows (8.01M vs 6.70M msg/s at 50 subscribers). On a small 2-core Linux VM with the io_uring backend it's a similar story: behind on the single-subscriber fan-out case, ahead at 50 subscribers (4.51M vs 3.28M msg/s). Throughput will drop from these figures in proportion to how much your rules do, but it's a respectable starting point. NATS is still the thing you'd want in production.
+Obvious caveat: `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so they measure raw broker work only.
+
+With that out of the way, on an M2 Air monoblok keeps up on single-publisher throughput (6.12M vs 6.18M msg/s for 64B payloads) and pulls ahead on fan-out as subscriber count grows (8.01M vs 6.70M msg/s at 50 subscribers). On a small 2-core Linux VM with the io_uring backend it's a similar story: behind on the single-subscriber fan-out case, ahead at 50 subscribers (4.51M vs 3.28M msg/s). Throughput will drop from these figures in proportion to how much your rules do, but it's a respectable starting point. This doesn't mean you should run this just yet, NATS is still the thing you'd want in production.
 
 ## Sitting in front of a real NATS cluster
 
-Attaching monoblok to a real NATS cluster is on the cards. The idea is that monoblok would sit out at the edge as a front-end to NATS, doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forwarding the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects is fine.
+Attaching monoblok to a real NATS cluster is on the cards. The idea is that monoblok would sit out at the edge as a front-end to NATSish, doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forwarding the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects works fine.
 
 ## Why I find this interesting
 
-The conventional split is "broker moves bytes, application does logic." That's fine and largely correct, but there's a category of logic, signal conditioning, that you could argue belongs at the broker. It's stateless from the application's point of view, it's the same boring code reimplemented in every consumer, and it benefits enormously from being applied once, centrally, before fan-out.
+The conventional logic is "broker moves bytes, application does logic." That's fine and largely correct, but there's a category of logic, signal conditioning, that you could argue belongs at the broker. It's stateless from the application's point of view, it's the same boring code reimplemented in every consumer, and it benefits enormously from being applied once, centrally, before fan-out.
 
 Putting a small DSL at the broker for this kind of work is a nice middle ground. It's not trying to be Flink, Beam or Kafka Streams. It's just a few primitives, declared once, that turn raw sensor noise into something useful before it ever leaves the broker. The LVC then makes late-joining subscribers a non-event, which is the other thing every realtime app ends up reinventing.
 
