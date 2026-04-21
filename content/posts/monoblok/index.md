@@ -152,7 +152,7 @@ With that out of the way, on an M2 Air monoblok keeps up on single-publisher thr
 
 ## Sitting in front of a real NATS cluster
 
-Attaching monoblok to a real NATS cluster is on the cards. The idea is that monoblok would sit out at the edge as a front-end to NATSish, doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forwarding the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects works fine.
+Attaching monoblok to a real NATS cluster is on the cards. The idea is that monoblok would sit out at the edge as a NATS-ish front-end to real NATS, doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forwarding the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects works fine.
 
 ## Why I find this interesting
 
