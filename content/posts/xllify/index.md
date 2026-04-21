@@ -1,5 +1,5 @@
 +++
-draft = false
+draft = true
 date = 2026-02-20
 title = "xllify is here!"
 description = "xllify builds custom function add-ins for Microsoft Excel from prompts or code."

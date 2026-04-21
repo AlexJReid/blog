@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2026-02-17
 title = "From prompt to Excel custom function in 30 seconds"
 description = "Thanks to xllify + Claude Code agent"

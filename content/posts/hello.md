@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2020-01-19T21:05:54Z
 title = "Hello Hugo and Cloud Run!"
 description = "Running a hugo blog with GitHub, Google Cloud Build and Google Cloud Run"

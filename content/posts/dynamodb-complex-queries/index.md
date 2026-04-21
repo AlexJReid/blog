@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2020-11-09T17:54:11Z
 title = "Filtering without using filters in DynamoDB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB."

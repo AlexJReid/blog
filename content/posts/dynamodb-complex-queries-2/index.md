@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2020-11-21T19:00:00Z
 title = "Filtering with GSIs and parallel queries in DynamoDB"
 description = "An exploration of using data duplication to implement an efficient paginated and filterable product comments system on DynamoDB. In this post, we improve upon our original design with more GSIs and parallel queries implemented in a Go client."

@@ -1,5 +1,5 @@
 +++
-draft = false
+draft = true
 date = 2020-12-02T00:00:00Z
 title = "Filtering and pagination with Cloud Bigtable"
 description = "Building a paginated and filterable comments data model with Cloud Bigtable."

@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2020-11-25T13:00:00Z
 title = "Storage and retrieval of comment statistics in DynamoDB, using index overloading and sparse indexes"
 description = "In this post we will explore how to store statistics within our data model, with index overloading and sparse indexes."

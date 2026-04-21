@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2020-04-16
 title = "Running Druid on Cloud Dataproc"
 description = "Today I discovered a ridiculously easy way to run a Druid cluster on GCP: flick a switch when creating a Cloud Dataproc cluster."
