@@ -62,15 +62,23 @@ That last requirement is the one that usually causes pain. With a vanilla pub/su
       (deadband 0.3)
       (publish-to (subject-append "stable"))))
 
-;; Sustained heat alert: 60-sample moving average above 28°C
+;; Sustained heat alert: fire once when the 60-sample moving average
+;; crosses above 28°C.
 (on "temp.*.*"
-  (when (> (moving-avg 60 payload-float) 28.0)
-    (publish (subject-append "alert") payload)))
+  (-> (> (moving-avg 60 payload-float) 28.0)
+      (rising-edge)
+      (publish-to (subject-append "alert"))))
+
+;; All-clear: fire once when the same moving average drops back below 28°C.
+(on "temp.*.*"
+  (-> (> (moving-avg 60 payload-float) 28.0)
+      (falling-edge)
+      (publish-to (subject-append "ok"))))
 ```
 
-Two rules. The first turns a chatty sensor feed into a change-only stream. The second uses a windowed aggregate to avoid alerting on a single spike. State is per rule, per subject, so floor 3 meeting room 2 has its own ring buffer that doesn't interfere with the kitchen on floor 1.
+Three rules. The first turns a chatty sensor feed into a change-only stream. The second uses a windowed aggregate to avoid alerting on a single spike, and `rising-edge` makes sure it only fires once per crossing rather than on every sample while the average stays above threshold. The third is the mirror image: `falling-edge` emits an all-clear the moment the average drops back below. State is per rule, per subject, so floor 3 meeting room 2 has its own ring buffer that doesn't interfere with the kitchen on floor 1.
 
-A subscriber wanting clean data subscribes to `temp.>.stable`. A subscriber that only cares about alerts subscribes to `temp.>.alert`. Neither needs to know anything about how the conditioning happens.
+A subscriber wanting clean data subscribes to `temp.>.stable`. A subscriber that only cares about alerts subscribes to `temp.>.alert`, and a paired subscription on `temp.>.ok` closes the loop. Neither needs to know anything about how the conditioning happens.
 
 ### Where the LVC earns its keep
 
