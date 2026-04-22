@@ -154,9 +154,7 @@ With that out of the way, on an M4 Mac Mini monoblok is within single-digit perc
 
 ## Sitting in front of a real NATS cluster
 
-This is now wired up. An outbound bridge to a real NATS cluster ships in the default build, so monoblok can sit out at the edge doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forward the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects still works fine.
-
-Configuration is a single optional form in the patchbay file:
+An outbound bridge to a real NATS cluster ships in the default build. Configuration is a single optional form in the patchbay file:
 
 ```clojure
 (bridge
