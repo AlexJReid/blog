@@ -2,29 +2,29 @@
 draft = false
 date = 2026-04-21
 title = "Monoblok: a tiny NATS-ish pub/sub server that conditions noisy feeds before they fan out"
-description = "An experimental, partially NATS-compatible pub/sub daemon with last-value streams and an S-expression signal-routing and conditioning DSL. All in a single binary."
+description = "An experimental, partially NATS-compatible pub/sub server with last-value streams and an S-expression signal-routing and conditioning DSL. All in a single binary."
 slug = "monoblok"
-tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay"]
+tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
 categories = ["projects","greatest-hits"]
 externalLink = ""
 series = []
+ShowToc = true
+TocOpen = false
 +++
-
-A pondering I've had for some time has come to life as [monoblok](https://github.com/lexvicacom/monoblok). It is a small partially NATS-compatible pub/sub daemon written in Zig. 
-
-There are two features that set it apart: a last-value cache on every subject, and a _signal conditioning_ DSL called **patchbay**, which lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
 
 ![monoblok](./monoblok.png)
 
+A pondering I've had for some time has come to life as [monoblok](https://github.com/lexvicacom/monoblok). It is a small partially NATS-compatible pub/sub server written in Zig. 
+
+There are two features that set it apart: a last-value cache on every subject, and a _signal conditioning_ DSL called **patchbay**, which lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
+
 It is an experimental toy at this point, but the ideas are quite nice.
 
-## Two key features
+## Key features
 
 **The last-value cache (LVC).** Every subject has an implicit cache of its most recent value. Subscribe to `$LVC.foo.bar` and you immediately receive the cached value (if any), then the live stream of subsequent publishes. Wildcards work too. It's on by default and costs a couple of percent overhead.
 
-**Patchbay.** A small S-expression DSL that runs at the broker, per message. You write rules of the shape `(on SUBJECT-FILTER BODY)` and the body gets evaluated when an incoming subject matches. The vocabulary borrows heavily from electronics: `squelch` to suppress duplicates, `deadband` to ignore small wobbles, `quantize` to snap to a grid, plus a family of O(1) windowed aggregates (`moving-avg`, `moving-max` and friends).
-
-Here's the canonical example from the readme:
+**Patchbay.** A small S-expression DSL that runs at the broker, per message. You write rules of the shape `(on SUBJECT-FILTER BODY)` and the body gets evaluated when an incoming subject matches. The vocabulary borrows heavily from electronics: `squelch` to suppress duplicates, `deadband` to ignore small wobbles, `quantize` to snap to a grid, plus a family of O(1) windowed aggregates (`moving-avg`, `moving-max` and friends). Here's the canonical example from the readme:
 
 ```clojure
 (on "sensors.*"
@@ -34,7 +34,15 @@ Here's the canonical example from the readme:
       (publish-to (subject-append "stable"))))
 ```
 
-Round to 1 decimal place, drop it if it hasn't changed, republish to `sensors.<whatever>.stable`. That's the lot.
+Round to 1 decimal place, drop it if it hasn't changed, republish to `sensors.<whatever>.stable`. That's the lot. If the grammar feels unfamiliar, fear not: Claude Code handles it quite happily once pointed at the [patchbay prompt](#using-patchbay-with-claude-code) further down.
+
+**NATS bridge.** An outbound bridge to a real NATS cluster ships in the default build. You nominate subject filters to export, and matching publishes are forwarded upstream while everything else stays local. The point is that an edge monoblok can do its conditioning work locally and only send the tidy, meaningful subjects on to a production NATS deployment. More on this further down.
+
+![Sensor publishes raw readings to a local monoblok broker over the NATS wire protocol; patchbay rules condition the stream; only exported subjects are bridged out to a remote NATS cluster over TLS.](./bridge.png)
+
+Sensors publish to a local monoblok, patchbay rules do the conditioning, and only the tidy subjects of interest get trampolined out to a remote NATS cluster. The subjects remain in the local monoblok for local subscribers.
+
+The pattern of using monoblok as a front-NATS for existing publishers is an elegant, light addition. What might have previously been handled by a consumer can now be done by monoblok. All consumers of the processed subjects are none the wiser, they just connect to the same production NATS environment. NATS is not actually necessary though: in smaller or more experimental setups, it is fine to simply point those consumers at monoblok instead.
 
 ## A hot/cold scenario
 
