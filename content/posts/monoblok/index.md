@@ -2,7 +2,7 @@
 draft = false
 date = 2026-04-21
 title = "Monoblok: a tiny NATS-ish pub/sub server that conditions noisy feeds before they fan out"
-description = "An experimental, partially NATS-compatible pub/sub daemon with last-value streams and an S-expression signal-routing and conditioning DSL, all in a single binary."
+description = "An experimental, partially NATS-compatible pub/sub daemon with last-value streams and an S-expression signal-routing and conditioning DSL. All in a single binary."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay"]
 categories = ["projects","greatest-hits"]
@@ -18,11 +18,7 @@ There are two features that set it apart: a last-value cache on every subject, a
 
 It is an experimental toy at this point, but the ideas are quite nice.
 
-## What's in the box
-
-A single-threaded event loop sat on top of the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads, no locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that an off-the-shelf NATS client can connect, `SUB` and `PUB`, which is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first.
-
-The two key features:
+## Two key features
 
 **The last-value cache (LVC).** Every subject has an implicit cache of its most recent value. Subscribe to `$LVC.foo.bar` and you immediately receive the cached value (if any), then the live stream of subsequent publishes. Wildcards work too. It's on by default and costs a couple of percent overhead.
 
@@ -40,9 +36,9 @@ Here's the canonical example from the readme:
 
 Round to 1 decimal place, drop it if it hasn't changed, republish to `sensors.<whatever>.stable`. That's the lot.
 
-## A cool scenario
+## A hot/cold scenario
 
-Let's wire something up that actually shows off both features together. Pretend we're running a small fleet of temperature sensors in an office building. Each sensor publishes a reading every few seconds on `temp.<floor>.<room>`. The raw stream is noisy: sensors jitter, the value wobbles by a tenth of a degree constantly, and most readings are functionally identical to the previous one. It turns out the facilities team has been buying their sensors from Temu.
+Let's wire something up that actually shows off both features together. Pretend we're running a small fleet of temperature sensors in an office building. Each sensor publishes a reading every few seconds on `temp.<floor>.<room>`. The raw stream is noisy: sensors jitter, the value wobbles by a tenth of a degree constantly, and most readings are functionally identical to the previous one. **It turns out the facilities team has been buying their sensors from Temu.**
 
 What we want:
 
@@ -92,7 +88,7 @@ The same trick works for the alerts subject. A new on-call engineer joining mid-
 
 It's quite nice how the conditioning rules and the LVC compose naturally. Rule-generated publishes participate in caching just like any other publish. The `temp.3.kitchen.stable` subject has its own LVC entry, populated by the patchbay rule, available to any late-joining subscriber. You didn't have to think about it; it just works.
 
-## Another scenario: catching over-revs at Peter's Porsche (and Lada) Rentals
+## Another scenario: catching over-revs at Peter's Porsche Rentals
 
 The office-sensors example is tidy but synthetic. Here's one that isn't. Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and occasionally decide the A69 is a good place to see what 9000rpm feels like. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
 
@@ -144,9 +140,11 @@ The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: 
 
 None of these subscribers know or care about OBD2; they're plain subscribers to a clean, meaningful stream. You can add or remove them without touching the car, the Pi or the patchbay rules.
 
-## Benchmarks
+## Implementation notes
 
-Because monoblok speaks enough of the NATS wire protocol, it was nice to benchmark it using the existing `nats bench` commands. 
+A single-threaded event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads, no locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that an off-the-shelf NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simple replace NATS as an experiment.
+
+It was also helpful to benchmark monoblok using the existing `nats bench` commands. 
 
 Obvious caveat: `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so they measure raw broker work only.
 
@@ -168,4 +166,4 @@ There are a few loose ends to tidy up: a TTL on last-value cache entries so stal
 
 The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin.
 
-If you've thoughts or want to chat about this sort of thing, [give me a shout](mailto:alxsti3@gmail.com) or find me on [X](https://x.com/AlexJReid) or [LinkedIn](https://www.linkedin.com/in/alexjreid/).
+If you've thoughts or want to chat about this sort of thing, [give me a shout](mailto:alex@lexvica.com) or find me on [X](https://x.com/AlexJReid) or [LinkedIn](https://www.linkedin.com/in/alexjreid/).
