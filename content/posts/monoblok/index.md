@@ -169,6 +169,20 @@ It's export-only: publishes whose subject matches any `:export` filter are forwa
 
 Bringing Peter's rental fleet back: the Pi in each car keeps running its conditioning rules locally, and the bridge forwards only `car.*.*.stable` and `car.*.*.alert` up to the office NATS cluster. Raw PIDs still never cross the 5G link, but now the uplink target is a proper cluster with persistence and replication rather than whatever the office happens to have running.
 
+## Using patchbay with Claude Code
+
+Writing patchbay rules by hand is fine once you've internalised the primitives, but it's much nicer to have Claude Code do it for you. There's a self-contained system prompt in the repo, [CLAUDE_PATCHBAY.md](https://raw.githubusercontent.com/lexvicacom/monoblok/main/CLAUDE_PATCHBAY.md), that teaches the model the grammar, the bound symbols, the idioms and the anti-patterns.
+
+![Claude Code writing patchbay rules](./claude.png)
+
+Append it to your project's `CLAUDE.md` and Claude Code will pick it up whenever you're editing rule files:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/lexvicacom/monoblok/main/CLAUDE_PATCHBAY.md >> ./CLAUDE.md
+```
+
+Or inline it into a one-off prompt with `@CLAUDE_PATCHBAY.md`. Handy.
+
 ## Why I find this interesting
 
 The conventional logic is "broker moves bytes, application does logic." That's fine and largely correct, but there's a category of logic, signal conditioning, that you could argue belongs at the broker. It's stateless from the application's point of view, it's the same boring code reimplemented in every consumer, and it benefits enormously from being applied once, centrally, before fan-out.
