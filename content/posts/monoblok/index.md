@@ -154,7 +154,22 @@ With that out of the way, on an M4 Mac Mini monoblok is within single-digit perc
 
 ## Sitting in front of a real NATS cluster
 
-Attaching monoblok to a real NATS cluster is on the cards. The idea is that monoblok would sit out at the edge as a NATS-ish front-end to real NATS, doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forwarding the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects works fine.
+This is now wired up. An outbound bridge to a real NATS cluster ships in the default build, so monoblok can sit out at the edge doing all the conditioning, deduplication and windowed aggregation work close to the publishers, then forward the cleaned-up streams into the main cluster for durability, replication and everything else NATS already does well. You get the patchbay primitives where they're useful without having to give up the production-grade broker behind them. Of course, if you're only experimenting, SUBscribing directly to monoblok subjects still works fine.
+
+Configuration is a single optional form in the patchbay file:
+
+```clojure
+(bridge
+  :servers  ("tls://connect.ngs.global:4222")
+  :creds    "/etc/monoblok/ngs.creds"
+  :tls      true
+  :name     "monoblok-prod-1"
+  :export   ("telemetry.>" "alerts.>"))
+```
+
+It's export-only: publishes whose subject matches any `:export` filter are forwarded to the remote cluster, everything else stays local. Local subscribers are served before the forward, so edge consumers don't wait on the uplink.
+
+Bringing Peter's rental fleet back: the Pi in each car keeps running its conditioning rules locally, and the bridge forwards only `car.*.*.stable` and `car.*.*.alert` up to the office NATS cluster. Raw PIDs still never cross the 5G link, but now the uplink target is a proper cluster with persistence and replication rather than whatever the office happens to have running.
 
 ## Why I find this interesting
 
@@ -164,7 +179,7 @@ Putting a small DSL at the broker for this kind of work is a nice middle ground.
 
 It's just a toy but the applications are endless. Swap office temperature sensors for market data ticks where you want to deadband out the noise and only emit on meaningful moves, fleet telemetry from a few thousand vehicles where most of the GPS jitter is uninteresting, IoT estates with flaky sensors that need smoothing before anyone trusts the readings, gaming or trading dashboards where late-joining clients shouldn't have to wait for the next event to see current state. **Same primitives, different domain.**
 
-There are a few loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, proper structured logging, the leaf-node path mentioned earlier (potentially as an actual NATS leaf rather than a bespoke bridge) so it can plug into a real cluster cleanly, and a resilience story for when the process inevitably falls over.
+There are a few loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, proper structured logging, and a resilience story for when the process inevitably falls over.
 
 The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin.
 
