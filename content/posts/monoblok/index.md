@@ -10,7 +10,7 @@ externalLink = ""
 series = []
 +++
 
-I've recently _reified_ a pondering I've had for some time. It has come to life as [monoblok](https://github.com/lexvicacom/monoblok): a small partially NATS-compatible pub/sub daemon written in Zig. 
+A pondering I've had for some time has come to life as [monoblok](https://github.com/lexvicacom/monoblok). It is a small partially NATS-compatible pub/sub daemon written in Zig. 
 
 There are two features that set it apart: a last-value cache on every subject, and a _signal conditioning_ DSL called **patchbay**, which lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
 
@@ -78,17 +78,17 @@ That last requirement is the one that usually causes pain. With a vanilla pub/su
 
 Three rules. The first turns a chatty sensor feed into a change-only stream. The second uses a windowed aggregate to avoid alerting on a single spike, and `rising-edge` makes sure it only fires once per crossing rather than on every sample while the average stays above threshold. The third is the mirror image: `falling-edge` emits an all-clear the moment the average drops back below. State is per rule, per subject, so floor 3 meeting room 2 has its own ring buffer that doesn't interfere with the kitchen on floor 1.
 
-A subscriber wanting clean data subscribes to `temp.>.stable`. A subscriber that only cares about alerts subscribes to `temp.>.alert`, and a paired subscription on `temp.>.ok` closes the loop. Neither needs to know anything about how the conditioning happens.
+A subscriber wanting clean data subscribes to `temp.*.*.stable`. A subscriber that only cares about alerts subscribes to `temp.*.*.alert`, and a paired subscription on `temp.*.*.ok` closes the loop. Neither needs to know anything about how the conditioning happens.
 
 ### Where the LVC earns its keep
 
 Now imagine the dashboard. It's a browser tab. Someone opens it at 14:32 and wants to see the current temperature for every room, immediately, then live updates as new readings come in.
 
-Without an LVC you've got a chicken-and-egg situation. You can subscribe to `temp.>.stable` but you'll only see values as they change. If the kitchen has been quiet for ten minutes, the dashboard shows nothing for the kitchen until the next publish. So you build a snapshot endpoint, or a key-value bucket, or you nag the publisher to send a heartbeat.
+Without an LVC, you can subscribe to `temp.*.*.stable` but you'll only see values as they change. If the kitchen has been quiet for ten minutes, the dashboard shows nothing for the kitchen until the next publish.
 
-With monoblok, the dashboard subscribes to `$LVC.temp.>.stable`. The broker delivers the most recent cached value for every matching subject right away, then transitions to live streaming. One subscription, no race condition, no separate snapshot service. Open the tab, see the current state, watch it update.
+With monoblok, the dashboard subscribes to `$LVC.temp.*.*.stable`. The broker delivers the most recent cached value for every matching subject right away, then transitions to live streaming. One subscription, no race condition, no separate snapshot service. Open the tab, see the current state, watch it update.
 
-The same trick works for the alerts subject. A new on-call engineer joining mid-shift can subscribe to `$LVC.temp.>.alert` and immediately see whatever the last alert was, rather than waiting for the next one to fire.
+The same trick works for the alerts subject. A new on-call engineer joining mid-shift can subscribe to `$LVC.temp.*.*.alert` and immediately see whatever the last alert was, rather than waiting for the next one to fire.
 
 It's quite nice how the conditioning rules and the LVC compose naturally. Rule-generated publishes participate in caching just like any other publish. The `temp.3.kitchen.stable` subject has its own LVC entry, populated by the patchbay rule, available to any late-joining subscriber. You didn't have to think about it; it just works.
 
@@ -132,11 +132,11 @@ The raw feed is exactly the sort of thing patchbay was built for. RPM updates ma
 
 The third rule is the one Peter cares about. A single sample over 7500 gets averaged with the surrounding values and ignored; twenty samples in a row up there, and an alert lands on `car.<vin>.rpm.alert`. State is per rule per subject, so each car has its own independent ring buffer.
 
-The interesting part is what crosses the 5G link. Raw PIDs at full rate would chew through a SIM's data allowance for no good reason; most of it is redundant. Conditioning at the edge means the uplink only carries RPM when it moves into a new 50rpm bucket, coolant when it shifts by a degree, and over-rev alerts only when a customer is actually abusing the car. Everything else stays on the Pi. Peter's backend subscribes to `car.>.stable` and `car.>.alert` and gets a tidy, low-volume feed it can log, graph or react to without having to do its own conditioning.
+The interesting part is what crosses the 5G link. Raw PIDs at full rate would chew through a SIM's data allowance for no good reason; most of it is redundant. Conditioning at the edge means the uplink only carries RPM when it moves into a new 50rpm bucket, coolant when it shifts by a degree, and over-rev alerts only when a customer is actually abusing the car. Everything else stays on the Pi. Peter's backend subscribes to `car.*.*.stable` and `car.*.*.alert` and gets a tidy, low-volume feed it can log, graph or react to without having to do its own conditioning.
 
-The LVC earns its keep on the backend side. When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.>.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
+The LVC earns its keep on the backend side. When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.*.*.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
 
-Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a seam for anything else you want to hang off it. A small service subscribed to `car.>.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded SMS reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
+Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a seam for anything else you want to hang off it. A small service subscribed to `car.*.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded SMS reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
 
 The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: the moment you want captured is *now*, not thirty seconds later when the 5G link comes back after a tunnel or a patch of rural Wales with no signal. So that subscriber runs on the Pi itself, on the same broker, and pokes the dashcam over the local network the instant the alert lands on the subject. No uplink required. Because the alert payload carries the offending RPM reading, the subscriber can stamp it straight onto the image before saving: a JPEG with `8,420 RPM` burned into the corner is a lot harder to argue with at handover than a log line. The notification and SMS services live back at the office and pick up the same alert whenever the 5G link is healthy again, because the broker buffers anything that couldn't be delivered. Same subject, two very different latency and connectivity profiles, no extra plumbing.
 
