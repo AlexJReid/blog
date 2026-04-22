@@ -74,6 +74,8 @@ That last requirement is the one that usually causes pain. With a vanilla pub/su
 
 Three rules. The first turns a chatty sensor feed into a change-only stream. The second uses a windowed aggregate to avoid alerting on a single spike, and `rising-edge` makes sure it only fires once per crossing rather than on every sample while the average stays above threshold. The third is the mirror image: `falling-edge` emits an all-clear the moment the average drops back below. State is per rule, per subject, so floor 3 meeting room 2 has its own ring buffer that doesn't interfere with the kitchen on floor 1.
 
+A `transition` form collapses the two edge rules into one (same semantics, one shared prev slot, one ring buffer instead of two). The two-rule version is shown here because it makes the primitives visible.
+
 A subscriber wanting clean data subscribes to `temp.*.*.stable`. A subscriber that only cares about alerts subscribes to `temp.*.*.alert`, and a paired subscription on `temp.*.*.ok` closes the loop. Neither needs to know anything about how the conditioning happens.
 
 ### Where the LVC earns its keep
@@ -82,7 +84,7 @@ Now imagine the dashboard. It's a browser tab. Someone opens it at 14:32 and wan
 
 Without an LVC, you can subscribe to `temp.*.*.stable` but you'll only see values as they change. If the kitchen has been quiet for ten minutes, the dashboard shows nothing for the kitchen until the next publish.
 
-With monoblok, the dashboard subscribes to `$LVC.temp.*.*.stable`. The broker delivers the most recent cached value for every matching subject right away, then transitions to live streaming. One subscription, no race condition, no separate snapshot service. Open the tab, see the current state, watch it update.
+With monoblok, the dashboard subscribes to `$LVC.temp.*.*.stable`. The broker delivers the most recent cached value for every matching subject right away, then switches to live streaming. One subscription, no race condition, no separate snapshot service. Open the tab, see the current state, watch it update.
 
 The same trick works for the alerts subject. A new on-call engineer joining mid-shift can subscribe to `$LVC.temp.*.*.alert` and immediately see whatever the last alert was, rather than waiting for the next one to fire.
 
@@ -96,6 +98,8 @@ A £10 Bluetooth OBD2 dongle plugged into the diagnostic port exposes a firehose
 
 Because monoblok compiles for ARM, the broker itself runs on the same Pi. A 5G hat gives it an uplink, so conditioned streams go straight to Peter's reporting system without ever shipping raw PIDs over the cellular link. Conditioning at the edge, analysis in the cloud.
 
+![Data flow: Porsche 911 with a Pi + 5G hat onboard running monoblok, publishing conditioned streams over 4G/5G to an office backend (fleet dashboard, SMS notifier, logger, dashcam archive). Raw PIDs never leave the car.](./monocar_post.jpg)
+
 What Peter wants:
 
 1. A clean per-car telemetry stream for the fleet dashboard. RPM, coolant, speed, the usual.
@@ -105,7 +109,7 @@ What Peter wants:
 
 The raw feed is exactly the sort of thing patchbay was built for. RPM updates many times a second and wobbles constantly at a steady throttle. Coolant barely moves once the engine is warm. Publishing all of this unconditioned over a metered 5G connection is wasteful and makes the dashboard feel like it's drinking from a firehose.
 
-Deadband, incidentally, is exactly what most consumer cars already do to their own gauges. The coolant temperature needle on a modern dash sits stubbornly in the middle across roughly 75-105°C of actual sensor reading, and only twitches if things get genuinely cold or genuinely hot. The manufacturers figured out a long time ago that a needle tracking the real value would have drivers ringing the dealership every time they sat in traffic on a warm day. Same primitive, different reason for wanting it.
+Deadband, incidentally, is exactly what most consumer cars already do to their own gauges. The coolant temperature needle on a modern dash sits stubbornly in the middle across roughly 75-105°C of actual sensor reading, and only twitches if things get genuinely cold or genuinely hot. VW, Ford and others figured out a long time ago that a needle tracking the real value would have drivers ringing the dealership every time they sat in traffic on a warm day. Same primitive, different reason for wanting it.
 
 ```clojure
 ;; RPM: quantize to 50rpm buckets, drop duplicates, republish
@@ -142,11 +146,9 @@ None of these subscribers know or care about OBD2; they're plain subscribers to 
 
 ## Implementation notes
 
-A single-threaded event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads, no locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that an off-the-shelf NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simple replace NATS as an experiment.
+A single-threaded event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads, no locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that an off-the-shelf NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simply replace NATS as an experiment.
 
-It was also helpful to benchmark monoblok using the existing `nats bench` commands. 
-
-Obvious caveat: `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so they measure raw broker work only.
+Benchmarking against the existing `nats bench` commands was convenient, though it comes with an obvious caveat: `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so the numbers measure raw broker work only.
 
 With that out of the way, on an M2 Air monoblok keeps up on single-publisher throughput (6.12M vs 6.18M msg/s for 64B payloads) and pulls ahead on fan-out as subscriber count grows (8.01M vs 6.70M msg/s at 50 subscribers). On a small 2-core Linux VM with the io_uring backend it's a similar story: behind on the single-subscriber fan-out case, ahead at 50 subscribers (4.51M vs 3.28M msg/s). Throughput will drop from these figures in proportion to how much your rules do, but it's a respectable starting point. This doesn't mean you should run this just yet, NATS is still the thing you'd want in production.
 
