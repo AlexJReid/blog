@@ -2,10 +2,10 @@
 draft = false
 date = 2026-04-21
 title = "Monoblok: a tiny NATS-ish pub/sub server with signal conditioning and a last value cache"
-description = "I wrote an experimental, partially NATS-compatible pub/sub server with last-valuestreams and an S-expression signal-routing and conditioning DSL. It's a tiny, flexible and like NATS is a small."
+description = "I wrote an experimental, partially NATS-compatible pub/sub server with last-valuestreams and an S-expression signal-routing and conditioning DSL. Like NATS is a single, small binary."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
-categories = ["projects","greatest-hits"]
+categories = ["projects"]
 externalLink = ""
 series = []
 ShowToc = true
@@ -201,7 +201,7 @@ Putting a small DSL at the broker for this kind of work is a nice middle ground.
 
 It's just a toy but the applications are endless. Swap office temperature sensors for market data ticks where you want to deadband out the noise and only emit on meaningful moves, fleet telemetry from a few thousand vehicles where most of the GPS jitter is uninteresting, IoT estates with flaky sensors that need smoothing before anyone trusts the readings, gaming or trading dashboards where late-joining clients shouldn't have to wait for the next event to see current state. **Same primitives, different domains.**
 
-There are a few loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, proper structured logging, and a resilience story for when the process inevitably falls over.
+There are many loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, maybe TLS (or just rely a NLB to terminate), proper structured logging, and a resilience story.
 
 The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin.
 
