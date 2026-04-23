@@ -2,7 +2,7 @@
 draft = false
 date = 2026-04-21
 title = "Monoblok: a tiny NATS-ish pub/sub server with signal conditioning and a last value cache"
-description = "I wrote an experimental, partially NATS-compatible pub/sub server with last-valuestreams and an S-expression signal-routing and conditioning DSL. Like NATS is a single, small binary."
+description = "I wrote an experimental, partially NATS-compatible pub/sub server with last-value streams and an S-expression signal-routing and conditioning DSL. Like NATS, it is a single small binary."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
 categories = ["projects"]
