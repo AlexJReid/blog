@@ -16,21 +16,14 @@ TocOpen = false
 
 A follow-up to [the monoblok post](/posts/monoblok/). There's now a public server you can talk to over the standard NATS wire protocol, because reading about a pub/sub DSL is fine but actually typing at one is much better.
 
-If you just want to get on with it:
-
-```
-Server: nats://monoblok.rtd.pub:4222
-Docs:   https://github.com/lexvicacom/monoblok/blob/main/DEMO.md
-```
-
-Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
+Server is `nats://monoblok.rtd.pub:4222`, docs at [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
 
 ```
 nats context save monoblok-demo --server nats://monoblok.rtd.pub:4222
 nats context select monoblok-demo
 ```
 
-Now `nats pub` and `nats sub` go straight to the public server. There's no auth, no TLS, and it's running on a small VPS; a tight publish loop will knock it over, and when that happens I'll restart it eventually. It's a whiteboard.
+Now `nats pub` and `nats sub` go straight to the public server.
 
 ## The 30-second tour
 
@@ -50,7 +43,7 @@ The demo rules live in the repo at [`examples/demo.edn`](https://github.com/lexv
 
 ## The LVC, independent of any rule
 
-Worth restating because it's the thing that separates monoblok from a vanilla broker, and it works independently of any patchbay rule: every subject has a last-value cache. Subscribe to `$LVC.demo.sensors.temp` and you get the most recent cached value immediately, then live updates.
+A small but mighty thing that separates monoblok from a vanilla broker, and it works independently of any patchbay rule: every subject has a last-value cache. Subscribe to `$LVC.demo.sensors.temp` and you get the most recent cached value immediately, then live updates.
 
 ```
 # Publish a value, then walk away.
@@ -63,7 +56,7 @@ nats sub '$LVC.demo.sensors.temp'
 
 (Single-quote any subject starting with `$` so the shell doesn't try to expand it.)
 
-On the demo server you can watch this across any subject someone else has ever published to: subscribe to `$LVC.demo.>` and you get a snapshot of whatever's lingering in the cache, then the live stream. Useful for dashboards, restarted consumers, curious late joiners. No JetStream, no external KV store, just the broker remembering the last thing it saw.
+On the demo server you can watch this across any subject someone else has ever published to: subscribe to `$LVC.demo.>` and you get a snapshot of whatever's lingering in the cache, then the live stream. Useful for dashboards, restarted consumers, curious late joiners. No JetStream, no external KV store, just the broker remembering the last thing it saw. Caveat: the LVC is in-memory today and doesn't survive a server restart; on-disk persistence is on the list.
 
 It pairs particularly well with the conditioning rules: a subscriber to `$LVC.demo.sensors.temp.stable` gets the most recent *rule-produced* value on connect, not the raw input. That fallout-for-free composition is the bit I find most satisfying about how this all hangs together.
 
