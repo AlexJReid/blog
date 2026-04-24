@@ -72,6 +72,6 @@ Each rule publishes `emitted` and `suppressed` totals, so you can confirm a gate
 
 ## Try it
 
-The point of all this is lowering the barrier. Reading a DSL is not the same as running it. If you've got the `nats` CLI handy, pointing it at the public server is probably a better use of the next thirty seconds than reading further.
+The point of all this is lowering the barrier. Reading a DSL is not the same as running it. If you've got the `nats` CLI handy, have a play and let me know what you think.
 
-Repo is [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok), demo doc is [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md), and if you want the full primitive reference there's [PATCHBAY.md](https://github.com/lexvicacom/monoblok/blob/main/PATCHBAY.md). Shout if it breaks.
+Monoblok is available for download at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok), demo server doc is [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md), and if you want the full patchbay DSL reference there's [PATCHBAY.md](https://github.com/lexvicacom/monoblok/blob/main/PATCHBAY.md). 
