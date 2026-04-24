@@ -1,8 +1,8 @@
 +++
 draft = false
 date = 2026-04-24
-title = "Monoblok demo: a public playground for patchbay rules"
-description = "I stood up a public monoblok server at monoblok.rtd.pub so you can poke at patchbay rules with the NATS CLI without installing anything."
+title = "monoblok.rtd.pub - a playground for monoblok"
+description = "Try out monoblok via the NATS CLI without installing anything."
 slug = "monoblok-demo"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay"]
 categories = ["projects"]
@@ -12,18 +12,16 @@ ShowToc = false
 TocOpen = false
 +++
 
-![monoblok](./monoblok.png)
+There's now a public [monoblok](/posts/monoblok/) demo server you can use with any NATS client to try it out.
 
-A follow-up to [the monoblok post](/posts/monoblok/). There's now a public server you can talk to over the standard NATS wire protocol, because reading about a pub/sub DSL is fine but actually typing at one is much better.
-
-Server is `nats://monoblok.rtd.pub:4222`, docs at [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
+It is at `nats://monoblok.rtd.pub:4222`, docs at [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
 
 ```
 nats context save monoblok-demo --server nats://monoblok.rtd.pub:4222
 nats context select monoblok-demo
 ```
 
-Now `nats pub` and `nats sub` go straight to the public server.
+Now `nats pub` and `nats sub` go straight to the public demo server.
 
 ## The 30-second tour
 
@@ -54,15 +52,15 @@ nats sub '$LVC.demo.sensors.temp'
 # -> prints "23.5" immediately
 ```
 
-(Single-quote any subject starting with `$` so the shell doesn't try to expand it.)
+(Single-quote any subject starting with `$` so your shell doesn't try to expand it.)
 
 On the demo server you can watch this across any subject someone else has ever published to: subscribe to `$LVC.demo.>` and you get a snapshot of whatever's lingering in the cache, then the live stream. Useful for dashboards, restarted consumers, curious late joiners. No JetStream, no external KV store, just the broker remembering the last thing it saw. Caveat: the LVC is in-memory today and doesn't survive a server restart; on-disk persistence is on the list.
 
-It pairs particularly well with the conditioning rules: a subscriber to `$LVC.demo.sensors.temp.stable` gets the most recent *rule-produced* value on connect, not the raw input. That fallout-for-free composition is the bit I find most satisfying about how this all hangs together.
+It pairs particularly well with the conditioning rules: a subscriber to `$LVC.demo.sensors.temp.stable` gets the most recent *rule-produced* value on connect, not the raw input. Nice side effect.
 
 ## Boring mechanical notes
 
-Everything from the original post still applies: single-threaded libxev event loop, core NATS wire protocol, zero-copy fan-out, runs anywhere Zig targets. The demo server is a single static binary on a 2-core VPS, so don't stress-test it in anger. If it dies I'll notice eventually. If you want guaranteed uptime, the repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases); it starts on sub-£5 hardware.
+Everything from the original post still applies: single-threaded libxev event loop, core NATS wire protocol, zero-copy fan-out, runs anywhere Zig targets. The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases); it starts fine on a $5 VPS.
 
 There's a read-only `$STATS.>` tree too, if you want to watch the rule-level counters update once a minute:
 
