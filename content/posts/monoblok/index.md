@@ -20,6 +20,8 @@ There are two features that set it apart: a last-value cache on every subject, a
 
 It is experimental at this point, but the ideas are solid.
 
+**Update:** [try the public demo server with the NATS CLI](/posts/monoblok-demo/), no install required.
+
 ## Key features
 
 **The last-value cache (LVC).** Every subject has an implicit cache of its most recent value. Subscribe to `$LVC.foo.bar` and you immediately receive the cached value (if any), then the live stream of subsequent publishes. Wildcards work too. It's on by default and costs a couple of percent overhead.
@@ -86,7 +88,7 @@ A `transition` form collapses the two edge rules into one (same semantics, one s
 
 A subscriber wanting clean data subscribes to `temp.*.*.stable`. A subscriber that only cares about alerts subscribes to `temp.*.*.alert`, and a paired subscription on `temp.*.*.ok` closes the loop. Neither needs to know anything about how the conditioning happens.
 
-### Where the LVC earns its keep
+### Where the LVC helps
 
 Now imagine the dashboard. It's a browser tab. Someone opens it at 14:32 and wants to see the current temperature for every room, immediately, then live updates as new readings come in.
 
@@ -144,7 +146,7 @@ The third rule is the one Peter cares about. A single sample over 7500 gets aver
 
 The interesting part is what crosses the 5G link. Raw PIDs at full rate would chew through a SIM's data allowance for no good reason; most of it is redundant. Conditioning at the edge means the uplink only carries RPM when it moves into a new 50rpm bucket, coolant when it shifts by a degree, and over-rev alerts only when a customer is actually abusing the car. Everything else stays on the Pi. Peter's backend subscribes to `car.*.*.stable` and `car.*.*.alert` and gets a tidy, low-volume feed it can log, graph or react to without having to do its own conditioning.
 
-The LVC earns its keep on the backend side. When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.*.*.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
+The LVC is a life saver on the backend side. When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.*.*.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
 
 Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a seam for anything else you want to hang off it. A small service subscribed to `car.*.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded SMS reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
 
