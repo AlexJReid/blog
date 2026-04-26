@@ -8,7 +8,7 @@ tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greate
 categories = ["projects"]
 externalLink = ""
 series = []
-ShowToc = true
+ShowToc = false
 TocOpen = false
 +++
 
