@@ -183,17 +183,17 @@ Back to Peter's rental fleet: the RRPiin each car keeps running its conditioning
 
 ## Using patchbay with Claude Code
 
-Writing patchbay rules by hand is fine once you've internalised the primitives, but it's much nicer to have Claude Code do it for you. There's a self-contained system prompt in the repo, [CLAUDE_PATCHBAY.md](https://raw.githubusercontent.com/lexvicacom/monoblok/main/CLAUDE_PATCHBAY.md), that teaches the model the grammar, the bound symbols, the idioms and the anti-patterns.
+Writing patchbay rules by hand is fine once you've internalised the primitives, but it's much nicer to have Claude Code do it for you. There's a self-contained system prompt in the repo, [claude-patchbay.md](https://raw.githubusercontent.com/lexvicacom/monoblok/main/docs/claude-patchbay.md), that teaches the model the grammar, the bound symbols, the idioms and the anti-patterns.
 
 ![Claude Code writing patchbay rules](./claude.png)
 
 Append it to your project's `CLAUDE.md` and Claude Code will pick it up whenever you're editing rule files:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/lexvicacom/monoblok/main/CLAUDE_PATCHBAY.md >> ./CLAUDE.md
+curl -fsSL https://raw.githubusercontent.com/lexvicacom/monoblok/main/docs/claude-patchbay.md >> ./CLAUDE.md
 ```
 
-Or inline it into a one-off prompt with `@CLAUDE_PATCHBAY.md`. Handy.
+Or inline it into a one-off prompt with `@claude-patchbay.md`. Handy.
 
 ## Why this is all interesting
 

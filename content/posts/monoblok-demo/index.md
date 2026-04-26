@@ -14,7 +14,7 @@ TocOpen = false
 
 There's now a public [monoblok](/posts/monoblok/) demo server you can use with any NATS client to try it out.
 
-It is at `nats://monoblok.rtd.pub:4222`, docs at [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
+It is at `nats://monoblok.rtd.pub:4222`, docs at [demo.md](https://github.com/lexvicacom/monoblok/blob/main/docs/demo.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
 
 ```
 nats context save monoblok-demo --server nats://monoblok.rtd.pub:4222
@@ -37,7 +37,7 @@ nats pub demo.sensors.temp 25.38
 
 The first terminal prints a handful of derived subjects: `demo.sensors.temp.stable`, `.delta`, `.smoothed`, `.delta-abs`. Each one comes from a different patchbay rule applied to the input. The subscriber publishing the raw readings doesn't know any of those rules exist.
 
-The demo rules live in the repo at [`examples/demo.edn`](https://github.com/lexvicacom/monoblok/blob/main/examples/demo.edn). The idea is to give one compact example of every primitive family so a reader hits all of them in a single sitting: `squelch` for value-dedup, `deadband` for "ignore small wobbles", `moving-avg` for smoothing, `delta` for per-tick change, `transition` for boolean edge detection, `rising-edge` for one-shot crossings, and `hold-off` for time-based rate limiting. The [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md) doc has the full subject map and per-rule walkthroughs.
+The demo rules live in the repo at [`examples/demo.edn`](https://github.com/lexvicacom/monoblok/blob/main/examples/demo.edn). The idea is to give one compact example of every primitive family so a reader hits all of them in a single sitting: `squelch` for value-dedup, `deadband` for "ignore small wobbles", `moving-avg` for smoothing, `delta` for per-tick change, `transition` for boolean edge detection, `rising-edge` for one-shot crossings, and `hold-off` for time-based rate limiting. The [demo.md](https://github.com/lexvicacom/monoblok/blob/main/docs/demo.md) doc has the full subject map and per-rule walkthroughs.
 
 ## The LVC, independent of any rule
 
@@ -74,4 +74,4 @@ Each rule publishes `emitted` and `suppressed` totals, so you can confirm a gate
 
 The point of all this is lowering the barrier. Reading a DSL is not the same as running it. If you've got the `nats` CLI handy, have a play and let me know what you think.
 
-Monoblok is available for download at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok), demo server doc is [DEMO.md](https://github.com/lexvicacom/monoblok/blob/main/DEMO.md), and if you want the full patchbay DSL reference there's [PATCHBAY.md](https://github.com/lexvicacom/monoblok/blob/main/PATCHBAY.md). 
+Monoblok is available for download at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok), demo server doc is [demo.md](https://github.com/lexvicacom/monoblok/blob/main/docs/demo.md), and if you want the full patchbay DSL reference there's [patchbay.md](https://github.com/lexvicacom/monoblok/blob/main/docs/patchbay.md). 
