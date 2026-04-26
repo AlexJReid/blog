@@ -159,6 +159,8 @@ Or inline it into a one-off prompt with `@claude-patchbay.md`. Handy.
 
 ## Why this is all interesting
 
+![A modular synth patchbay: knobs, jacks, and a tangle of brightly coloured patch cables routing signal between modules.](./patchbay.jpg)
+
 The conventional logic is "broker moves bytes, application does logic." That's fine and largely correct, but there's a category of logic, signal conditioning, that you could argue belongs at the broker. It's stateless from the application's point of view, it's the same boring code reimplemented in every consumer, and it benefits enormously from being applied once, centrally, before fan-out.
 
 Putting a small DSL at the broker for this kind of work is a nice middle ground. It's not trying to be Flink, Beam or Kafka Streams. It's just a few primitives, declared once, that turn raw sensor noise into something useful before it ever leaves the broker. The LVC then makes late-joining subscribers a non-event, which is the other thing every realtime app ends up reinventing.
