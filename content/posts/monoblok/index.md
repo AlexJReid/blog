@@ -24,7 +24,7 @@ Useful for jittery sensors (the £2.99 Temu kind), high-frequency market data, f
 
 ![a cheap shouty sensor](./shoutysensor.png)
 
-It's a small partially NATS-compatible pub/sub server written in Zig. Alongside the conditioning DSL (called **patchbay**), there's a second feature worth flagging up front: a last-value cache on every subject, so late-joining subscribers see the current state immediately rather than waiting for the next publish.
+It's a small partially NATS-compatible pub/sub server written in Zig. The conditioning DSL is called **patchbay**, and there's also a last-value cache on every subject so late-joining subscribers see the current state immediately rather than waiting for the next publish.
 
 It is experimental at this point, but the ideas are solid.
 
