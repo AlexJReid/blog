@@ -54,69 +54,15 @@ Sensors publish to a local monoblok, patchbay rules do the conditioning, and onl
 
 The pattern of using monoblok as a front-NATS for existing publishers is an elegant, light addition. What might have previously been handled by a consumer can now be done by monoblok. All consumers of the processed subjects are none the wiser, they just connect to the same production NATS environment. NATS is not actually necessary though: in smaller or more experimental setups, it is fine to simply point those consumers at monoblok instead.
 
-## A hot/cold scenario
+## A worked example: catching over-revs at Peter's Porsche Rentals
 
-Let's wire something up that actually shows off both features together. Pretend we're running a small fleet of temperature sensors in an office building. Each sensor publishes a reading every few seconds on `temp.<floor>.<room>`. The raw stream is noisy: sensors jitter, the value wobbles by a tenth of a degree constantly, and most readings are functionally identical to the previous one. **It turns out the facilities team has been buying their sensors from Temu.**
+Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and occasionally decide the [A69](https://en.wikipedia.org/wiki/A69_road) is a good place to see what 9000rpm feels like. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
 
-What we want:
-
-1. A clean "stable" stream that downstream dashboards can render without flickering.
-2. A separate alert subject when the temperature in a room climbs above a threshold (in Celsius) sustained over a window, not just a single spike from someone leaning on the sensor.
-3. Anyone opening a dashboard at any time should see the current reading immediately, without waiting for the next publish.
-
-That last requirement is the one that usually causes pain. With a vanilla pub/sub broker you end up bolting on a key-value store, or a "snapshot on connect" service, or asking the publisher to also write to a database. Before you know it you have a Rube Goldberg contraption involving Redis, a K8s cluster, load balancers and a partridge in a pear tree. With monoblok it's a subscription pattern.
-
-### The patchbay rules
-
-```clojure
-;; Round to 1dp, ignore wobbles under 0.3°C, republish for dashboards
-(on "temp.*.*"
-  (-> payload-float
-      (round 1)
-      (deadband 0.3)
-      (publish-to (subject-append "stable"))))
-
-;; Sustained heat alert: fire once when the 60-sample moving average
-;; crosses above 28°C.
-(on "temp.*.*"
-  (-> (> (moving-avg 60 payload-float) 28.0)
-      (rising-edge)
-      (publish-to (subject-append "alert"))))
-
-;; All-clear: fire once when the same moving average drops back below 28°C.
-(on "temp.*.*"
-  (-> (> (moving-avg 60 payload-float) 28.0)
-      (falling-edge)
-      (publish-to (subject-append "ok"))))
-```
-
-Three rules. The first turns a chatty sensor feed into a change-only stream. The second uses a windowed aggregate to avoid alerting on a single spike, and `rising-edge` makes sure it only fires once per crossing rather than on every sample while the average stays above threshold. The third is the mirror image: `falling-edge` emits an all-clear the moment the average drops back below. State is per rule, per subject, so floor 3 meeting room 2 has its own ring buffer that doesn't interfere with the kitchen on floor 1.
-
-A `transition` form collapses the two edge rules into one (same semantics, one shared prev slot, one ring buffer instead of two). The two-rule version is shown here because it makes the primitives visible.
-
-A subscriber wanting clean data subscribes to `temp.*.*.stable`. A subscriber that only cares about alerts subscribes to `temp.*.*.alert`, and a paired subscription on `temp.*.*.ok` closes the loop. Neither needs to know anything about how the conditioning happens.
-
-### Where the LVC helps
-
-Now imagine the dashboard. It's a browser tab. Someone opens it at 14:32 and wants to see the current temperature for every room, immediately, then live updates as new readings come in.
-
-Without an LVC, you can subscribe to `temp.*.*.stable` but you'll only see values as they change. If the kitchen has been quiet for ten minutes, the dashboard shows nothing for the kitchen until the next publish.
-
-With monoblok, the dashboard subscribes to `$LVC.temp.*.*.stable`. The broker delivers the most recent cached value for every matching subject right away, then switches to live streaming. One subscription, no race condition, no separate snapshot service. Open the tab, see the current state, watch it update.
-
-The same trick works for the alerts subject. A new on-call engineer joining mid-shift can subscribe to `$LVC.temp.*.*.alert` and immediately see whatever the last alert was, rather than waiting for the next one to fire.
-
-It's quite nice how the conditioning rules and the LVC compose naturally. Rule-generated publishes participate in caching just like any other publish. The `temp.3.kitchen.stable` subject has its own LVC entry, populated by the patchbay rule, available to any late-joining subscriber. You didn't have to think about it; it just works.
-
-## Another scenario: catching over-revs at Peter's Porsche Rentals
-
-The office-sensors example is tidy but synthetic. Here's one that isn't. Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and occasionally decide the [A69](https://en.wikipedia.org/wiki/A69_road) is a good place to see what 9000rpm feels like. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
-
-A £10 Bluetooth OBD2 dongle plugged into the diagnostic port exposes a firehose of PIDs: RPM, coolant temperature, throttle position, short and long-term fuel trims, O2 sensor voltages, intake manifold pressure, the lot. A small Python script on a Raspberry RPitucked behind the glovebox polls the dongle over RFCOMM and publishes each reading to `car.<vin>.<pid>`.
+A £10 Bluetooth OBD2 dongle plugged into the diagnostic port exposes a firehose of PIDs: RPM, coolant temperature, throttle position, short and long-term fuel trims, O2 sensor voltages, intake manifold pressure, the lot. A small Python script on a Raspberry Pi tucked behind the glovebox polls the dongle over RFCOMM and publishes each reading to `car.<vin>.<pid>`.
 
 Because monoblok compiles for ARM, the broker itself runs on the same Pi. A 5G hat gives it an uplink, so conditioned streams go straight to Peter's reporting system without ever shipping raw PIDs over the cellular link. Conditioning at the edge, analysis in the cloud.
 
-![Data flow: Porsche 911 with a RPi+ 5G hat onboard running monoblok, publishing conditioned streams over 4G/5G to an office backend (fleet dashboard, SMS notifier, logger, dashcam archive). Raw PIDs never leave the car.](./monocar_post.jpg)
+![Data flow: Porsche 911 with a Pi + 5G hat onboard running monoblok, publishing conditioned streams over 4G/5G to an office backend (fleet dashboard, SMS notifier, logger, dashcam archive). Raw PIDs never leave the car.](./monocar_post.jpg)
 
 What Peter wants:
 
@@ -144,13 +90,21 @@ Deadband, incidentally, is exactly what most consumer cars already do to their o
       (deadband 1.0)
       (publish-to (subject-append "stable"))))
 
-;; Over-rev alert: sustained above 7500rpm across a 20-sample window
+;; Over-rev alert: fire once when the 20-sample moving average
+;; crosses above 7500rpm.
 (on "car.*.rpm"
-  (when (> (moving-avg 20 payload-float) 7500.0)
-    (publish (subject-append "alert") payload)))
+  (-> (> (moving-avg 20 payload-float) 7500.0)
+      (rising-edge)
+      (publish-to (subject-append "alert"))))
+
+;; All-clear: fire once when the same moving average drops back below.
+(on "car.*.rpm"
+  (-> (> (moving-avg 20 payload-float) 7500.0)
+      (falling-edge)
+      (publish-to (subject-append "ok"))))
 ```
 
-The third rule is the one Peter cares about. A single sample over 7500 gets averaged with the surrounding values and ignored; twenty samples in a row up there, and an alert lands on `car.<vin>.rpm.alert`. State is per rule per subject, so each car has its own independent ring buffer.
+The over-rev rule is the one Peter cares about. A single sample over 7500 gets averaged with the surrounding values and ignored; twenty samples in a row up there, and `rising-edge` fires exactly once on the crossing rather than spamming an alert every sample while the car sits in the limiter. The mirror rule with `falling-edge` emits an all-clear the moment the average drops back. A `transition` form collapses the two into one (same semantics, one shared prev slot, one ring buffer instead of two); the two-rule version is shown here because it makes the primitives visible. State is per rule per subject, so each car has its own independent ring buffer.
 
 The interesting part is what crosses the 5G link. Raw PIDs at full rate would chew through a SIM's data allowance for no good reason; most of it is redundant. Conditioning at the edge means the uplink only carries RPM when it moves into a new 50rpm bucket, coolant when it shifts by a degree, and over-rev alerts only when a customer is actually abusing the car. Everything else stays on the Pi. Peter's backend subscribes to `car.*.*.stable` and `car.*.*.alert` and gets a tidy, low-volume feed it can log, graph or react to without having to do its own conditioning.
 
@@ -158,9 +112,9 @@ The LVC is a life saver on the backend side. When Peter opens the fleet dashboar
 
 Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a seam for anything else you want to hang off it. A small service subscribed to `car.*.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded SMS reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
 
-The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: the moment you want captured is *now*, not thirty seconds later when the 5G link comes back after a tunnel or a patch of rural Wales with no signal. So that subscriber runs on the RPiitself, on the same broker, and pokes the dashcam over the local network the instant the alert lands on the subject. No uplink required. Because the alert payload carries the offending RPM reading, the subscriber can stamp it straight onto the image before saving: a JPEG with `8,420 RPM` burned into the corner is a lot harder to argue with at handover than a log line. The notification and SMS services live back at the office and pick up the same alert whenever the 5G link is healthy again, because the broker buffers anything that couldn't be delivered. Same subject, two very different latency and connectivity profiles, no extra plumbing.
+The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: the moment you want captured is *now*, not thirty seconds later when the 5G link comes back after a tunnel or a patch of rural Wales with no signal. So that subscriber runs on the Pi itself, on the same broker, and pokes the dashcam over the local network the instant the alert lands on the subject. No uplink required. Because the alert payload carries the offending RPM reading, the subscriber can stamp it straight onto the image before saving: a JPEG with `8,420 RPM` burned into the corner is a lot harder to argue with at handover than a log line. The notification and SMS services live back at the office and pick up the same alert whenever the 5G link is healthy again, because the broker buffers anything that couldn't be delivered. Same subject, two very different latency and connectivity profiles, no extra plumbing.
 
-None of these subscribers know or care about OBD2; they're plain subscribers to a clean, meaningful stream. You can add or remove them without touching the car, the RPior the patchbay rules.
+None of these subscribers know or care about OBD2; they're plain subscribers to a clean, meaningful stream. You can add or remove them without touching the car, the Pi or the patchbay rules.
 
 ## Implementation notes
 
@@ -187,7 +141,7 @@ An outbound bridge to a real NATS cluster ships in the default build. Configurat
 
 It's export-only: publishes whose subject matches any `:export` filter are forwarded to the remote cluster, everything else stays local. Local subscribers are served before the forward, so edge consumers don't wait on the uplink.
 
-Back to Peter's rental fleet: the RRPiin each car keeps running its conditioning rules locally, and the bridge forwards only `car.*.*.stable` and `car.*.*.alert` up to the office NATS cluster. Raw PIDs still never cross the 5G link, but now the uplink target is a proper cluster with persistence and replication rather than whatever the office happens to have running.
+Back to Peter's rental fleet: the Pi in each car keeps running its conditioning rules locally, and the bridge forwards only `car.*.*.stable` and `car.*.*.alert` up to the office NATS cluster. Raw PIDs still never cross the 5G link, but now the uplink target is a proper cluster with persistence and replication.
 
 ## Using patchbay with Claude Code
 
@@ -211,7 +165,7 @@ Putting a small DSL at the broker for this kind of work is a nice middle ground.
 
 It's just a toy but the applications are endless. Swap office temperature sensors for market data ticks where you want to deadband out the noise and only emit on meaningful moves, fleet telemetry from a few thousand vehicles where most of the GPS jitter is uninteresting, IoT estates with flaky sensors that need smoothing before anyone trusts the readings, gaming or trading dashboards where late-joining clients shouldn't have to wait for the next event to see current state. **Same primitives, different domains.**
 
-There are many loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, maybe TLS (or just rely a NLB to terminate), proper structured logging, and a resilience story.
+There are many loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, maybe TLS (or just rely a NLB to terminate), proper structured logging, and a resilience story. Further out, getting it running on a microcontroller is an interesting direction, swapping the Pi for something an order of magnitude cheaper and lower-power at the edge.
 
 The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin.
 
