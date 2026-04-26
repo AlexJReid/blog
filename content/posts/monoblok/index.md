@@ -1,8 +1,8 @@
 +++
 draft = false
 date = 2026-04-21
-title = "Monoblok: a tiny NATS-ish pub/sub server with signal conditioning and a last value cache"
-description = "I wrote an experimental, partially NATS-compatible pub/sub server with last-value streams and an S-expression signal-routing and conditioning DSL. Like NATS, it is a single small binary."
+title = "Monoblok: a NATS-compatible broker that conditions the signal before subscribers see it"
+description = "Every team writes the same subscriber: read a messy stream, clean it up, republish it. Monoblok is an experimental pub/sub broker that does that work once, at the broker, with a small S-expression DSL and a last-value cache on every subject."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
 categories = ["projects"]
@@ -14,9 +14,15 @@ TocOpen = false
 
 ![monoblok](./monoblok.png)
 
-A pondering I've had for some time has come to life (thanks to some downtime as I recover from a stroke!) as [monoblok](https://github.com/lexvicacom/monoblok). It is a small partially NATS-compatible pub/sub server written in Zig. 
+Every team I've worked on has written the same subscriber: read a messy stream, clean it up, republish it. Data can move quickly, but the speed doesn't always carry value. Most of it is noise.
 
-There are two features that set it apart: a last-value cache on every subject, and a _signal conditioning_ DSL called **patchbay**, which lets you filter, smooth and re-publish messages at the broker, before any subscriber sees them.
+[monoblok](https://github.com/lexvicacom/monoblok) is a broker that does that work once, before a message reaches any subscriber. It sits between your publishers and your real message broker, and conditions the signal in flight: deadband, debounce, dedupe, demux JSON payloads into per-field subjects. The cleanup logic is stable, configured once, instead of being re-implemented in every subscriber.
+
+The pattern: publishers PUB to monoblok instead of directly to NATS, using the exact same NATS client. No code changes. Monoblok does the conditioning, then forwards the tidy subjects to your real cluster. Subscribers get a stream that's already correct.
+
+Useful for jittery sensors (the £2.99 Temu kind), high-frequency market data, fleet telemetry, anything where the data moves fast but most of the movement isn't worth a downstream message.
+
+It's a small partially NATS-compatible pub/sub server written in Zig. Alongside the conditioning DSL (called **patchbay**), there's a second feature worth flagging up front: a last-value cache on every subject, so late-joining subscribers see the current state immediately rather than waiting for the next publish.
 
 It is experimental at this point, but the ideas are solid.
 
