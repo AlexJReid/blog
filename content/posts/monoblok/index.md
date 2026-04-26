@@ -169,6 +169,8 @@ It's just a toy but the applications are endless. Swap office temperature sensor
 
 There are many loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, maybe TLS (or just rely a NLB to terminate), proper structured logging, and a resilience story. Further out, getting it running on a microcontroller is an interesting direction, swapping the Pi for something an order of magnitude cheaper and lower-power at the edge.
 
-The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin.
+The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin. There's also a [demo server anyone can try out](/posts/monoblok-demo/) with the NATS CLI, no install required.
 
 If you've thoughts or want to chat about this sort of thing, [give me a shout](mailto:alex@lexvica.com) or find me on [X](https://x.com/AlexJReid) or [LinkedIn](https://www.linkedin.com/in/alexjreid/).
+
+<sub>Patchbay photo by [John Barkiple](https://unsplash.com/@barkiple?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/xWiXi6wRLGo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText).</sub>
