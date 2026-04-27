@@ -1,8 +1,8 @@
 +++
 draft = false
 date = 2026-04-21
-title = "Monoblok: a NATS-compatible broker that conditions the signal before subscribers see it"
-description = "An experimental NATS-compatible pub/sub broker that conditions the signal in flight (deadband, debounce, dedupe, demux) with a last-value cache on every subject."
+title = "Monoblok: a tiny, configurable broker that conditions and transforms noisy data streams in flight"
+description = "Including deadband, debounce, dedupe, demux and more, with a last-value cache on every subject. Works alongside NATS"
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
 categories = ["projects"]
@@ -20,15 +20,11 @@ Every team I've worked on has written the same subscriber: read a messy stream, 
 
 The pattern: publishers PUB to monoblok instead of directly to NATS, using the exact same NATS client. No code changes. Monoblok does the conditioning, then forwards the tidy subjects to your real cluster. Subscribers get a stream that's already correct.
 
-Useful for jittery sensors (the £2.99 Temu kind), high-frequency market data, fleet telemetry, anything where the data moves fast but most of the movement isn't worth a downstream message.
+This is useful for smoothing out output from jittery sensors (the £2.99 Temu kind), high-frequency market data, fleet telemetry, anything where the data moves fast but most of the movement isn't worth a downstream message.
 
 ![a cheap shouty sensor](./shoutysensor.png)
 
-It's a small partially NATS-compatible pub/sub server written in Zig. The conditioning DSL is called **patchbay**, and there's also a last-value cache on every subject so late-joining subscribers see the current state immediately rather than waiting for the next publish.
-
-It is experimental at this point, but the ideas are solid.
-
-**Update:** [try the public demo server with the NATS CLI](/posts/monoblok-demo/), no install required.
+monoblok is partially NATS-compatible and is written in Zig, resulting in a fast and compact binary with low hardware requirements. It is configured through a simple signal conditioning DSL is called **patchbay*.
 
 ## Key features
 
@@ -56,7 +52,7 @@ The pattern of using monoblok as a front-NATS for existing publishers is an eleg
 
 ## A worked example: catching over-revs at Peter's Porsche Rentals
 
-Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and occasionally decide the [A69](https://en.wikipedia.org/wiki/A69_road) is a good place to see what 9000rpm feels like. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
+Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pay a lot of money per day and in exchange may enjoy bouncing off the rev limiter for fun. Peter would like to know about that, ideally while the car is still out, so he can have a conversation at handover rather than discovering a trashed engine three services later.
 
 A £10 Bluetooth OBD2 dongle plugged into the diagnostic port exposes a firehose of PIDs: RPM, coolant temperature, throttle position, short and long-term fuel trims, O2 sensor voltages, intake manifold pressure, the lot. A small Python script on a Raspberry Pi tucked behind the glovebox polls the dongle over RFCOMM and publishes each reading to `car.<vin>.<pid>`.
 
@@ -69,9 +65,9 @@ What Peter wants:
 1. A clean per-car telemetry stream for the fleet dashboard. RPM, coolant, speed, the usual.
 2. An over-rev alert the moment a car holds the engine above 7500rpm for more than a couple of seconds. One brief blip past redline on a downshift is forgivable; ten seconds in the limiter is a phone call.
 3. When he opens the dashboard in the morning, the current state of every car on hire, immediately. No "waiting for first reading" spinner.
-4. It isn't just to spy. If the car has issues, he may want to provide pre-emptive assistance.
+4. If the car has issues, he may want to provide pre-emptive assistance.
 
-The raw feed is exactly the sort of thing patchbay was built for. RPM updates many times a second and wobbles constantly at a steady throttle. Coolant barely moves once the engine is warm. Publishing all of this unconditioned over a metered 5G connection is wasteful and makes the dashboard feel like it's drinking from a firehose.
+ RPM updates many times a second and wobbles constantly at a steady throttle. Coolant barely moves once the engine is warm. Publishing all of this unconditioned over a metered 5G connection is wasteful. Conditioning the raw feed is exactly the sort of thing patchbay was built for.
 
 Deadband, incidentally, is exactly what most consumer cars already do to their own gauges. The coolant temperature needle on a modern dash sits stubbornly in the middle across roughly 75-105°C of actual sensor reading, and only twitches if things get genuinely cold or genuinely hot. VW, Ford and others figured out a long time ago that a needle tracking the real value would have drivers ringing the dealership every time they sat in traffic on a warm day. Same primitive, different reason for wanting it.
 
@@ -108,19 +104,19 @@ The over-rev rule is the one Peter cares about. A single sample over 7500 gets a
 
 The interesting part is what crosses the 5G link. Raw PIDs at full rate would chew through a SIM's data allowance for no good reason; most of it is redundant. Conditioning at the edge means the uplink only carries RPM when it moves into a new 50rpm bucket, coolant when it shifts by a degree, and over-rev alerts only when a customer is actually abusing the car. Everything else stays on the Pi. Peter's backend subscribes to `car.*.*.stable` and `car.*.*.alert` and gets a tidy, low-volume feed it can log, graph or react to without having to do its own conditioning.
 
-The LVC is a life saver on the backend side. When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.*.*.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
+When Peter opens the fleet dashboard first thing, subscribing to `$LVC.car.*.*.stable` yields the last known value for every PID on every car without having to wait for the next change. If a logger process restarts, same deal. Useful if you're trying to work out the state a car was in at the moment something went wrong.
 
-Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a seam for anything else you want to hang off it. A small service subscribed to `car.*.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded SMS reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
+Once the over-rev alert is sitting on a pub/sub subject rather than buried in a log file, it becomes a hook for anything else you want to hang off it. A small service subscribed to `car.*.rpm.alert` can push a notification to Peter's phone the moment it fires. Another can look up the customer against the rental record and fire off a politely-worded text message reminding them that the car is leased, not theirs, and that the limiter exists for a reason.
 
-The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: the moment you want captured is *now*, not thirty seconds later when the 5G link comes back after a tunnel or a patch of rural Wales with no signal. So that subscriber runs on the Pi itself, on the same broker, and pokes the dashcam over the local network the instant the alert lands on the subject. No uplink required. Because the alert payload carries the offending RPM reading, the subscriber can stamp it straight onto the image before saving: a JPEG with `8,420 RPM` burned into the corner is a lot harder to argue with at handover than a log line. The notification and SMS services live back at the office and pick up the same alert whenever the 5G link is healthy again, because the broker buffers anything that couldn't be delivered. Same subject, two very different latency and connectivity profiles, no extra plumbing.
+The dashcam trigger is the interesting one. Grabbing a still is time-sensitive: the moment you want captured is *now*, not thirty seconds later when the 5G link comes back after a tunnel or a patch of rural Wales with no signal. Therefore, that subscriber runs on the Pi itself, on the same broker, and pokes the dashcam over the local network the instant the alert lands on the subject. No uplink required. Because the alert payload carries the offending RPM reading, the subscriber can stamp it straight onto the image before saving: a JPEG with `8,420 RPM` burned into the corner is a lot harder to argue with at handover than a log line. The notification and SMS services live back at the office and pick up the same alert whenever the 5G link is healthy again, because the broker buffers anything that couldn't be delivered. Same subject, two very different latency and connectivity profiles, but with no extra plumbing.
 
-None of these subscribers know or care about OBD2; they're plain subscribers to a clean, meaningful stream. You can add or remove them without touching the car, the Pi or the patchbay rules.
+These are just plain subscribers to a clean, meaningful stream. You can add or remove them without touching the car, the Pi or the patchbay rules.
 
 ## Implementation notes
 
-Everything runs in an event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads or locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that any NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simply replace NATS as an experiment.
+Everything besides networking runs in an event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads or locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that any NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simply replace NATS as an experiment.
 
-Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so the numbers measure raw broker work only.
+Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so the numbers measure raw broker work only. Plus, most useful systems tend to work over a LAN or WAN and not localhost. 
 
 A M4 Mac Mini monoblok is within single-digit percent of `nats-server` on the single-publisher 64B workload (6.46M vs 7.14M msg/s) and pulls sharply ahead as fan-out grows: 17.52M (!) vs 4.82M msg/s at 50 subscribers. 17.52M seems high so I'm cynical and need to look into that. 🤏🧂
 
