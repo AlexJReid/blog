@@ -14,6 +14,8 @@ TocOpen = false
 
 ![monoblok](./monoblok.png)
 
+*Want to [jump straight to the code](https://github.com/lexvicacom/monoblok)?*
+
 A car publishes its engine RPM ten times a second. A market data feed ticks on every quote. A cheap temperature sensor posts a fresh reading every two seconds, mostly identical to the last one. Data moves quickly, but most of it is noise: a publisher that doesn't know what its subscribers care about, and a fleet of subscribers each writing the same defensive code to round, debounce, and ignore the boring readings.
 
 Every team I've worked on has written some version of that subscriber, usually three or four times, usually subtly differently each time.
