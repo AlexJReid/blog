@@ -1,7 +1,7 @@
 +++
 draft = false
 date = 2026-04-24
-title = "monoblok.rtd.pub - a playground for monoblok"
+title = "A playground for monoblok"
 description = "Try out monoblok via the NATS CLI without installing anything."
 slug = "monoblok-demo"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay"]
@@ -54,13 +54,13 @@ nats sub '$LVC.demo.sensors.temp'
 
 (Single-quote any subject starting with `$` so your shell doesn't try to expand it.)
 
-On the demo server you can watch this across any subject someone else has ever published to: subscribe to `$LVC.demo.>` and you get a snapshot of whatever's lingering in the cache, then the live stream. Useful for dashboards, restarted consumers, curious late joiners. No JetStream, no external KV store, just the broker remembering the last thing it saw. Caveat: the LVC is in-memory today and doesn't survive a server restart; on-disk persistence is on the list.
+On the demo server you can watch this across any subject someone else has ever published to: subscribe to `$LVC.demo.>` and you get a snapshot of whatever's lingering in the cache, then the live stream. Useful for dashboards, restarted consumers, curious late joiners. No JetStream, no external KV store, just the broker remembering the last thing it saw. Caveat: 
 
 It pairs particularly well with the conditioning rules: a subscriber to `$LVC.demo.sensors.temp.stable` gets the most recent *rule-produced* value on connect, not the raw input. Nice side effect.
 
 ## Boring mechanical notes
 
-Everything from the original post still applies: single-threaded libxev event loop, core NATS wire protocol, zero-copy fan-out, runs anywhere Zig targets. The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases); it starts fine on a $5 VPS.
+Everything from the original post still applies: single-threaded libxev event loop, core NATS wire protocol, zero-copy fan-out, runs anywhere Zig targets. The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases). The demo is running on a Hetzner CAX11 ARM server - less than £5/mo!
 
 There's a read-only `$STATS.>` tree too, if you want to watch the rule-level counters update once a minute:
 
@@ -72,6 +72,6 @@ Each rule publishes `emitted` and `suppressed` totals, so you can confirm a gate
 
 ## Try it
 
-The point of all this is lowering the barrier. Reading a DSL is not the same as running it. If you've got the `nats` CLI handy, have a play and let me know what you think.
+Reading a DSL is not the same as running it. If you've got the `nats` CLI handy, have a play and let me know what you think.
 
 Monoblok is available for download at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok), demo server doc is [demo.md](https://github.com/lexvicacom/monoblok/blob/main/docs/demo.md), and if you want the full patchbay DSL reference there's [patchbay.md](https://github.com/lexvicacom/monoblok/blob/main/docs/patchbay.md). 
