@@ -1,7 +1,7 @@
 +++
 draft = false
 date = 2026-04-21
-title = "Signal conditioning in a messaging broker"
+title = "monoblok: signal conditioning in a messaging broker"
 description = "monoblok is a small, NATS-compatible broker that does deadband, debounce, dedupe, demux and last-value cache in flight, so subscribers don't have to."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
