@@ -1,8 +1,8 @@
 +++
 draft = false
 date = 2026-04-21
-title = "Monoblok: a tiny, configurable broker that conditions and transforms noisy data streams in flight"
-description = "Including deadband, debounce, dedupe, demux and more, with a last-value cache on every subject. Works alongside NATS"
+title = "Signal conditioning in a messaging broker"
+description = "monoblok is a small, NATS-compatible broker that does deadband, debounce, dedupe, demux and last-value cache in flight, so subscribers don't have to."
 slug = "monoblok"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
 categories = ["projects"]
@@ -14,7 +14,9 @@ TocOpen = false
 
 ![monoblok](./monoblok.png)
 
-Every team I've worked on has written the same subscriber: read a messy stream, clean it up, republish it. Data can move quickly, but the speed doesn't always carry value. Most of it is noise.
+A car publishes its engine RPM ten times a second. A market data feed ticks on every quote. A cheap temperature sensor posts a fresh reading every two seconds, mostly identical to the last one. Data moves quickly, but most of it is noise: a publisher that doesn't know what its subscribers care about, and a fleet of subscribers each writing the same defensive code to round, debounce, and ignore the boring readings.
+
+Every team I've worked on has written some version of that subscriber, usually three or four times, usually subtly differently each time.
 
 [monoblok](https://github.com/lexvicacom/monoblok) is a broker that does that work once, before a message reaches any subscriber. It sits between your publishers and your real message broker, and conditions the signal in flight: deadband, debounce, dedupe, demux JSON payloads into per-field subjects. The cleanup logic is stable, configured once, instead of being re-implemented in every subscriber.
 
@@ -24,7 +26,7 @@ This is useful for smoothing out output from jittery sensors (the £2.99 Temu ki
 
 ![a cheap shouty sensor](./shoutysensor.png)
 
-monoblok is partially NATS-compatible and is written in Zig, resulting in a fast and compact binary with low hardware requirements. It is configured through a simple signal conditioning DSL is called **patchbay*.
+monoblok is partially NATS-compatible and is written in Zig, resulting in a fast and compact binary with low hardware requirements. It is configured through a simple signal conditioning DSL called **patchbay**.
 
 ## Key features
 
@@ -67,7 +69,7 @@ What Peter wants:
 3. When he opens the dashboard in the morning, the current state of every car on hire, immediately. No "waiting for first reading" spinner.
 4. If the car has issues, he may want to provide pre-emptive assistance.
 
- RPM updates many times a second and wobbles constantly at a steady throttle. Coolant barely moves once the engine is warm. Publishing all of this unconditioned over a metered 5G connection is wasteful. Conditioning the raw feed is exactly the sort of thing patchbay was built for.
+RPM updates many times a second and wobbles constantly at a steady throttle. Coolant barely moves once the engine is warm. Publishing all of this unconditioned over a metered 5G connection is wasteful. Conditioning the raw feed is exactly the sort of thing patchbay was built for.
 
 Deadband, incidentally, is exactly what most consumer cars already do to their own gauges. The coolant temperature needle on a modern dash sits stubbornly in the middle across roughly 75-105°C of actual sensor reading, and only twitches if things get genuinely cold or genuinely hot. VW, Ford and others figured out a long time ago that a needle tracking the real value would have drivers ringing the dealership every time they sat in traffic on a warm day. Same primitive, different reason for wanting it.
 
