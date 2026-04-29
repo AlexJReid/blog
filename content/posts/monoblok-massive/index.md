@@ -79,6 +79,12 @@ The subject last-value cache (LVC) is a built-in feature of monoblok, on by defa
 
 A small aside that's worth knowing if you're poking at the real Massive feed rather than the mock: the `AM` / `XA` / `CA` channels deliver server-side OHLC bars when using a `-delayed` feed. The patchbay just demuxes those into scalar `o` / `h` / `l` / `c` / `v` streams instead of recomputing bars from raw trades. If you only have a trade stream and want to build bars yourself, there's a `bar` primitive and a separate `examples/bars.edn` for it.
 
+## Bridging to NATS
+
+Subscribers can hook up directly to monoblok and it works fine. Most of the time though, you already have a NATS cluster doing the heavy lifting for the rest of the system, and you want the conditioned market data to land there too. monoblok ships with a bridge that forwards selected subjects to a downstream NATS server, so the conditioned streams can flow into JetStream without the broker having to redo any of the work. Point it at `T.*.p.stable` and JetStream stores the deduplicated, rounded prices, not the raw firehose. Less write amplification, less retained noise, and only the precision a consumer actually needs.
+
+That sharpens a few things downstream. Per-message dedupe windows in JetStream have less to chew on because squelch already collapsed redundant reprints upstream. Replays are smaller and faster. Consumers reading from the stream get the same shape of data as live subscribers on the broker, which means a backfill and a live tail stitch together cleanly. The raw frames stay on the monoblok side for anyone who wants them, but nothing forces JetStream to pay the storage cost.
+
 ## Try it
 
 Repo, code, and a more detailed README at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). Binaries for the 0.0.28 release are on the [releases page](https://github.com/lexvicacom/monoblok/releases/tag/v0.0.28). The earlier [playground post](/posts/monoblok-demo/) is still the easiest way to get a feel for the primitives without running anything locally.
