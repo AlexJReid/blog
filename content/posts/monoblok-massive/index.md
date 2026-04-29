@@ -85,4 +85,4 @@ That sharpens a few things downstream. Per-message dedupe windows in JetStream h
 
 ## Try it
 
-Repo, code, and a more detailed README at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). Binaries for the 0.0.28 release are on the [releases page](https://github.com/lexvicacom/monoblok/releases/tag/v0.0.28). The earlier [playground post](/posts/monoblok-demo/) is still the easiest way to get a feel for the primitives without running anything locally.
+Repo, code, and a more detailed README at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). Binaries are on the [releases page](https://github.com/lexvicacom/monoblok/releases). The earlier [playground post](/posts/monoblok-demo/) is still the easiest way to get a feel for the primitives without running anything locally.
