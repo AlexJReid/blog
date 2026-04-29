@@ -58,9 +58,36 @@ On the demo server you can watch this across any subject someone else has ever p
 
 It pairs particularly well with the conditioning rules: a subscriber to `$LVC.demo.sensors.temp.stable` gets the most recent *rule-produced* value on connect, not the raw input. Nice side effect.
 
+## Bridge is on too
+
+The demo server now has the [outbound bridge](/posts/monoblok/#nats-bridge) wired up, so you can see the export side of the story without standing up two brokers yourself. The config at the bottom of [`examples/demo.edn`](https://github.com/lexvicacom/monoblok/blob/main/examples/demo.edn) exports just two subject filters:
+
+```
+(bridge
+   :servers  ("nats://127.0.0.1:4223")
+   :name     "monoblok-prod-1"
+   :export   ("demo.sensors.*.spike" "demo.alerts.>"))
+```
+
+Everything else - the raw `demo.sensors.*` firehose, the smoothed and deltaed derivatives, the `$LVC` and `$STATS` trees - stays local to the demo broker. Only the rising-edge spikes and the alert mirror cross over. That's the pattern from the [massive post](/posts/monoblok-massive/): a noisy input stream gets conditioned down to a few high-signal subjects, and only those get forwarded onward.
+
+The downstream broker is reachable at `nats://monoblok.rtd.pub:4223`, so you can subscribe there and watch the bridged subjects arrive:
+
+```
+# Terminal A: subscribe on the downstream broker (port 4223)
+nats sub --server nats://monoblok.rtd.pub:4223 'demo.>'
+
+# Terminal B: publish to the demo broker (port 4222)
+nats pub demo.sensors.temp 10
+nats pub demo.sensors.temp 60   # crosses 50 -> rising-edge "spike"
+nats pub demo.log.app "alert: disk full"
+```
+
+Terminal A only sees `demo.sensors.temp.spike` and `demo.alerts` - the two filters in the export list. Publish anything else and it stays on `:4222`.
+
 ## Boring mechanical notes
 
-Everything from the original post still applies: single-threaded libxev event loop, core NATS wire protocol, zero-copy fan-out, runs anywhere Zig targets. The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases). The demo is running on a Hetzner CAX11 ARM server - less than £5/mo!
+The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases). The demo is running on a Hetzner CAX11 ARM server - less than £5/mo!
 
 There's a read-only `$STATS.>` tree too, if you want to watch the rule-level counters update once a minute:
 
