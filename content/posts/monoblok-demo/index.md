@@ -75,7 +75,7 @@ The downstream broker is reachable at `nats://monoblok.rtd.pub:4223`, so you can
 
 ```
 # Terminal A: subscribe on the downstream broker (port 4223)
-nats sub --server nats://monoblok.rtd.pub:4223 'demo.>'
+nats -s nats://monoblok.rtd.pub:4223 sub 'demo.>'
 
 # Terminal B: publish to the demo broker (port 4222)
 nats pub demo.sensors.temp 10
@@ -87,7 +87,7 @@ Terminal A only sees `demo.sensors.temp.spike` and `demo.alerts` - the two filte
 
 ## Boring mechanical notes
 
-The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases). The demo is running on a Hetzner CAX11 ARM server - less than £5/mo!
+The demo server is a single static binary on a 2-core VPS. The repo has ARM and x86 Linux builds on the [releases page](https://github.com/lexvicacom/monoblok/releases). The demo is running on a [Hetzner CAX11 ARM server](https://www.hetzner.com/cloud/cost-optimized) - less than £5/mo!
 
 There's a read-only `$STATS.>` tree too, if you want to watch the rule-level counters update once a minute:
 
