@@ -122,9 +122,7 @@ Everything besides networking runs in an event loop provided by the excellent [l
 
 Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so the numbers measure raw broker work only. Plus, most useful systems tend to work over a LAN or WAN and not localhost. 
 
-A M4 Mac Mini monoblok is within single-digit percent of `nats-server` on the single-publisher 64B workload (6.46M vs 7.14M msg/s) and pulls sharply ahead as fan-out grows: 17.52M (!) vs 4.82M msg/s at 50 subscribers. 17.52M seems high so I'm cynical and need to look into that. 🤏🧂
-
-Linux is a similar tale. On a 2-core Hetzner VM with the io_uring backend this time. Multi-publisher throughput collapses to parity because a single-threaded loop can't scale past one core while nats-server spreads across both, and the single-subscriber fan-out case flips the other way (0.73M vs 1.09M msg/s, likely io_uring completion batching misbehaving under low concurrency), but by 50 subscribers monoblok is ahead again at 3.98M vs 3.05M msg/s. Throughput will drop from these figures in proportion to how much your rules do, but it's a respectable starting point. 
+On a MacBook Air M2 (kqueue backend), monoblok lands within a few percent of `nats-server` on the single-publisher 64B workload (8.52M vs 8.91M msg/s, a 4% gap) and pulls sharply ahead as fan-out grows: 11.18M vs 2.97M msg/s at 50 subscribers, almost 4x. Multi-publisher rows hold their own too (4.60M vs 3.90M msg/s on 2 publishers, 5.32M vs 4.47M msg/s on 8). The standing exception is the 1-pub to 1-sub case, where monoblok is a touch behind (3.00M vs 3.16M msg/s), likely a low-concurrency quirk worth chasing later. Throughput drops from these figures in proportion to how much your rules do, but it's a respectable starting point. 🤏🧂
 
 ## Sitting in front of a real NATS cluster
 
