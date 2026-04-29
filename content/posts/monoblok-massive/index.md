@@ -16,11 +16,9 @@ TocOpen = false
 
 I added new end-to-end example in the [monoblok](https://github.com/lexvicacom/monoblok) repo: [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). If you're new to monoblok, you may want to check out the [introductory post](/posts/monoblok-demo/).
 
-Running it shows synthetic data, roughly simulating the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker.
+Tick data moves fast, the JSON frames carry several fields per message, and every downstream consumer otherwise re-implements the same demux, round, dedupe, alert plumbing. Doing it once at the broker means subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
 
->monoblok solves this problem nicely. Tick data moves fast, the JSON frames carry several fields per message, and every downstream consumer otherwise re-implements the same demux, round, dedupe, alert plumbing. Doing it once at the broker means subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
-
-The producer is a small Node script that speaks the NATS protocol over a plain socket (no npm dependencies) and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. The patchbay file is [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn). Open three terminals and run:
+The example simulates the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker. The producer is a small Node script that speaks the NATS protocol over a plain socket (no npm dependencies) and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. The patchbay file is [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn). Open three terminals and run:
 
 ```bash
 # 1: monoblok with the demuxing patchbay
