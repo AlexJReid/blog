@@ -14,7 +14,7 @@ TocOpen = false
 
 ![massive monoblok](./massivemono.png)
 
-I added new end-to-end example in the [monoblok](https://github.com/lexvicacom/monoblok) repo: [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). 
+I added new end-to-end example in the [monoblok](https://github.com/lexvicacom/monoblok) repo: [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). If you're new to monoblok, you may want to check out the [introductory post](/posts/monoblok-demo/).
 
 Running it shows synthetic data, roughly simulating the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker.
 
