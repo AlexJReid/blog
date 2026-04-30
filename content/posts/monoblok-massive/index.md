@@ -31,9 +31,9 @@ node examples/json-massive/mock_producer.js
 nats sub '>'
 ```
 
-![nats sub showing raw frames alongside demuxed scalar streams and stable mirrors](./sub.png)
+![nats sub showing raw frames alongside demuxed scalar streams](./sub.png)
 
-The screenshot shows it running. Raw `T.AAPL` JSON frames land alongside the demuxed `T.AAPL.p` and `T.AAPL.s` scalar streams, plus the deduplicated `T.AAPL.p.stable` mirror and any `alerts.trade.AAPL` triggers. A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, deduplicated, per-symbol stream of rounded floats (assuming that precision is acceptable for their use case). No JSON parsing, no client-side dedupe.
+The screenshot above is a glimpse of it running on the crypto quote channel (`XQ.*`), where the raw frame and the per-field scalars land side by side. The trade flow on `T.*` is the same shape: raw frames alongside demuxed `T.<sym>.p` and `T.<sym>.s` scalars, plus a deduplicated `T.<sym>.p.stable` mirror and any `alerts.trade.<sym>` triggers. A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, deduplicated, per-symbol stream of rounded floats (assuming that precision is acceptable for their use case). No JSON parsing, no client-side dedupe.
 
 The patchbay is staged:
 
