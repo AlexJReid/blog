@@ -1,7 +1,7 @@
 +++
 draft = false
 date = 2026-04-29
-title = "Taming a market data firehose with monoblok"
+title = "One config file replaces the demux, round, dedupe glue every market data consumer rewrites"
 description = "Demuxing a raw market data feed conditioned at the broker, plus the new re-entry feature in v0.0.28"
 slug = "monoblok-massive"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","market-data"]
@@ -14,11 +14,36 @@ TocOpen = false
 
 ![massive monoblok](./massivemono.png)
 
-I added new end-to-end example in the [monoblok](https://github.com/lexvicacom/monoblok) repo: [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). If you're new to monoblok, you may want to check out the [introductory post](/posts/monoblok-demo/).
-
 Tick data moves fast, the JSON frames carry several fields per message, and every downstream consumer otherwise re-implements the same demux, round, dedupe, alert plumbing. Doing it once at the broker means subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
 
-The example simulates the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker. The producer is a small Node script that speaks the NATS protocol over a plain socket (no npm dependencies) and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. The patchbay file is [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn). Open three terminals and run:
+Here are the three rules. Each frame carries several fields, so rule 1 splits them out into one subject per field (a demux). Rule 2 cleans the price stream. Rule 3 watches for jumps. Each rule feeds the next.
+
+```clojure
+;; 1. Demux the JSON frame into per-field scalar subjects.
+;;    T.AAPL { "p": 187.42, "s": 100 } becomes T.AAPL.p, T.AAPL.s
+(on "T.*"
+  (json-demux "p" "s" payload))
+
+;; 2. Round to 2dp, drop duplicates, mirror to .stable.
+(on "T.*.p"
+  (-> payload-float
+      (round 2)
+      (squelch)
+      (publish-to (subject-append "stable"))))
+
+;; 3. Alert on a >= $1.00 jump between consecutive ticks on the same symbol.
+(on "T.*.p"
+  (when (>= (abs (delta payload-float)) 1.0)
+    (publish
+      (str-concat "alerts.trade." (subject-token 1))
+      payload)))
+```
+
+That is the entire conditioning layer for stock trades. Options come along free (the `T.*` wildcard matches `T.O:AAPL250620C00200000` too), crypto and FX repeat the pattern with their own thresholds. Full file: [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn).
+
+A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, per-symbol stream of rounded floats. No JSON parsing, no client-side dedupe.
+
+The example sits in the [monoblok](https://github.com/lexvicacom/monoblok) repo at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). It simulates the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker. The producer is a small Node script that speaks the NATS protocol over a plain socket (no npm dependencies) and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. Open three terminals and run:
 
 ```bash
 # 1: monoblok with the demuxing patchbay
@@ -33,31 +58,9 @@ nats sub '>'
 
 ![nats sub showing raw frames alongside demuxed scalar streams](./sub.png)
 
-The screenshot above is a glimpse of it running on the crypto quote channel (`XQ.*`), where the raw frame and the per-field scalars land side by side. The trade flow on `T.*` is the same shape: raw frames alongside demuxed `T.<sym>.p` and `T.<sym>.s` scalars, plus a deduplicated `T.<sym>.p.stable` mirror and any `alerts.trade.<sym>` triggers. A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, deduplicated, per-symbol stream of rounded floats (assuming that precision is acceptable for their use case). No JSON parsing, no client-side dedupe.
+A glimpse of it running on the crypto quote channel (`XQ.*`), where the raw frame and the per-field scalars land side by side. The trade flow on `T.*` is the same shape: raw frames alongside demuxed `T.<sym>.p` and `T.<sym>.s` scalars, plus a deduplicated `T.<sym>.p.stable` mirror and any `alerts.trade.<sym>` triggers.
 
-The patchbay is staged:
-
-```clojure
-;; 1. Demux the JSON frame into per-field scalar subjects.
-(on "T.*"
-  (json-demux "p" "s" payload))
-
-;; 2. Round and dedupe the demuxed price stream.
-(on "T.*.p"
-  (-> payload-float
-      (round 2)
-      (squelch)
-      (publish-to (subject-append "stable"))))
-
-;; 3. Alert on big single-trade jumps.
-(on "T.*.p"
-  (when (>= (abs (delta payload-float)) 1.0)
-    (publish
-      (str-concat "alerts.trade." (subject-token 1))
-      payload)))
-```
-
-That second and third rule depend on a feature that didn't exist a week ago.
+If you're new to monoblok, the [introductory post](/posts/monoblok-demo/) covers the primitives. Rules 2 and 3 above also depend on a feature that didn't exist a week ago.
 
 ## Re-entry, capped at 8
 
@@ -85,4 +88,10 @@ That sharpens a few things downstream. Per-message dedupe windows in JetStream h
 
 ## Try it
 
-Repo, code, and a more detailed README at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). Binaries are on the [releases page](https://github.com/lexvicacom/monoblok/releases). The earlier [playground post](/posts/monoblok-demo/) is still the easiest way to get a feel for the primitives without running anything locally.
+```bash
+git clone https://github.com/lexvicacom/monoblok
+cd monoblok
+./examples/json-massive/run.sh
+```
+
+That runs the daemon, fires the synthetic producer for 5 seconds, and prints tables of the raw frames, the demuxed prices, the stable mirror, and the alerts side by side. Binaries are on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you would rather not build from source. The earlier [playground post](/posts/monoblok-demo/) is the easiest way to get a feel for the primitives without running anything locally.
