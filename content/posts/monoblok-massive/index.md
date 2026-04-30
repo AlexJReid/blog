@@ -1,8 +1,8 @@
 +++
 draft = false
 date = 2026-04-29
-title = "One config file replaces the demux, round, dedupe glue every market data consumer rewrites"
-description = "Demuxing a raw market data feed conditioned at the broker, plus the new re-entry feature in v0.0.28"
+title = "Taming a market data firehose efficiently with monoblok"
+description = "One config file replaces the demux, round, dedupe glue every market data consumer rewrites"
 slug = "monoblok-massive"
 tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","market-data"]
 categories = ["projects"]
@@ -14,9 +14,11 @@ TocOpen = false
 
 ![massive monoblok](./massivemono.png)
 
-Tick data moves fast, the JSON frames carry several fields per message, and every downstream consumer otherwise re-implements the same demux, round, dedupe, alert plumbing. Doing it once at the broker means subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
+Market data moves fast. Imagine your data provider gives you a stream of JSON frames that carry several fields per message, and every downstream subscriber re-implements the same demux, round, dedupe, alert logic. At scale, doing this n times causes read/write amplification and much wasted work, not to mention subtle bugs. Doing it once at the broker means that subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
 
-Here are the three rules. Each frame carries several fields, so rule 1 splits them out into one subject per field (a demux). Rule 2 cleans the price stream. Rule 3 watches for jumps. Each rule feeds the next.
+**[monoblok](https://github.com/lexvicacom/monoblok) can help you to do just that.**
+
+Here are three rules. Each frame carries several fields, so rule 1 splits them out into one subject per field (a demux). Rule 2 cleans the price stream. Rule 3 watches for jumps. Each rule feeds the next.
 
 ```clojure
 ;; 1. Demux the JSON frame into per-field scalar subjects.
@@ -39,11 +41,11 @@ Here are the three rules. Each frame carries several fields, so rule 1 splits th
       payload)))
 ```
 
-That is the entire conditioning layer for stock trades. Options come along free (the `T.*` wildcard matches `T.O:AAPL250620C00200000` too), crypto and FX repeat the pattern with their own thresholds. Full file: [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn).
+That is the entire conditioning layer for stock trades! Options come along free (the `T.*` wildcard matches `T.O:AAPL250620C00200000` too), crypto and FX repeat the pattern with their own thresholds. Full file: [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn).
 
-A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, per-symbol stream of rounded floats. No JSON parsing, no client-side dedupe.
+A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, per-symbol stream of rounded floats. No JSON parsing, no every-single-consumer must deal with the firehose and repeat logic.
 
-The example sits in the [monoblok](https://github.com/lexvicacom/monoblok) repo at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). It simulates the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker. The producer is a small Node script that speaks the NATS protocol over a plain socket (no npm dependencies) and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. Open three terminals and run:
+A working example sits in the [monoblok](https://github.com/lexvicacom/monoblok) repo at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). It simulates the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker. The producer is a  Node script that speaks the NATS protocol over a plain socket and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. Open three terminals and run:
 
 ```bash
 # 1: monoblok with the demuxing patchbay
@@ -84,7 +86,7 @@ A small aside that's worth knowing if you're poking at the real Massive feed rat
 
 Subscribers can hook up directly to monoblok and it works fine. Most of the time though, you already have a NATS cluster doing the heavy lifting for the rest of the system, and you want the conditioned market data to land there too. monoblok ships with a [bridge](https://github.com/lexvicacom/monoblok#outbound-nats-bridge) that forwards selected subjects to a downstream NATS server, so the conditioned streams can flow into JetStream without the broker having to redo any of the work. Point it at `T.*.p.stable` and JetStream stores the deduplicated, rounded prices, not the raw firehose. Less write amplification, less retained noise, and only the precision a consumer actually needs.
 
-That sharpens a few things downstream. Per-message dedupe windows in JetStream have less to chew on because squelch already collapsed redundant reprints upstream. Replays are smaller and faster. Consumers reading from the stream get the same shape of data as live subscribers on the broker, which means a backfill and a live tail stitch together cleanly. The raw frames stay on the monoblok side for anyone who wants them, but nothing forces JetStream to pay the storage cost.
+**This sharpens a few things downstream.** Per-message dedupe windows in JetStream have less to chew on because squelch already collapsed redundant messages upstream. Replays are smaller and faster. Consumers reading from the stream get the same shape of data as live subscribers on the broker, which means a backfill and a live tail stitch together cleanly. The raw frames stay on the monoblok side for anyone who wants them, but nothing forces JetStream to pay the storage cost.
 
 ## Try it
 
@@ -94,4 +96,6 @@ cd monoblok
 ./examples/json-massive/run.sh
 ```
 
-That runs the daemon, fires the synthetic producer for 5 seconds, and prints tables of the raw frames, the demuxed prices, the stable mirror, and the alerts side by side. Binaries are on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you would rather not build from source. The earlier [playground post](/posts/monoblok-demo/) is the easiest way to get a feel for the primitives without running anything locally.
+This will run monoblok, the synthetic producer for 5 seconds, and prints tables of the raw frames, the demuxed prices, the stable mirror, and the alerts side by side. 
+
+Binaries are on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you would rather not build from source. The earlier [playground post](/posts/monoblok-demo/) is the easiest way to get a feel for the primitives without running anything locally.
