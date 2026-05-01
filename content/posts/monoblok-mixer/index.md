@@ -64,7 +64,7 @@ zig build
 python examples/mixer.py
 ```
 
-Mixer mode is considered experimental; there are rough edges around SUB routing, worker restarts, and observability. There's no exact formula for sizing either. One worker per subtree-that-matters is the right shape, but cramming 96 workers onto an 8-core box is asking for trouble. Every worker is a real process with its own loop, and once they outnumber the cores you're paying context-switch tax on every publish, almost certainly worse than one well-tuned monoblok would have been on its own. Some experimentation needed.
+Mixer mode is considered experimental; there are rough edges around SUB routing, worker restarts, and observability. There's no exact formula for sizing either. One worker per subtree-that-matters is the right shape, but cramming 96 workers onto an 8-core box is asking for trouble. I'm guesssing this is certainly worse than one well-tuned monoblok would have been on its own. Some experimentation needed.
 
 One detail I'm pleased with: the mixer-to-worker hop runs over inherited socketpairs rather than TCP or a unix socket. The fd is open on both sides from fork; no addressing, no lookup, just bytes.
 
