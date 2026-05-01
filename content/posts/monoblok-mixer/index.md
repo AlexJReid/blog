@@ -51,7 +51,7 @@ The cost of this easy win is that state doesn't cross shards. `$LVC.SENSORS.>` l
 
 If your subject space is already organised by hierarchy (which it should be, NATS or otherwise) the same first-token discipline scales past one machine. Run independent monobloks on different hosts, each handling a subtree, sized to suit. There's no clustering, no quorum, no replication; if a process dies, systemd brings it back, and the upstream NATS bridge is the system of record for anything that's already been exported.
 
-The same logic applies inside one box (fork more workers) and across boxes (run more monobloks); the partitioning is the same. If you happen to bridge monoblok output to a NATS cluster, your subjects are all reunited anyway.
+The same logic applies inside one box (fork more workers) and across boxes (run more monobloks); the partitioning is the same. Multiple monoblok mixers would mean configuring your publishers, i.e. connect to `nats-sensors` and `nats-orders`, etc but if you happen to bridge monoblok output to a real NATS environment, your cleaned subjects are all reunited for your consumers anyway.
 
 ## Try it
 
