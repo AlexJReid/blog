@@ -41,7 +41,7 @@ Subscriptions are coalesced. The mixer keeps one upstream SUB per unique filter 
 
 ## Why not threads?
 
-I am just-about intelligent enough to resist adding threads and start sharing structures with locks or atomics. 
+I am just-about intelligent enough to resist adding threads and start sharing structures with locks or atomics. And the more I work on monoblok, the more I think that restraint is the feature, not the limitation. A single core, used well, is a quietly wonderful thing. There's one place state lives and one schedule it changes on. Reasoning about the system is the same as reading the code top to bottom. Performance is predictable: the working set sits in one core's L1 and stays there. Crashes are reproducible and profiles are legible.
 
 Processes sidestep all of that. Each worker is a normal monoblok with no idea it's part of a fleet. The hot path inside a worker is identical to the hot path inside a standalone monoblok. State, including the LVC and rule state, snapshots and warm-starts per worker, exactly like before.
 
