@@ -18,11 +18,11 @@ The empty-patchbay benchmarks on a MacBook Air M2 land somewhere between 3M and 
 
 ## Mixer mode
 
-`monoblok 0.0.41` adds an experimental **mixer mode**, an approach that keeps the single-loop model intact.
-
 On a single core, _embarrassingly far_ is honestly _good enough_ most of the time (I love these exacting terms.) 
 
-That said, a few people have asked the obvious question: what happens when one core does run out? The obvious answer would be to pay for a faster core and have done with it. Nothing wrong with that, but it's wasteful.
+That said, a few people have asked the obvious question: what happens when one core does run out? The obvious answer would be to pay for a faster core and have done with it. Nothing wrong with that, but it's wasteful. A broad way of balancing processing is through queue groups, but this falls apart when state is involved.
+
+So anyway, `monoblok 0.0.41` adds an experimental **mixer mode**, an approach that keeps the single-loop model intact.
 
 As NATS subjects are hierarchical, a lot of the time the natural way to scale isn't _add threads inside one process_ but to identify the hot parts of the tree and give them their own process, or family of processes.
 
