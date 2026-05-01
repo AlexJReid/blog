@@ -24,7 +24,7 @@ _Embarrassingly far_ is actually _good enough_ most of the time (I love these ex
 
 Anyway, `monoblok 0.0.41` adds an experimental **mixer mode**, an approach that keeps the single-loop model intact.
 
-```edn
+```clojure
 (mixer
   :listen "tcp://0.0.0.0:4222"
   :workers
