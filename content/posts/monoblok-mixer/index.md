@@ -43,9 +43,9 @@ Subscriptions are coalesced. The mixer keeps one upstream SUB per unique filter 
 
 I am just-about intelligent enough to resist adding threads and start sharing structures with locks or atomics. And the more I work on monoblok, the more I think that restraint is the feature, not the limitation. A single core, used well, is a quietly wonderful thing. There's one place state lives and one schedule it changes on. Reasoning about the system is the same as reading the code top to bottom. Performance is predictable: the working set sits in one core's L1 and stays there. Crashes are reproducible and profiles are legible.
 
-Processes sidestep all of that. Each worker is a normal monoblok with no idea it's part of a fleet. The hot path inside a worker is identical to the hot path inside a standalone monoblok. State, including the LVC and rule state, snapshots and warm-starts per worker, exactly like before.
+Multiple processes are therefore a crude but neat way of scaling, without adding much, if any, complexity. Each worker is a normal monoblok with no idea it's part of a fleet. The hot path inside a worker is identical to the hot path inside a standalone monoblok. State, including the LVC and rule state, snapshots and warm-starts per worker, exactly like before.
 
-The cost is that state doesn't cross shards. `$LVC.SENSORS.>` lives on the SENSORS worker; the ORDERS worker has no idea it exists. If you want a rule to react to both sensor and order events, you'd need to put them on the same shard. In practice subject hierarchies usually map cleanly onto this constraint: the things that need to share state already share a prefix.
+The cost of this easy win is that state doesn't cross shards. `$LVC.SENSORS.>` lives on the SENSORS worker; the ORDERS worker has no idea it exists. If you want a rule to react to both sensor and order events, you'd need to put them on the same shard. In practice subject hierarchies usually map cleanly within this constraint: the things that need to share state already share a prefix.
 
 ## Beyond one box
 
