@@ -14,15 +14,18 @@ TocOpen = false
 
 [monoblok](/posts/monoblok/) is single-threaded by design, like a mono amplifier that only processes a single channel without compromise. It has one `xev.Loop` that owns its happy little world with no locks or coordination to think about. Adding a second thread is a slippery slope that utterly betrays the simplicity of the original design, and a single core used well gets you embarrassingly far.
 
-Luckily, as NATS subjects are hierarchical, a lot of the time the natural way to scale isn't _add threads inside one process_ but to identify the hot parts of the tree and give them their own process, or family of processes.
-
 The empty-patchbay benchmarks on a MacBook Air M2 land somewhere between 3M and 11M msg/s depending on the workload, and even with 50 rules loaded the floor is around 5M msg/s. For the kinds of jobs monoblok is aimed at, sensor conditioning, market data demux, fleet telemetry, that's an awful lot of headroom on modest hardware. 
 
 ## Mixer mode
 
-_Embarrassingly far_ is actually _good enough_ most of the time (I love these exacting terms.) That said, a few people have asked the obvious question: what happens when one core does run out? The obvious answer would be to pay for a faster core and have done with it. Nothing wrong with that, but it's wasteful.
+`monoblok 0.0.41` adds an experimental **mixer mode**, an approach that keeps the single-loop model intact.
 
-Anyway, `monoblok 0.0.41` adds an experimental **mixer mode**, an approach that keeps the single-loop model intact.
+On a single core, _embarrassingly far_ is honestly _good enough_ most of the time (I love these exacting terms.) 
+
+That said, a few people have asked the obvious question: what happens when one core does run out? The obvious answer would be to pay for a faster core and have done with it. Nothing wrong with that, but it's wasteful.
+
+As NATS subjects are hierarchical, a lot of the time the natural way to scale isn't _add threads inside one process_ but to identify the hot parts of the tree and give them their own process, or family of processes.
+
 
 ```clojure
 (mixer
