@@ -153,13 +153,15 @@ Or inline it into a one-off prompt with `@claude-patchbay.md`. Handy.
 
 ## Benchmarks
 
-Getting meaningful numbers turned out to be trickier than I first realised. Single-row variance on a laptop is large, the bench client (nats CLI, itself a Go process) can be the bottleneck on some rows, and battery vs AC throttling alone roughly halves throughput on Apple Silicon (face palm). So no specific percentages here; run `scripts/bench-with-nats-server.sh` on your own hardware if numbers matter to you.
+Getting meaningful numbers turned out trickier than I expected. Single-row variance on a laptop is large, the bench client (nats CLI, itself a Go process) can be the bottleneck on some rows, and battery vs AC throttling alone roughly halves throughput on Apple Silicon (face palm). So no headline percentages here; run `scripts/bench-with-nats-server.sh` on your own hardware if numbers matter to you.
 
-The shape of the comparison vs. nats-server, though, is consistent across runs:
+The shape of the comparison vs. nats-server is consistent across runs, though:
 
-- **nats-server wins on pure publish throughput.** Multi-threaded acceptance and a more battle-hardened parse loop both help when there's no fan-out work to spread the cost over.
-- **The two are roughly comparable at low fan-out** (1-10 subscribers per publish).
-- **monoblok scales better with subscriber count.** The single-threaded deduped-kicks fan-out avoids the per-subscriber lock work a multi-threaded server pays. Crossover happens somewhere around 10-30 subscribers; the further past that you go, the bigger monoblok's lead.
+- **nats-server wins on pure publish throughput on big boxes.** Multi-threaded acceptance and a battle-hardened parse loop both help when there's no fan-out to amortise the cost over and there are spare cores to spread it across. On small ARM VPSes the gap narrows or disappears: nats-server has less parallelism to exploit, and monoblok's single-threaded design has no coordination overhead to pay.
+- **Roughly comparable at low fan-out** (1-10 subscribers per publish).
+- **monoblok scales better with subscriber count.** The single-threaded deduped-kicks fan-out avoids the per-subscriber lock work a multi-threaded server pays. Crossover sits somewhere around 10-30 subscribers; the further past that you go, the bigger the lead.
+
+Worth keeping in mind: nats-server has a decade of production performance work behind it. Any monoblok win above should be read as _the single-threaded design happens to fit this workload shape well_, not _monoblok is faster than nats_. The right tool for most pub/sub deployments is still nats-server; monoblok is for the cases where the patchbay or LVC actually earn their place, and _fast enough on a small box_ is a happy side-effect of the design rather than the headline.
 
 Patchbay overhead scales with **matching** rules per PUB, not total rules in the file: pub-heavy workloads take a ~20% hit once a rule starts firing, fan-out workloads stay close to break-even.
 
