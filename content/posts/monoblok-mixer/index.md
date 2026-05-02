@@ -12,6 +12,8 @@ ShowToc = false
 TocOpen = false
 +++
 
+> Note from the future: the mixer was built when patchbay evaluation was the per-process bottleneck. Turns out patchbays are seriously fast, and the mixer's own parse loop (every byte gets parsed twice, once at the mixer and once at the worker) tends to cap before the workers do. Sustained-load measurements have the mixer pinned at one core while workers sit at ~50% each. Deviating from the clean single-loop model was a mis-step. It was experimental after all. Such are the joys of building in public. Leaving the post up for posterity.
+
 [monoblok](/posts/monoblok/) is single-threaded by design, like a mono amplifier that only processes a single channel without compromise. It has one `xev.Loop` that owns its happy little world with no locks or coordination to think about. Adding a second thread is a slippery slope that utterly betrays the simplicity of the original design, and a single core used well gets you embarrassingly far.
 
 The empty-patchbay benchmarks on a MacBook Air M2 land somewhere between 3M and 11M msg/s depending on the workload, and even with 50 rules loaded the floor is around 5M msg/s. For the kinds of jobs monoblok is aimed at, sensor conditioning, market data demux, fleet telemetry, that's an awful lot of headroom on modest hardware. 
