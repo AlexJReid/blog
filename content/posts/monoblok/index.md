@@ -120,25 +120,6 @@ These are just plain subscribers to a clean, meaningful stream. You can add or r
 
 Everything besides networking runs in an event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads or locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that any NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simply replace NATS as an experiment.
 
-Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it doing a lot more than monoblok (accounting, slow-consumer detection, clustering, JetStream, TLS, auth). I ran these with an empty patchbay so the numbers measure raw PUB/SUB and fan-out only. Plus, most useful systems tend to work over a LAN or WAN and not localhost.
-
-The baseline box is a Hetzner CAX11: 2 vCPU Ampere ARM, 4 GB RAM, around £5/month, the cheapest ARM instance in their lineup. If it holds up here it holds up anywhere. Note that this is a shared-CPU instance with only 2 cores, so a noisy neighbour can skew a single row by 10-20%; the patchbay overhead table below is a 3-run median to take some of that out.
-
-Numbers are msgs/sec from `nats bench`, monoblok built `--release=safe`, against `nats-server` v2.10.7 on the same box (Linux 6.8 aarch64, io_uring backend):
-
-| workload                |   monoblok |  nats-server |  diff |
-|-------------------------|-----------:|-------------:|------:|
-| 1 pub, 500k msgs, 64B   |    2.52M/s |      2.22M/s |  +13% |
-| 2 pub, 10k msgs, 64B    |    1.75M/s |      1.53M/s |  +14% |
-| 8 pub, 50k msgs, 128B   |    2.24M/s |      1.80M/s |  +24% |
-| 1 pub to 1 sub          |    1.17M/s |      0.93M/s |  +26% |
-| 1 pub to 10 subs        |    2.49M/s |      1.84M/s |  +35% |
-| 1 pub to 50 subs        |    2.67M/s |      1.98M/s |  +35% |
-
-`--release=fast` adds another 10-15% on top. Take it with appropriate bucket-load of salt: NATS is the reliable, tuned Porsche, monoblok is a rusty Civic with a bolted-on eBay turbo.
-
-Patchbay overhead scales with **matching** rules per PUB, not total rules in the file: pub-heavy workloads take a ~20% hit once a rule starts firing, fan-out workloads stay close to break-even. Full numbers in the [README](https://github.com/lexvicacom/monoblok#patchbay-overhead).
-
 ## Sitting in front of a real NATS cluster
 
 An outbound bridge to a real NATS cluster ships in the default build. Configuration is a single optional form in the patchbay file:
@@ -169,6 +150,27 @@ curl -fsSL https://raw.githubusercontent.com/lexvicacom/monoblok/main/docs/claud
 ```
 
 Or inline it into a one-off prompt with `@claude-patchbay.md`. Handy.
+
+## Benchmarks
+
+Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it doing a lot more than monoblok (accounting, slow-consumer detection, clustering, JetStream, TLS, auth). I ran these with an empty patchbay so the numbers measure raw PUB/SUB and fan-out only. Plus, most useful systems tend to work over a LAN or WAN and not localhost.
+
+The baseline box is a Hetzner CAX11: 2 vCPU Ampere ARM, 4 GB RAM, around £5/month, the cheapest ARM instance in their lineup. If it holds up here it holds up anywhere. Note that this is a shared-CPU instance with only 2 cores, so a noisy neighbour can skew a single row by 10-20%; the patchbay overhead table below is a 3-run median to take some of that out.
+
+Numbers are msgs/sec from `nats bench`, monoblok built `--release=safe`, against `nats-server` v2.10.7 on the same box (Linux 6.8 aarch64, io_uring backend):
+
+| workload                |   monoblok |  nats-server |  diff |
+|-------------------------|-----------:|-------------:|------:|
+| 1 pub, 500k msgs, 64B   |    2.52M/s |      2.22M/s |  +13% |
+| 2 pub, 10k msgs, 64B    |    1.75M/s |      1.53M/s |  +14% |
+| 8 pub, 50k msgs, 128B   |    2.24M/s |      1.80M/s |  +24% |
+| 1 pub to 1 sub          |    1.17M/s |      0.93M/s |  +26% |
+| 1 pub to 10 subs        |    2.49M/s |      1.84M/s |  +35% |
+| 1 pub to 50 subs        |    2.67M/s |      1.98M/s |  +35% |
+
+`--release=fast` adds another 10-15% on top. Take it with appropriate bucket-load of salt: NATS is the reliable, tuned Porsche, monoblok is a rusty Civic with a bolted-on eBay turbo.
+
+Patchbay overhead scales with **matching** rules per PUB, not total rules in the file: pub-heavy workloads take a ~20% hit once a rule starts firing, fan-out workloads stay close to break-even. Full numbers in the [README](https://github.com/lexvicacom/monoblok#patchbay-overhead).
 
 ## Why this is all interesting
 
