@@ -16,7 +16,7 @@ TocOpen = false
 
 Market data moves fast. Imagine your data provider gives you a stream of JSON frames that carry several fields per message, and every downstream subscriber re-implements the same demux, round, dedupe, alert logic. At scale, doing this n times causes read/write amplification and much wasted work, not to mention subtle bugs. Doing it once at the broker means that subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
 
-**[monoblok](https://github.com/lexvicacom/monoblok) can help you to do just that.**
+**[monoblok](/posts/monoblok/) can help you to do just that.**
 
 Here are three rules. Each frame carries several fields, so rule 1 splits them out into one subject per field (a demux). Rule 2 cleans the price stream. Rule 3 watches for jumps. Each rule feeds the next.
 
