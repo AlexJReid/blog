@@ -16,9 +16,9 @@ TocOpen = false
 
 Market data moves fast. Imagine your data provider gives you a stream of JSON frames that carry several fields per message, and every downstream subscriber re-implements the same demux, round, dedupe, alert logic. At scale, doing this n times causes read/write amplification and much wasted work, not to mention subtle bugs. Doing it once at the broker means that subscribers can use subject filtering to pick the slice they actually need and ignore the rest.
 
-**[monoblok](/posts/monoblok/) can help you to do just that.**
+**Three [monoblok](/posts/monoblok/) rules can get you there.**
 
-Here are three rules. Each frame carries several fields, so rule 1 splits them out into one subject per field (a demux). Rule 2 cleans the price stream. Rule 3 watches for jumps. Each rule feeds the next.
+Each frame carries several fields, so rule 1 splits them out into one subject per field (a demux). Rule 2 cleans the price stream. Rule 3 watches for jumps. Each rule feeds the next.
 
 ```clojure
 ;; 1. Demux the JSON frame into per-field scalar subjects.
@@ -41,9 +41,9 @@ Here are three rules. Each frame carries several fields, so rule 1 splits them o
       payload)))
 ```
 
-That is the entire conditioning layer for stock trades! Options come along free (the `T.*` wildcard matches `T.O:AAPL250620C00200000` too), crypto and FX repeat the pattern with their own thresholds. Full file: [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn).
+That is the entire conditioning layer for stock trades. Options come along free (the `T.*` wildcard matches `T.O:AAPL250620C00200000` too), crypto and FX repeat the pattern with their own thresholds. Full file: [massive.edn](https://github.com/lexvicacom/monoblok/blob/main/examples/json-massive/massive.edn).
 
-A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, per-symbol stream of rounded floats. No JSON parsing, no every-single-consumer must deal with the firehose and repeat logic.
+A subscriber that only cares about price changes subscribes to `T.*.p.stable` and gets a clean, per-symbol stream of rounded floats. No JSON parsing, and no need for every consumer to chew through the firehose and repeat the same logic.
 
 A working example sits in the [monoblok](https://github.com/lexvicacom/monoblok) repo at [examples/json-massive](https://github.com/lexvicacom/monoblok/tree/main/examples/json-massive). It simulates the [Massive](https://www.massive.com) websocket market data feed (stocks, options, crypto, forex) being conditioned by patchbay rules at the broker. The producer is a  Node script that speaks the NATS protocol over a plain socket and publishes synthetic frames on subjects shaped `<ev>.<symbol>`. Open three terminals and run:
 
@@ -62,11 +62,11 @@ nats sub '>'
 
 A glimpse of it running on the crypto quote channel (`XQ.*`), where the raw frame and the per-field scalars land side by side. The trade flow on `T.*` is the same shape: raw frames alongside demuxed `T.<sym>.p` and `T.<sym>.s` scalars, plus a deduplicated `T.<sym>.p.stable` mirror and any `alerts.trade.<sym>` triggers.
 
-If you're new to monoblok, the [introductory post](/posts/monoblok-demo/) covers the primitives. Rules 2 and 3 above also depend on a feature that didn't exist a week ago.
+If you're new to monoblok, the [introductory post](/posts/monoblok-demo/) covers the primitives. Rules 2 and 3 above also depend on a feature that didn't exist a week ago: as of 0.0.28, publishes from patchbay rules can re-enter the rule engine, which is what lets these three rules feed into each other.
 
 ## Re-entry, capped at 8
 
-The interesting bit is rule 2 matching `T.*.p`, a subject that only exists because rule 1 emitted it. In [0.0.28](https://github.com/lexvicacom/monoblok/releases/tag/v0.0.28), a publish produced by patchbay itself is now eligible to match downstream rules. Previously it would have been forwarded to subscribers and that was that, so a staged pipeline like the one above had to be flattened by hand into one rule that did everything inline. Awkward, especially when several rules want to feed off the same demuxed scalar.
+The interesting bit is rule 2 matching `T.*.p`, a subject that only exists because rule 1 emitted it. In 0.0.28, a publish produced by patchbay itself is now eligible to match downstream rules. Previously it would have been forwarded to subscribers and that was that, so a staged pipeline like the one above had to be flattened by hand into one rule that did everything inline. Awkward, especially when several rules want to feed off the same demuxed scalar.
 
 Re-entry is the obvious thing to want and the obvious thing to be nervous about. A rule that emits a subject which matches itself is a feedback loop: howl, except in subject-space. The cap is 8: a publish can re-enter the rule engine up to 8 times in a single causal chain, then it stops. Long enough for any reasonable staged pipeline (demux, condition, mirror, alert is 3 or 4), short enough that a misconfigured terminates, with a warning, almost immediately.
 
