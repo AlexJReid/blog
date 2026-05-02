@@ -120,9 +120,35 @@ These are just plain subscribers to a clean, meaningful stream. You can add or r
 
 Everything besides networking runs in an event loop provided by the excellent [libxev](https://github.com/mitchellh/libxev), so you get kqueue, io_uring, epoll or IOCP depending on where you run it. No threads or locks, zero-copy fan-out. It speaks enough of the NATS wire protocol that any NATS client can connect. This is rather convenient because it means you can drop it in alongside existing tooling without writing a client library first, or simply replace NATS as an experiment.
 
-Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it, and I ran these with an empty patchbay so the numbers measure raw broker work only. Plus, most useful systems tend to work over a LAN or WAN and not localhost. 
+Benchmarking against the existing `nats bench` commands was convenient, although obviously `nats-server` is a mature Go codebase with a decade of production history behind it doing a lot more than monoblok (accounting, slow-consumer detection, clustering, JetStream, TLS, auth). I ran these with an empty patchbay so the numbers measure raw PUB/SUB and fan-out only. Plus, most useful systems tend to work over a LAN or WAN and not localhost.
 
-On a MacBook Air M2 (kqueue backend), monoblok lands within a few percent of `nats-server` on the single-publisher 64B workload (8.52M vs 8.91M msg/s, a 4% gap) and pulls sharply ahead as fan-out grows: 11.18M vs 2.97M msg/s at 50 subscribers, almost 4x. Multi-publisher rows hold their own too (4.60M vs 3.90M msg/s on 2 publishers, 5.32M vs 4.47M msg/s on 8). The standing exception is the 1-pub to 1-sub case, where monoblok is a touch behind (3.00M vs 3.16M msg/s), likely a low-concurrency quirk worth chasing later. Throughput drops from these figures in proportion to how much your rules do, but it's a respectable starting point. 🤏🧂
+The baseline box is a Hetzner CAX11: 2 vCPU Ampere ARM, 4 GB RAM, around £5/month, the cheapest ARM instance in their lineup. If it holds up here it holds up anywhere. Note that this is a shared-CPU instance with only 2 cores, so a noisy neighbour can skew a single row by 10-20%; the patchbay overhead table below is a 3-run median to take some of that out.
+
+Numbers are msgs/sec from `nats bench`, monoblok built `--release=safe`, against `nats-server` v2.10.7 on the same box (Linux 6.8 aarch64, io_uring backend):
+
+| workload            |   monoblok |  nats-server |  diff |
+|---------------------|-----------:|-------------:|------:|
+| 1 pub × 500k × 64B  |    2.52M/s |      2.22M/s |  +13% |
+| 2 pub × 10k × 64B   |    1.75M/s |      1.53M/s |  +14% |
+| 8 pub × 50k × 128B  |    2.24M/s |      1.80M/s |  +24% |
+| 1 pub → 1 sub       |    1.17M/s |      0.93M/s |  +26% |
+| 1 pub → 10 subs     |    2.49M/s |      1.84M/s |  +35% |
+| 1 pub → 50 subs     |    2.67M/s |      1.98M/s |  +35% |
+
+`--release=fast` adds another 10-15% on top. Take it with appropriate bucket-load of salt: NATS is the reliable, tuned Porsche, monoblok is a rusty Civic with a bolted-on eBay turbo.
+
+The more interesting question is what a non-empty patchbay costs. Same CAX11, empty rule set vs 1 rule vs 50 rules, median of 3 runs:
+
+| workload                |    no patchbay |       1 rule |  diff |     50 rules |  diff |
+|-------------------------|---------------:|-------------:|------:|-------------:|------:|
+| 1 pub × 1M × 64B        |        2.38M/s |      2.48M/s |   +4% |      2.46M/s |   +3% |
+| 2 pub × 500k × 64B      |        3.40M/s |      2.82M/s |  -17% |      2.63M/s |  -23% |
+| 8 pub × 200k × 128B     |        2.69M/s |      2.18M/s |  -19% |      2.65M/s |   -1% |
+| 1 pub → 1 sub           |        1.14M/s |      1.22M/s |   +7% |      1.14M/s |   +0% |
+| 1 pub → 10 subs         |        2.41M/s |      2.35M/s |   -2% |      2.39M/s |   -1% |
+| 1 pub → 50 subs         |        2.61M/s |      2.64M/s |   +1% |      2.59M/s |   -1% |
+
+Cost scales with **matching** rules per PUB, not total rules in the file: 1 rule and 50 rules land in roughly the same place because the dispatch table only invokes rules whose subject filter actually matches. Pub-heavy workloads take a 20% hit once a rule starts firing, fan-out workloads stay close to break-even because the per-publish work is dominated by writing to N subscribers.
 
 ## Sitting in front of a real NATS cluster
 
