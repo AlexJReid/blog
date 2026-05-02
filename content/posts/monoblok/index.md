@@ -126,29 +126,18 @@ The baseline box is a Hetzner CAX11: 2 vCPU Ampere ARM, 4 GB RAM, around £5/mon
 
 Numbers are msgs/sec from `nats bench`, monoblok built `--release=safe`, against `nats-server` v2.10.7 on the same box (Linux 6.8 aarch64, io_uring backend):
 
-| workload            |   monoblok |  nats-server |  diff |
-|---------------------|-----------:|-------------:|------:|
-| 1 pub × 500k × 64B  |    2.52M/s |      2.22M/s |  +13% |
-| 2 pub × 10k × 64B   |    1.75M/s |      1.53M/s |  +14% |
-| 8 pub × 50k × 128B  |    2.24M/s |      1.80M/s |  +24% |
-| 1 pub → 1 sub       |    1.17M/s |      0.93M/s |  +26% |
-| 1 pub → 10 subs     |    2.49M/s |      1.84M/s |  +35% |
-| 1 pub → 50 subs     |    2.67M/s |      1.98M/s |  +35% |
+| workload                |   monoblok |  nats-server |  diff |
+|-------------------------|-----------:|-------------:|------:|
+| 1 pub, 500k msgs, 64B   |    2.52M/s |      2.22M/s |  +13% |
+| 2 pub, 10k msgs, 64B    |    1.75M/s |      1.53M/s |  +14% |
+| 8 pub, 50k msgs, 128B   |    2.24M/s |      1.80M/s |  +24% |
+| 1 pub to 1 sub          |    1.17M/s |      0.93M/s |  +26% |
+| 1 pub to 10 subs        |    2.49M/s |      1.84M/s |  +35% |
+| 1 pub to 50 subs        |    2.67M/s |      1.98M/s |  +35% |
 
 `--release=fast` adds another 10-15% on top. Take it with appropriate bucket-load of salt: NATS is the reliable, tuned Porsche, monoblok is a rusty Civic with a bolted-on eBay turbo.
 
-The more interesting question is what a non-empty patchbay costs. Same CAX11, empty rule set vs 1 rule vs 50 rules, median of 3 runs:
-
-| workload                |    no patchbay |       1 rule |  diff |     50 rules |  diff |
-|-------------------------|---------------:|-------------:|------:|-------------:|------:|
-| 1 pub × 1M × 64B        |        2.38M/s |      2.48M/s |   +4% |      2.46M/s |   +3% |
-| 2 pub × 500k × 64B      |        3.40M/s |      2.82M/s |  -17% |      2.63M/s |  -23% |
-| 8 pub × 200k × 128B     |        2.69M/s |      2.18M/s |  -19% |      2.65M/s |   -1% |
-| 1 pub → 1 sub           |        1.14M/s |      1.22M/s |   +7% |      1.14M/s |   +0% |
-| 1 pub → 10 subs         |        2.41M/s |      2.35M/s |   -2% |      2.39M/s |   -1% |
-| 1 pub → 50 subs         |        2.61M/s |      2.64M/s |   +1% |      2.59M/s |   -1% |
-
-Cost scales with **matching** rules per PUB, not total rules in the file: 1 rule and 50 rules land in roughly the same place because the dispatch table only invokes rules whose subject filter actually matches. Pub-heavy workloads take a 20% hit once a rule starts firing, fan-out workloads stay close to break-even because the per-publish work is dominated by writing to N subscribers.
+Patchbay overhead scales with **matching** rules per PUB, not total rules in the file: pub-heavy workloads take a ~20% hit once a rule starts firing, fan-out workloads stay close to break-even. Full numbers in the [README](https://github.com/lexvicacom/monoblok#patchbay-overhead).
 
 ## Sitting in front of a real NATS cluster
 
