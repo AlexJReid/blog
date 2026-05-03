@@ -60,7 +60,7 @@ Peter runs a boutique rental outfit with a dozen 911s on the books. Customers pa
 
 A £10 Bluetooth OBD2 dongle plugged into the diagnostic port exposes a firehose of PIDs: RPM, coolant temperature, throttle position, short and long-term fuel trims, O2 sensor voltages, intake manifold pressure, the lot. A small Python script on a Raspberry Pi tucked behind the glovebox polls the dongle over RFCOMM and publishes each reading to `car.<vin>.<pid>`.
 
-Because monoblok compiles for ARM, the broker itself runs on the same Pi. A 5G hat gives it an uplink, so conditioned streams go straight to Peter's reporting system without ever shipping raw PIDs over the cellular link. Conditioning at the edge, analysis in the cloud.
+Because monoblok compiles for ARM, the broker itself runs on the same Pi. A 5G hat gives it an uplink, so conditioned streams go straight to Peter's reporting system without ever shipping raw PIDs over the cellular link. Conditioning at the edge, analysis in the cloud. (For an even smaller edge, see [tinyblok](/posts/tinyblok/): same idea on an ESP32-C6.)
 
 ![Data flow: Porsche 911 with a Pi + 5G hat onboard running monoblok, publishing conditioned streams over 4G/5G to an office backend (fleet dashboard, SMS notifier, logger, dashcam archive). Raw PIDs never leave the car.](./monocar_post.jpg)
 
@@ -175,7 +175,7 @@ Putting a small DSL at the broker for this kind of work is a nice middle ground.
 
 It's just a toy but the applications are endless. Swap office temperature sensors for market data ticks where you want to deadband out the noise and only emit on meaningful moves, fleet telemetry from a few thousand vehicles where most of the GPS jitter is uninteresting, IoT estates with flaky sensors that need smoothing before anyone trusts the readings, gaming or trading dashboards where late-joining clients shouldn't have to wait for the next event to see current state. **Same primitives, different domains.**
 
-There are many loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, maybe TLS (or just rely a NLB to terminate), proper structured logging, and a resilience story. Further out, getting it running on a microcontroller is an interesting direction, swapping the Pi for something an order of magnitude cheaper and lower-power at the edge.
+There are many loose ends to tidy up: a TTL on last-value cache entries so stale state doesn't linger forever or grow unbounded, maybe TLS (or just rely a NLB to terminate), proper structured logging, and a resilience story. The microcontroller direction has since turned into [tinyblok](/posts/tinyblok/), an ESP32-C6 running a codegen'd patchbay and publishing conditioned streams over Wi-Fi, swapping the Pi for something an order of magnitude cheaper and lower-power at the edge.
 
 The code lives at [github.com/lexvicacom/monoblok](https://github.com/lexvicacom/monoblok) and there are both x86 and ARM Linux builds ready to go on the [releases page](https://github.com/lexvicacom/monoblok/releases) if you want to skip the build step and give it a spin. There's also a [demo server anyone can try out](/posts/monoblok-demo/) with the NATS CLI, no install required.
 
