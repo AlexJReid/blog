@@ -102,7 +102,7 @@ Below: device boot log on the left, conditioned stream on the right. TCP connect
 
 `tools/gen.py` runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser; a small Python script is boring and produces a `.zig` file you can read. Python turned out OK. Next stop is doing something more interesting than forwarding temperature and Wi-Fi RSSI.
 
-The genuinely satisfying bit: flash once, and from then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
+The genuinely satisfying bit: drop in a `patchbay.edn`, run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
 
 Experimental quality code is at [github.com/lexvicacom/tinyblok](https://github.com/lexvicacom/tinyblok); expect more than a few rough edges.
 
