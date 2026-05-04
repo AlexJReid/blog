@@ -2,9 +2,9 @@
 draft = false
 date = 2026-05-03
 title = "tinyblok: monoblok's patchbay on an ESP32-C6: a £5 microcontroller"
-description = "Running the patchbay DSL on a microcontroller. Wi-Fi, a NATS PUB, and a temperature reading."
+description = "Running the existing patchbay DSL on a microcontroller"
 slug = "tinyblok"
-tags = ["esp32","zig","nats","monoblok","patchbay","embedded","iot"]
+tags = ["esp32","zig","nats","monoblok","patchbay","embedded","iot","greatest-hits"]
 categories = ["projects"]
 externalLink = ""
 series = []
@@ -12,13 +12,13 @@ ShowToc = false
 TocOpen = false
 +++
 
-[tinyblok](https://github.com/lexvicacom/tinyblok) is the obvious next question after [monoblok](/posts/monoblok/): can the patchbay run on a microcontroller and ship sensor data straight into a remote NATS cluster? The [Peter's Porsche Rentals worked example](/posts/monoblok/#a-worked-example-catching-over-revs-at-peters-porsche-rentals) put a Raspberry Pi behind the glovebox; an ESP32 is an order of magnitude cheaper and smaller. Coupled with a 4G mi-fi or the car's onboard Wi-Fi, it's a self-contained edge node that can sit on a OBD2 dongle's worth of power and still cherry-pick what crosses the mobile data connection.
+[tinyblok](https://github.com/lexvicacom/tinyblok) is the obvious next experiment after [monoblok](/posts/monoblok/): can the patchbay run on a microcontroller and ship sensor data straight into a remote NATS cluster? The [Peter's Porsche Rentals worked example](/posts/monoblok/#a-worked-example-catching-over-revs-at-peters-porsche-rentals) put a Raspberry Pi behind the glovebox; an ESP32 is an order of magnitude cheaper and smaller. Coupled with a 4G mi-fi or the car's onboard Wi-Fi, it's a self-contained edge node that can sit on a OBD2 dongle's worth of power and still cherry-pick what crosses the mobile data connection.
 
-![ESP32-C6 dev board, with curious assistant](board.jpg)
+![ESP32-C6 dev board, with a disapproving assistant](board.jpg)
 
 Right now it's an ESP32-C6 that brings up Wi-Fi, opens a TCP socket to a NATS broker, sends `CONNECT`, and publishes the on-die temperature sensor reading once a second. C owns everything that touches ESP-IDF (Wi-Fi, NVS, lwIP, the NATS client); Zig owns the sample-and-publish loop.
 
-The patchbay introduces a new top-level form, `pump`, alongside the familiar `(on ...)` rules. A `pump` declares a source: the subject values appear on, the Zig `extern fn` that returns the next value, the value's type, and how often to poll it.
+The patchbay introduces a new top-level form, `pump`, alongside the familiar `(on ...)` rules. A `pump` declares a source: the _subject_ values appear on, the Zig `extern fn` that returns the next value, the value's type, and how often to poll it. It is equivalent to a NATS subject - `on` reacts to these messages.
 
 <small>
 
@@ -100,10 +100,10 @@ Below: device boot log on the left, conditioned stream on the right. TCP connect
 
 **The temperature sensor quantises to 1 °C.** Polling faster than 1 Hz just gives you duplicates. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
 
-`tools/gen.py` runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. What's next? Doing something more interesting than forwarding temperature and Wi-Fi RSSI.
+A Python script runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. What's next? Doing something more interesting than forwarding temperature and Wi-Fi RSSI.
 
-The genuinely satisfying bit: drop in a `patchbay.edn`, run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
+The most satisfying bit: drop in a `patchbay.edn`, run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
 
-Experimental quality code is at [github.com/lexvicacom/tinyblok](https://github.com/lexvicacom/tinyblok); expect more than a few rough edges.
+Code is at [github.com/lexvicacom/tinyblok](https://github.com/lexvicacom/tinyblok); expect more than a few rough edges.
 
 If you've thoughts, [give me a shout](mailto:alex@lexvica.com) or find me on [X](https://x.com/AlexJReid) or [LinkedIn](https://www.linkedin.com/in/alexjreid/).
