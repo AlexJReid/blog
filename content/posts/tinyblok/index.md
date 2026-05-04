@@ -120,11 +120,11 @@ The cases where age _does_ matter, like a lower velocity remote sensor where eve
 
 **The temperature sensor quantizes to 1 deg C.** Polling faster than 1 Hz just gives you duplicates. Ironically quantization is already in place. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
 
-It is built with `make build`. A Python script runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. What's next? Doing something more interesting than forwarding temperature and Wi-Fi RSSI.
+It is built with `make build`. A Python script runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. 
 
 The most satisfying bit: run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
 
-What's next? Understanding failure modes and considering `request/reply` inbox pattern i.e. `nats req`. Ask the device a question directly through NATS or monoblok. Maybe this fits scenarios where you don't need a stream, or it is so rarely seen you miss it. Another obvious use is turning `pumps` off/on for remote debugging, forcing OTA updates, etc.
+What's next? Definintely doing something more interesting than forwarding temperature and Wi-Fi RSSI. Understanding real failure modes, considering `request/reply` inbox pattern i.e. `nats req`. Ask the device a question directly through NATS or monoblok. Maybe this fits scenarios where you don't need a stream, or it is so rarely seen you miss it. Another obvious use is turning `pumps` off/on for remote debugging, forcing OTA updates, etc.
 
 Code is at [github.com/lexvicacom/tinyblok](https://github.com/lexvicacom/tinyblok); expect more than a few rough edges. You'll need [espressif/esp-idf](https://github.com/espressif/esp-idf) installing first. It's a chunky download but is really nice.
 
