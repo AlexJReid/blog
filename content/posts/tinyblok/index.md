@@ -124,7 +124,11 @@ It is built with `make build`. A Python script runs as a CMake step before the Z
 
 The most satisfying bit: run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
 
-What's next? Definintely doing something more interesting than forwarding temperature and Wi-Fi RSSI. Understanding real failure modes, considering `request/reply` inbox pattern i.e. `nats req`. Ask the device a question directly through NATS or monoblok. Maybe this fits scenarios where you don't need a stream, or it is so rarely seen you miss it. Another obvious use is turning `pumps` off/on for remote debugging, forcing OTA updates, etc.
+## What's next? 
+
+Definintely doing something more interesting than forwarding temperature and Wi-Fi RSSI. Understanding real failure modes, considering `request/reply` inbox pattern i.e. `nats req`. Ask the device a question directly through NATS or monoblok. Maybe this fits scenarios where you don't need a stream, or it is so rarely seen you miss it. Another obvious use is turning `pumps` off/on for remote debugging, forcing OTA updates, etc.
+
+## Try it
 
 Code is at [github.com/lexvicacom/tinyblok](https://github.com/lexvicacom/tinyblok); expect more than a few rough edges. You'll need [espressif/esp-idf](https://github.com/espressif/esp-idf) installing first. It's a chunky download but is really nice.
 
