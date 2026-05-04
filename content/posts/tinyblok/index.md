@@ -94,13 +94,13 @@ Below: device boot log on the left, conditioned stream on the right. TCP connect
 
 Monoblok interprets the DSL, tinyblok uses codegen to keep things as light as possible.
 
-The thing that makes the two-implementation story tolerable is that the ops themselves aren't duplicated. `deadband`, `moving-avg`, `rising-edge`, `throttle`, and friends live in a small kernel that both monoblok and tinyblok call into. Monoblok walks the parsed tree at runtime and calls the kernel; tinyblok's codegen emits straight-line Zig that calls the same kernel. The DSL has one implementation of what each op _means_; the two backends just differ on how they get there.
+The fork isn't so bad as the ops themselves aren't duplicated. `deadband`, `moving-avg`, `rising-edge`, `throttle`, and friends live in a small kernel that both monoblok and tinyblok share. Monoblok walks the parsed tree at runtime and calls the kernel; whereas tinyblok's codegen emits straight-line Zig that calls the same kernel. The DSL has one implementation of what each op _means_; the two backends just differ on how they get there.
 
-This keeps the cost of new ops bearable. Adding one is: write the op in the shared kernel, teach the runtime walker to dispatch to it (monoblok), teach the codegen to emit a call to it (tinyblok). Two light touches, not two parallel implementations to keep in sync.
+Adding one? Write the op in the shared kernel, teach the runtime walker to dispatch to it (monoblok), teach the codegen to emit a call to it (tinyblok). Two light touches, not two parallel implementations to keep in sync.
 
 ## Drivers are just functions
 
-A `pump` form points at a function; that's the entire driver contract. Codegen turns it into an `extern fn` declaration on the Zig side and an entry in a static table the C side reads. Either language can satisfy the contract, so an IDF-touching sensor is a C function and a pure-compute source is an exported Zig function with `callconv(.c)`. Adding a sensor is one function and one line of patchbay.
+A `pump` form points at a function :fn ... and that's the entire driver contract. Codegen turns it into an `extern fn` declaration on the Zig side and an entry in a static table the C side reads. Either language can use this, so an IDF-touching sensor would likely be a C function and a pure-compute source is an exported Zig function with `callconv(.c)`. Adding a sensor is one function and one line of patchbay.
 
 The C side wires that table into IDF's native event loop: each pump gets an `esp_timer` armed at its `:hz`, the timer posts onto a private `esp_event` base, and a single handler dispatches back into Zig. Sample read, format, rule eval all run on the event task; the main Zig loop only drains the network.
 
@@ -114,7 +114,7 @@ The cases where age _does_ matter, like a remote sensor on a flaky link where ev
 
 ## Challenges so far
 
-**More C than planned.** ESP-IDF macros don't translate: `ESP_ERROR_CHECK`, `WIFI_INIT_CONFIG_DEFAULT`, `IPSTR`/`IP2STR`, FreeRTOS event-group bits. `@cImport` chokes on most of them, and the rest you'd want to wrap by hand anyway. Faster to keep the IDF surface in C and reserve Zig for the hot path.
+**More C than planned.** ESP-IDF macros don't translate: `ESP_ERROR_CHECK`, `WIFI_INIT_CONFIG_DEFAULT`, `IPSTR`/`IP2STR`, FreeRTOS event-group bits. `@cImport` has issues. I was naive - it was faster to keep the IDF surface in C and reserve Zig for the hot path.
 
 **The C NATS client is hand-rolled.** The obvious off-the-shelf options didn't fit. Synadia's [nats.c](https://github.com/nats-io/nats.c) is a good library on a server or full client, but it pulls in pthreads, a thread pool, and TLS through linking OpenSSL, none of which is a good match in a microcontroller context where the NATS client is one of several tasks sharing 320 KB of RAM. Same story for [nats.zig](https://github.com/nats-io/nats.zig) which assumes `std.Io.Threaded` and `std.crypto.tls`, neither of which exist here either. So, a small bespoke client it is: this is the beauty of the NATS protocol: the wire format is so simple you can implement the publish-only subset in a small amount of C and have it talk to a real broker. TLS and auth is a problem for another day, but doable.
 
