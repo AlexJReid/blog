@@ -108,7 +108,7 @@ Only polled drivers exist today. The interesting follow-on is push-style drivers
 
 ## The TX ring and what gets dropped
 
-`publish!` doesn't write to the socket; it enqueues into a small ring (8 KB, ≈256 messages at typical sizes) which the main loop drains via non-blocking `send()`. When the broker is slow or Wi-Fi is retransmitting, the ring drops the _oldest_ records rather than stalling the rule loop. Newest-wins is the right default for telemetry: when the link comes back you want recent state, not a faithful replay of half an hour ago.
+`publish!` doesn't write to the socket; it enqueues into a small ring (8 KB, ~256 messages at typical sizes) which the main loop drains via non-blocking `send()`. When the broker is slow or Wi-Fi is retransmitting, the ring drops the _oldest_ records rather than stalling the loop. Newest-wins is the right default for telemetry: when the link comes back you want recent state, not a faithful replay of half an hour ago.
 
 The cases where age _does_ matter, like a remote sensor on a flaky link where every reading counts, want a different policy: spool overflow to LittleFS and flush on reconnect. That's a sensible next addition, paired with a producer-side `X-Measured-At` header so a catch-up burst is distinguishable from live data downstream.
 
