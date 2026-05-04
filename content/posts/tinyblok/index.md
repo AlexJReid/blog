@@ -12,7 +12,7 @@ ShowToc = false
 TocOpen = false
 +++
 
-[tinyblok](https://github.com/lexvicacom/tinyblok) is the obvious next experiment after [monoblok](/posts/monoblok/): can the patchbay run on a microcontroller and ship sensor data straight into a remote NATS cluster? The [Peter's Porsche Rentals worked example](/posts/monoblok/#a-worked-example-catching-over-revs-at-peters-porsche-rentals) put a Raspberry Pi behind the glovebox; an ESP32 is an order of magnitude cheaper and smaller. Coupled with a 4G mi-fi or the car's onboard Wi-Fi, it's a self-contained edge node that can sit on a OBD2 dongle's worth of power and still cherry-pick what crosses the mobile data connection.
+[tinyblok](https://github.com/lexvicacom/tinyblok) is the obvious next experiment after [monoblok](/posts/monoblok/): can the patchbay run on a microcontroller and ship sensor data straight into a remote NATS cluster? The [Peter's Porsche Rentals worked example](/posts/monoblok/#a-worked-example-catching-over-revs-at-peters-porsche-rentals) put a Raspberry Pi behind the glovebox; an ESP32 is an order of magnitude cheaper and smaller. Coupled with a 4G mi-fi or the car's onboard Wi-Fi, it's a self-contained edge node that can sit on a OBD2 dongle's worth of power and select what crosses the mobile data connection.
 
 ![ESP32-C6 dev board, with a disapproving assistant](board.jpg)
 
@@ -90,19 +90,37 @@ Below: device boot log on the left, conditioned stream on the right. TCP connect
 
 ![Device log on the left, monoblok subscriber on the right](monitor.png)
 
+## Shared kernel, two backends
+
+The thing that makes the two-implementation story tolerable is that the ops themselves aren't duplicated. `deadband`, `moving-avg`, `rising-edge`, `throttle`, and friends live in a small kernel that both monoblok and tinyblok call into. Monoblok walks the parsed tree at runtime and calls the kernel; tinyblok's codegen emits straight-line Zig that calls the same kernel. The DSL has one implementation of what each op _means_; the two backends just differ on how they get there.
+
+This keeps the cost of new ops bearable. Adding one is: write the op in the shared kernel, teach the runtime walker to dispatch to it (monoblok), teach the codegen to emit a call to it (tinyblok). Two light touches, not two parallel implementations to keep in sync.
+
+## Drivers are just functions
+
+A `pump` form points at a function; that's the entire driver contract. Codegen turns it into an `extern fn` declaration on the Zig side and an entry in a static table the C side reads. Either language can satisfy the contract, so an IDF-touching sensor is a C function and a pure-compute source is an exported Zig function with `callconv(.c)`. Adding a sensor is one function and one line of patchbay.
+
+The C side wires that table into IDF's native event loop: each pump gets an `esp_timer` armed at its `:hz`, the timer posts onto a private `esp_event` base, and a single handler dispatches back into Zig. Sample read, format, rule eval all run on the event task; the main Zig loop only drains the network.
+
+Only polled drivers exist today. The interesting follow-on is push-style drivers (GPIO ISRs, UART RX) under a `pump` form with no `:hz`, registering their own event ids on the same base. From the patchbay's perspective an interrupt-driven sensor looks identical to a polled one, which is the bit I want.
+
+## The TX ring and what gets dropped
+
+`publish!` doesn't write to the socket; it enqueues into a small ring (8 KB, ≈256 messages at typical sizes) which the main loop drains via non-blocking `send()`. When the broker is slow or Wi-Fi is retransmitting, the ring drops the _oldest_ records rather than stalling the rule loop. Newest-wins is the right default for telemetry: when the link comes back you want recent state, not a faithful replay of half an hour ago.
+
+The cases where age _does_ matter, like a remote sensor on a flaky link where every reading counts, want a different policy: spool overflow to LittleFS and flush on reconnect. That's a sensible next addition, paired with a producer-side `X-Measured-At` header so a catch-up burst is distinguishable from live data downstream.
+
 ## Challenges so far
 
 **More C than planned.** ESP-IDF macros don't translate: `ESP_ERROR_CHECK`, `WIFI_INIT_CONFIG_DEFAULT`, `IPSTR`/`IP2STR`, FreeRTOS event-group bits. `@cImport` chokes on most of them, and the rest you'd want to wrap by hand anyway. Faster to keep the IDF surface in C and reserve Zig for the hot path.
 
-**The patchbay can't be ported, only re-implemented.** Monoblok walks a parsed s-expr tree at runtime with a per-message arena. On a chip with a few hundred KB of RAM that's a non-starter. So `tools/gen.py` compiles `patchbay.edn` to straight-line Zig with statically-allocated state slots ahead of build. Same DSL, two implementations; possibly something to share later, but the forms are simple enough that two backends isn't yet painful.
+**The C NATS client is hand-rolled.** The obvious off-the-shelf options didn't fit. Synadia's [nats.c](https://github.com/nats-io/nats.c) is a good library on a server or full client, but it pulls in pthreads, a thread pool, and TLS through linking OpenSSL, none of which is a good match in a microcontroller context where the NATS client is one of several tasks sharing 320 KB of RAM. Same story for [nats.zig](https://github.com/nats-io/nats.zig) which assumes `std.Io.Threaded` and `std.crypto.tls`, neither of which exist here either. So, a small bespoke client it is: this is the beauty of the NATS protocol: the wire format is so simple you can implement the publish-only subset in a small amount of C and have it talk to a real broker. TLS and auth is a problem for another day, but doable.
 
-**The C NATS client is hand-rolled.** The obvious off-the-shelf options didn't fit. Synadia's [nats.c](https://github.com/nats-io/nats.c) is a good library on a desktop, but it pulls in pthreads, a thread pool, and TLS through linking OpenSSL, none of which is a good match in a microcontroller context where the NATS client is one of several tasks sharing 320 KB of RAM. Same story for [nats.zig](https://github.com/nats-io/nats.zig) which assumes `std.Io.Threaded` and `std.crypto.tls`, neither of which exist here either. So, a small bespoke client it is: this is the beauty of the NATS protocol: the wire format is so simple you can implement the publish-only subset in a small amount of C and have it talk to a real broker. TLS and auth is a problem for another day, but doable.
-
-**The temperature sensor quantises to 1 °C.** Polling faster than 1 Hz just gives you duplicates. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
+**The temperature sensor quantizes to 1 °C.** Polling faster than 1 Hz just gives you duplicates. Ironically quantization is already in place. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
 
 A Python script runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. What's next? Doing something more interesting than forwarding temperature and Wi-Fi RSSI.
 
-The most satisfying bit: drop in a `patchbay.edn`, run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
+The most satisfying bit: run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
 
 Code is at [github.com/lexvicacom/tinyblok](https://github.com/lexvicacom/tinyblok); expect more than a few rough edges.
 
