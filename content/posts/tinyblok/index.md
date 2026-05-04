@@ -16,7 +16,7 @@ TocOpen = false
 
 ![ESP32-C6 dev board, with a disapproving assistant](board.jpg)
 
-Right now it's an ESP32-C6 that brings up Wi-Fi, opens a TCP socket to a NATS broker, sends `CONNECT`, and publishes the on-die temperature sensor reading once a second. C owns everything that touches ESP-IDF (Wi-Fi, NVS, lwIP, the NATS client); Zig owns the sample-and-publish loop.
+Right now it's an ESP32-C6 that brings up Wi-Fi, opens a TCP socket to a NATS broker, sends `CONNECT`, and publishes some metrics off the board at defined rates. C owns everything that touches ESP-IDF (Wi-Fi, NVS, lwIP, the NATS client); Zig owns the sample-and-publish loop.
 
 The patchbay introduces a new top-level form, `pump`, alongside the familiar `(on ...)` rules. A `pump` declares a source: the _subject_ values appear on, the Zig `extern fn` that returns the next value, the value's type, and how often to poll it. It is equivalent to a NATS subject - `on` reacts to these messages.
 
@@ -92,6 +92,8 @@ Below: device boot log on the left, conditioned stream on the right. TCP connect
 
 ## Shared kernel, two backends
 
+Monoblok interprets the DSL, tinyblok uses codegen to keep things as light as possible.
+
 The thing that makes the two-implementation story tolerable is that the ops themselves aren't duplicated. `deadband`, `moving-avg`, `rising-edge`, `throttle`, and friends live in a small kernel that both monoblok and tinyblok call into. Monoblok walks the parsed tree at runtime and calls the kernel; tinyblok's codegen emits straight-line Zig that calls the same kernel. The DSL has one implementation of what each op _means_; the two backends just differ on how they get there.
 
 This keeps the cost of new ops bearable. Adding one is: write the op in the shared kernel, teach the runtime walker to dispatch to it (monoblok), teach the codegen to emit a call to it (tinyblok). Two light touches, not two parallel implementations to keep in sync.
@@ -116,7 +118,7 @@ The cases where age _does_ matter, like a remote sensor on a flaky link where ev
 
 **The C NATS client is hand-rolled.** The obvious off-the-shelf options didn't fit. Synadia's [nats.c](https://github.com/nats-io/nats.c) is a good library on a server or full client, but it pulls in pthreads, a thread pool, and TLS through linking OpenSSL, none of which is a good match in a microcontroller context where the NATS client is one of several tasks sharing 320 KB of RAM. Same story for [nats.zig](https://github.com/nats-io/nats.zig) which assumes `std.Io.Threaded` and `std.crypto.tls`, neither of which exist here either. So, a small bespoke client it is: this is the beauty of the NATS protocol: the wire format is so simple you can implement the publish-only subset in a small amount of C and have it talk to a real broker. TLS and auth is a problem for another day, but doable.
 
-**The temperature sensor quantizes to 1 °C.** Polling faster than 1 Hz just gives you duplicates. Ironically quantization is already in place. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
+**The temperature sensor quantizes to 1 deg C.** Polling faster than 1 Hz just gives you duplicates. Ironically quantization is already in place. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
 
 A Python script runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. What's next? Doing something more interesting than forwarding temperature and Wi-Fi RSSI.
 
