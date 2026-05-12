@@ -5,3 +5,9 @@
 .post-content .highlight:not(table) {
     margin: 4px auto 12px;
 }
+
+.post-content .twitter-tweet,
+.post-content iframe.twitter-tweet {
+    margin-left: auto;
+    margin-right: auto;
+}

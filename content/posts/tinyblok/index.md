@@ -14,7 +14,9 @@ TocOpen = false
 
 [tinyblok](https://github.com/lexvicacom/tinyblok) is the obvious next experiment after [monoblok](/posts/monoblok/): can the patchbay run on a microcontroller and ship sensor data straight into a remote NATS cluster? In the original post, the [Peter's Porsche Rentals worked example](/posts/monoblok/#a-worked-example-catching-over-revs-at-peters-porsche-rentals) put a Raspberry Pi behind the glovebox; an ESP32 is an order of magnitude cheaper and smaller. Coupled with a 4G mi-fi or the car's onboard Wi-Fi, it's a self-contained edge node that can sit on a OBD2 dongle's worth of power and select what crosses the mobile data connection.
 
-![ESP32-C6 dev board, with a disapproving assistant](board.jpg)
+{{< rawhtml >}}
+<blockquote class="twitter-tweet"><a href="https://x.com/monoblok_/status/2053897186681688394">tinyblok dog and board photo on X</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+{{< /rawhtml >}}
 
 Right now it's an ESP32-C6 that brings up Wi-Fi, opens a TCP socket to a NATS broker, sends `CONNECT`, and publishes some metrics off the board at defined rates. C owns everything that touches ESP-IDF (Wi-Fi, NVS, lwIP, the NATS client); Zig owns the sample-and-publish loop.
 
