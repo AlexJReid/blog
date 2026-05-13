@@ -14,10 +14,10 @@ TocOpen = false
 
 There's now a public [monoblok](/posts/monoblok/) demo server you can use with any NATS client to try it out.
 
-It is at `nats://monoblok.rtd.pub:4222`, docs at [demo.md](https://github.com/lexvicacom/monoblok/blob/main/docs/demo.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
+It is at `nats://demo.monoblok.host:4222`, docs at [demo.md](https://github.com/lexvicacom/monoblok/blob/main/docs/demo.md). Grab the [`nats` CLI](https://github.com/nats-io/natscli), save the demo server as a context once, and select it so you don't have to type the URL every time:
 
 ```
-nats context save monoblok-demo --server nats://monoblok.rtd.pub:4222
+nats context save monoblok-demo --server nats://demo.monoblok.host:4222
 nats context select monoblok-demo
 ```
 
@@ -71,11 +71,11 @@ The demo server now has the [outbound bridge](/posts/monoblok/#nats-bridge) wire
 
 Everything else - the raw `demo.sensors.*` firehose, the smoothed and deltaed derivatives, the `$LVC` and `$STATS` trees - stays local to the demo broker. Only the rising-edge spikes and the alert mirror cross over. That's the pattern from the [massive post](/posts/monoblok-massive/): a noisy input stream gets conditioned down to a few high-signal subjects, and only those get forwarded onward.
 
-The downstream broker is reachable at `nats://monoblok.rtd.pub:4223`, so you can subscribe there and watch the bridged subjects arrive:
+The downstream broker is reachable at `nats://demo.monoblok.host:4223`, so you can subscribe there and watch the bridged subjects arrive:
 
 ```
 # Terminal A: subscribe on the downstream broker (port 4223)
-nats -s nats://monoblok.rtd.pub:4223 sub 'demo.>'
+nats -s nats://demo.monoblok.host:4223 sub 'demo.>'
 
 # Terminal B: publish to the demo broker (port 4222)
 nats pub demo.sensors.temp 10
