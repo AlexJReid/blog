@@ -12,8 +12,6 @@ ShowToc = false
 TocOpen = false
 +++
 
-![monoblok](./monoblok.png)
-
 *Want to [jump straight to the code](https://github.com/lexvicacom/monoblok)?*
 
 A car publishes its engine RPM ten times a second. A market data feed ticks on every quote. A cheap temperature sensor posts a fresh reading every two seconds, mostly identical to the last one. Data moves quickly, but most of it is noise: a publisher that doesn't know what its subscribers care about, and a fleet of subscribers each writing the same defensive code to round, debounce, and ignore the boring readings.
@@ -31,9 +29,10 @@ The pattern: publishers PUB to monoblok instead of directly to NATS, using the e
 
 This is useful for smoothing out output from jittery sensors (the £2.99 Temu kind), high-frequency market data, fleet telemetry, anything where the data moves fast but most of the movement isn't worth a downstream message.
 
-![a cheap shouty sensor](./shoutysensor.png)
-
 monoblok is partially NATS-compatible and is written in Zig, resulting in a fast and compact binary with low hardware requirements. It is configured through a simple signal conditioning DSL called **patchbay**.
+
+[![why monoblok infographic](./infographic.png)](./infographic.png)
+(click to zoom)
 
 ## Key features
 
