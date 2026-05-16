@@ -4,7 +4,7 @@ date = 2026-05-03
 title = "tinyblok: monoblok's patchbay on an ESP32-C6: a £5 microcontroller"
 description = "Running the existing patchbay DSL on a microcontroller"
 slug = "tinyblok"
-tags = ["esp32","zig","nats","monoblok","patchbay","embedded","iot","greatest-hits"]
+tags = ["esp32","nats","monoblok","patchbay","embedded","iot","greatest-hits"]
 categories = ["projects"]
 externalLink = ""
 series = []
@@ -116,13 +116,9 @@ The cases where age _does_ matter, like a lower velocity remote sensor where eve
 
 **More C than planned.** ESP-IDF macros don't translate: `ESP_ERROR_CHECK`, `WIFI_INIT_CONFIG_DEFAULT`, `IPSTR`/`IP2STR`, FreeRTOS event-group bits. `@cImport` has issues. I was naive - it was faster to keep the IDF surface in C and reserve Zig for the overlap with monoblok/patchbay.
 
-**The C NATS client is hand-rolled.** The obvious off-the-shelf options didn't fit. Synadia's [nats.c](https://github.com/nats-io/nats.c) is a good library on a server or full client, but it pulls in pthreads, a thread pool, and TLS through linking OpenSSL, none of which is a good match in a microcontroller context where the NATS client is one of several tasks sharing 320 KB of RAM. Same story for [nats.zig](https://github.com/nats-io/nats.zig) which assumes `std.Io.Threaded` and `std.crypto.tls`, neither of which exist here either. So, a small bespoke client it is: this is the beauty of the NATS protocol: the wire format is so simple you can implement the publish-only subset in a small amount of C and have it talk to a real broker. TLS and auth is a problem for another day (or 8), but doable.
+**The C NATS client is hand-rolled.** The obvious off-the-shelf options didn't fit. Synadia's [nats.c](https://github.com/nats-io/nats.c) is a good library on a server or full client, but it pulls in pthreads, a thread pool, and TLS through linking OpenSSL, none of which is a good match in a microcontroller context where the NATS client is one of several tasks sharing 320 KB of RAM. So, a small bespoke client it is: this is the beauty of the NATS protocol: the wire format is so simple you can implement the publish-only subset in a small amount of C and have it talk to a real broker. TLS and auth is a problem for another day (or 8), but doable.
 
 **The temperature sensor quantizes to 1 deg C.** Polling faster than 1 Hz just gives you duplicates. Ironically quantization is already in place. A good early reminder that on-device, the sensor is usually the bottleneck, not the code.
-
-It is built with `make build`. A Python script runs as a CMake step before the Zig static lib is built, turning `patchbay.edn` into `main/rules.zig` automatically on every `make build`. The Zig-flavoured alternative would be a `comptime` EDN parser or Zig-based executable; instead a small Python script is boring and produces a `.zig` file you can read. Python was the right move. 
-
-The most satisfying bit: run `make build flash`, and it's running. From then on every time the board sees power it's on Wi-Fi, talking to the broker, and publishing conditioned data in a couple of seconds.
 
 ## What's next? 
 

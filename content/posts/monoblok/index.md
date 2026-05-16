@@ -4,7 +4,7 @@ date = 2026-04-21
 title = "monoblok: signal conditioning in a messaging broker"
 description = "monoblok is a small, NATS-compatible broker that does deadband, debounce, dedupe, demux and last-value cache in flight, so subscribers don't have to."
 slug = "monoblok"
-tags = ["nats","zig","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
+tags = ["nats","pub-sub","stream-processing","monoblok","patchbay","greatest-hits"]
 categories = ["projects"]
 externalLink = ""
 series = []
@@ -29,7 +29,7 @@ The pattern: publishers PUB to monoblok instead of directly to NATS, using the e
 
 This is useful for smoothing out output from jittery sensors (the £2.99 Temu kind), high-frequency market data, fleet telemetry, anything where the data moves fast but most of the movement isn't worth a downstream message.
 
-monoblok is partially NATS-compatible and is written in Zig, resulting in a fast and compact binary with low hardware requirements. It is configured through a simple signal conditioning DSL called **patchbay**.
+monoblok is partially NATS-compatible and is written in as simple as possible C, resulting in a fast and compact binary with low hardware requirements. It is configured through a simple signal conditioning DSL called **patchbay**.
 
 [![why monoblok infographic](./infographic.png)](./infographic.png)
 (click to zoom)
